@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vishnu Vardhan — Data Analytics Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ───── HERO SECTION ───── */
+#hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: #060407;
+}
+
+/* Ambient blurred background duplicate */
+#ambientWrap {
+  position: absolute;
+  inset: -40px;
+  z-index: 1;
+  overflow: hidden;
+}
+#ambientVideo {
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(32px) brightness(0.28) saturate(1.6);
+  transform: scale(1.04);
+  will-change: filter;
+}
+
+/* Main video */
+#mainVideoWrap {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+#mainVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cinematic gradient overlays */
+.grad {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+#gradTop {
+  top: 0; left: 0; right: 0; height: 42%;
+  background: linear-gradient(180deg,
+    rgba(4,2,8,0.88) 0%,
+    rgba(4,2,8,0.45) 55%,
+    transparent 100%
+  );
+}
+#gradBottom {
+  bottom: 0; left: 0; right: 0; height: 62%;
+  background: linear-gradient(0deg,
+    rgba(2,1,6,0.96) 0%,
+    rgba(4,2,8,0.72) 40%,
+    rgba(4,2,8,0.3) 72%,
+    transparent 100%
+  );
+}
+#gradLeft {
+  top: 0; left: 0; bottom: 0; width: 38%;
+  background: linear-gradient(90deg,
+    rgba(2,1,6,0.78) 0%,
+    rgba(10,6,18,0.3) 55%,
+    transparent 100%
+  );
+}
+#gradRight {
+  top: 0; right: 0; bottom: 0; width: 32%;
+  background: linear-gradient(270deg,
+    rgba(2,1,6,0.55) 0%,
+    transparent 100%
+  );
+}
+
+/* Warm orange vignette hint */
+#warmVignette {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 35%;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 20% 100%,
+    rgba(255, 100, 30, 0.08) 0%,
+    transparent 70%
+  );
+}
+
+/* Cool blue Snowflake glow — top right */
+#coolGlow {
+  position: absolute;
+  top: 0; right: 0;
+  width: 40%; height: 50%;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 80% at 90% 10%,
+    rgba(40, 120, 220, 0.09) 0%,
+    transparent 70%
+  );
+}
+
+/* Three.js canvas */
+#threeCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ───── CONTENT ───── */
+#contentOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 6vw 10vh;
+  pointer-events: none;
+}
+
+#tagline {
+  font-size: clamp(8.5px, 1vw, 11.5px);
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  color: rgba(255, 152, 60, 0.82);
+  text-transform: uppercase;
+  margin: 0 0 1.5rem;
+  opacity: 0;
+}
+
+#nameBlock {
+  line-height: 0.86;
+  margin: 0 0 1.8rem;
+}
+
+#firstName {
+  display: block;
+  font-size: clamp(58px, 9.5vw, 142px);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.035em;
+  opacity: 0;
+  transform: translateY(70px);
+  will-change: transform, opacity;
+}
+
+#lastName {
+  display: block;
+  font-size: clamp(58px, 9.5vw, 142px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  opacity: 0;
+  transform: translateY(70px);
+  will-change: transform, opacity;
+  background: linear-gradient(130deg, #FF8C42 0%, #FFD166 50%, #FF6B35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#subtitle {
+  font-size: clamp(12px, 1.4vw, 16.5px);
+  font-weight: 300;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.015em;
+  line-height: 1.7;
+  max-width: 480px;
+  opacity: 0;
+}
+
+/* ───── CONTROLS ───── */
+#controls {
+  position: absolute;
+  bottom: 9vh;
+  right: 4.5vw;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  opacity: 0;
+}
+
+.ctrlBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(15,12,22,0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.22s, border-color 0.22s, transform 0.16s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ctrlBtn:hover {
+  background: rgba(255,140,66,0.12);
+  border-color: rgba(255,140,66,0.45);
+  transform: scale(1.1);
+}
+.ctrlBtn:active { transform: scale(0.97); }
+.ctrlBtn svg { width: 17px; height: 17px; }
+
+/* ───── SOUND HINT ───── */
+#soundHint {
+  position: absolute;
+  top: 50%;
+  right: 4.5vw;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 17px;
+  border-radius: 100px;
+  background: rgba(10,8,18,0.5);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.68);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 0.8s;
+  pointer-events: none;
+}
+#soundPulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,140,66,0.95);
+  animation: hintPulse 1.8s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.55); }
+}
+
+/* ───── SCROLL INDICATOR ───── */
+#scrollIndicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#scrollIndicator:hover { opacity: 0.7 !important; }
+#scrollLabel {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+}
+#scrollLine {
+  width: 1px;
+  height: 44px;
+  background: rgba(255,255,255,0.12);
+  position: relative;
+  overflow: hidden;
+}
+#scrollLine::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,140,66,0) 0%, rgba(255,140,66,0.85) 100%);
+  animation: scrollDrop 2.2s ease-in-out infinite;
+}
+@keyframes scrollDrop {
+  0% { top: -40%; opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 140%; opacity: 0; }
+}
+
+/* ───── NEXT SECTION (placeholder) ───── */
+#nextSection {
+  min-height: 100vh;
+  background: #07050d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+#nextSection h2 {
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: -0.02em;
+}
+#nextSection p {
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.02em;
+}
+
+/* ───── RESPONSIVE ───── */
+@media (max-width: 768px) {
+  #contentOverlay { padding: 0 6vw 16vh; }
+  #controls { bottom: 16vh; right: 5vw; }
+  #soundHint {
+    top: auto;
+    bottom: 24vh;
+    right: 5vw;
+    transform: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ──────────── HERO ──────────── -->
+<section id="hero" aria-label="Portfolio hero">
+
+  <!-- Ambient blurred bg -->
+  <div id="ambientWrap">
+    <video id="ambientVideo"
+      autoplay loop muted playsinline
+      preload="auto"
+      aria-hidden="true">
+      <source src="hero.mp4" type="video/mp4"/>
+    </video>
+  </div>
+
+  <!-- Main video -->
+  <div id="mainVideoWrap">
+    <video id="mainVideo"
+      autoplay loop muted playsinline
+      preload="auto">
+      <source src="hero.mp4" type="video/mp4"/>
+    </video>
+  </div>
+
+  <!-- Cinematic gradients -->
+  <div id="gradTop"    class="grad"></div>
+  <div id="gradBottom" class="grad"></div>
+  <div id="gradLeft"   class="grad"></div>
+  <div id="gradRight"  class="grad"></div>
+  <div id="warmVignette"></div>
+  <div id="coolGlow"></div>
+
+  <!-- Three.js canvas -->
+  <canvas id="threeCanvas" aria-hidden="true"></canvas>
+
+  <!-- Content -->
+  <div id="contentOverlay">
+    <p id="tagline">Data Analytics &amp; Predictive Modeling</p>
+    <div id="nameBlock">
+      <span id="firstName">VISHNU</span>
+      <span id="lastName">VARDHAN</span>
+    </div>
+    <p id="subtitle">Specialising in ETL automation, risk scoring models,<br>and scalable business intelligence architecture.</p>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls" aria-label="Video controls">
+    <button class="ctrlBtn" id="btnPlayPause" aria-label="Pause video">
+      <!-- Pause icon (default: playing) -->
+      <svg id="iconPlay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      <svg id="iconPause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+      </svg>
+    </button>
+    <button class="ctrlBtn" id="btnMute" aria-label="Unmute video">
+      <!-- Mute icon (default: muted) -->
+      <svg id="iconMute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <svg id="iconSound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Sound hint -->
+  <div id="soundHint" aria-hidden="true">
+    <div id="soundPulse"></div>
+    <span>Tap for sound</span>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div id="scrollIndicator" role="button" aria-label="Scroll to next section" tabindex="0">
+    <div id="scrollLabel">Scroll</div>
+    <div id="scrollLine"></div>
+  </div>
+
+</section>
+
+<!-- ──────────── NEXT SECTION ──────────── -->
+<section id="nextSection">
+  <h2>Portfolio Coming Soon</h2>
+  <p>Full case studies · Dashboards · Data pipelines</p>
+</section>
+
+<!-- ──────────── SCRIPTS ──────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  VIDEO CONTROLS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const mainVideo    = document.getElementById('mainVideo');
+const ambientVideo = document.getElementById('ambientVideo');
+const btnPlay      = document.getElementById('btnPlayPause');
+const btnMute      = document.getElementById('btnMute');
+const iconPlay     = document.getElementById('iconPlay');
+const iconPause    = document.getElementById('iconPause');
+const iconMute     = document.getElementById('iconMute');
+const iconSound    = document.getElementById('iconSound');
+const soundHint    = document.getElementById('soundHint');
+
+let isPlaying = true;
+let isMuted   = true;
+
+// Sync videos
+function syncVideos() {
+  try { ambientVideo.currentTime = mainVideo.currentTime; } catch(e){}
+}
+
+btnPlay.addEventListener('click', () => {
+  isPlaying = !isPlaying;
+  if (isPlaying) {
+    mainVideo.play(); ambientVideo.play();
+    iconPlay.style.display = 'none'; iconPause.style.display = '';
+    btnPlay.setAttribute('aria-label', 'Pause video');
+  } else {
+    mainVideo.pause(); ambientVideo.pause();
+    iconPause.style.display = 'none'; iconPlay.style.display = '';
+    btnPlay.setAttribute('aria-label', 'Play video');
+  }
+});
+
+btnMute.addEventListener('click', () => {
+  isMuted = !isMuted;
+  mainVideo.muted = isMuted;
+  if (!isMuted) {
+    iconMute.style.display = 'none'; iconSound.style.display = '';
+    soundHint.style.opacity = '0';
+    btnMute.setAttribute('aria-label', 'Mute video');
+  } else {
+    iconSound.style.display = 'none'; iconMute.style.display = '';
+    btnMute.setAttribute('aria-label', 'Unmute video');
+  }
+});
+
+// Hide sound hint after 5s
+setTimeout(() => {
+  gsap.to(soundHint, { opacity: 0, duration: 1.2, ease: 'power2.inOut' });
+}, 5000);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SCROLL INDICATOR
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const scrollBtn = document.getElementById('scrollIndicator');
+scrollBtn.addEventListener('click', () => {
+  document.getElementById('nextSection').scrollIntoView({ behavior: 'smooth' });
+});
+scrollBtn.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') scrollBtn.click();
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  GSAP ENTRANCE ANIMATIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const tl = gsap.timeline({ delay: 0.35 });
+
+tl
+  .to('#tagline', {
+    opacity: 1,
+    y: 0,
+    duration: 1.1,
+    ease: 'power3.out'
+  })
+  .to('#firstName', {
+    opacity: 1,
+    y: 0,
+    duration: 1.2,
+    ease: 'power4.out'
+  }, '-=0.55')
+  .to('#lastName', {
+    opacity: 1,
+    y: 0,
+    duration: 1.2,
+    ease: 'power4.out'
+  }, '-=0.95')
+  .to('#subtitle', {
+    opacity: 1,
+    duration: 1.1,
+    ease: 'power2.out'
+  }, '-=0.6')
+  .to('#controls', {
+    opacity: 1,
+    duration: 0.9,
+    ease: 'power2.out'
+  }, '-=0.5')
+  .to('#scrollIndicator', {
+    opacity: 0.55,
+    duration: 1.0,
+    ease: 'power2.out'
+  }, '-=0.4');
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  THREE.JS — CINEMATIC DATA PARTICLE LAYER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+(function initThree() {
+  const canvas   = document.getElementById('threeCanvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+  camera.position.z = 80;
+
+  // ── PARTICLES ──
+  const NODE_COUNT = 160;
+  const EDGE_PAIR_COUNT = 90;
+  const positions = [];
+  const sizes     = [];
+  const nodeData  = [];
+
+  for (let i = 0; i < NODE_COUNT; i++) {
+    const x = (Math.random() - 0.5) * 220;
+    const y = (Math.random() - 0.5) * 130;
+    const z = (Math.random() - 0.5) * 80;
+    positions.push(x, y, z);
+    sizes.push(Math.random() * 2.8 + 0.5);
+    nodeData.push({
+      ox: x, oy: y, oz: z,
+      phaseX: Math.random() * Math.PI * 2,
+      phaseY: Math.random() * Math.PI * 2,
+      phaseZ: Math.random() * Math.PI * 2,
+      speedX: 0.18 + Math.random() * 0.22,
+      speedY: 0.12 + Math.random() * 0.18,
+      speedZ: 0.08 + Math.random() * 0.12,
+      ampX:   4 + Math.random() * 7,
+      ampY:   3 + Math.random() * 5,
+      ampZ:   2 + Math.random() * 4,
+    });
+  }
+
+  const pGeo = new THREE.BufferGeometry();
+  const posArray = new Float32Array(positions);
+  pGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+  pGeo.setAttribute('size', new THREE.BufferAttribute(new Float32Array(sizes), 1));
+
+  // Particle shader — warm orange + soft white glowing dots
+  const pMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color(0xFF8C42) },
+      uWhite: { value: new THREE.Color(0xFFEDD8) },
+    },
+    vertexShader: `
+      attribute float size;
+      uniform float uTime;
+      varying float vWhiteFactor;
+      void main() {
+        vWhiteFactor = clamp(position.z / 40.0 + 0.5, 0.0, 1.0);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * (180.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform vec3 uWhite;
+      varying float vWhiteFactor;
+      void main() {
+        float d = length(gl_PointCoord - 0.5) * 2.0;
+        if (d > 1.0) discard;
+        float alpha = pow(1.0 - d, 2.2) * 0.75;
+        vec3 col = mix(uColor, uWhite, vWhiteFactor * 0.55);
+        gl_FragColor = vec4(col, alpha);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  // ── EDGES ──
+  const edgeVertices = [];
+  const usedPairs = new Set();
+  let attempts = 0;
+  while (edgeVertices.length / 6 < EDGE_PAIR_COUNT && attempts < 2000) {
+    attempts++;
+    const a = Math.floor(Math.random() * NODE_COUNT);
+    const b = Math.floor(Math.random() * NODE_COUNT);
+    if (a === b) continue;
+    const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+    if (usedPairs.has(key)) continue;
+    const ax = nodeData[a].ox, ay = nodeData[a].oy, az = nodeData[a].oz;
+    const bx = nodeData[b].ox, by = nodeData[b].oy, bz = nodeData[b].oz;
+    const dist = Math.hypot(ax-bx, ay-by, az-bz);
+    if (dist > 70) continue;
+    usedPairs.add(key);
+    edgeVertices.push(ax, ay, az, bx, by, bz);
+  }
+
+  const eGeo = new THREE.BufferGeometry();
+  const eArr = new Float32Array(edgeVertices);
+  eGeo.setAttribute('position', new THREE.BufferAttribute(eArr, 3));
+
+  const eMat = new THREE.LineBasicMaterial({
+    color: 0xFF8C42,
+    opacity: 0.07,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const edges = new THREE.LineSegments(eGeo, eMat);
+  scene.add(edges);
+
+  // ── Bokeh / depth glow spheres ──
+  const bokehGroup = new THREE.Group();
+  for (let i = 0; i < 18; i++) {
+    const r = 0.35 + Math.random() * 1.4;
+    const bg = new THREE.SphereGeometry(r, 6, 6);
+    const isWarm = Math.random() > 0.4;
+    const bm = new THREE.MeshBasicMaterial({
+      color: isWarm ? 0xFF7020 : 0x3080FF,
+      opacity: 0.04 + Math.random() * 0.06,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const b = new THREE.Mesh(bg, bm);
+    b.position.set(
+      (Math.random() - 0.5) * 200,
+      (Math.random() - 0.5) * 120,
+      (Math.random() - 0.5) * 60 - 20
+    );
+    b.userData = { phase: Math.random() * Math.PI * 2, speed: 0.08 + Math.random() * 0.12 };
+    bokehGroup.add(b);
+  }
+  scene.add(bokehGroup);
+
+  // ── Mouse parallax ──
+  let mouseX = 0, mouseY = 0;
+  let targetX = 0, targetY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  }, { passive: true });
+
+  // ── Resize ──
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+
+  // ── Animate ──
+  let raf;
+  function animate(t) {
+    raf = requestAnimationFrame(animate);
+    const time = t * 0.001;
+
+    pMat.uniforms.uTime.value = time;
+
+    // Update particle positions with sine waves
+    const posAttr = pGeo.attributes.position;
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const d = nodeData[i];
+      posAttr.setXYZ(i,
+        d.ox + Math.sin(time * d.speedX + d.phaseX) * d.ampX,
+        d.oy + Math.sin(time * d.speedY + d.phaseY) * d.ampY,
+        d.oz + Math.sin(time * d.speedZ + d.phaseZ) * d.ampZ
+      );
+    }
+    posAttr.needsUpdate = true;
+
+    // Update edge start/end positions to match nodes
+    const eAttr = eGeo.attributes.position;
+    let ei = 0;
+    for (const key of usedPairs) {
+      const [a, b] = key.split('_').map(Number);
+      const pa = posAttr;
+      eAttr.setXYZ(ei,   pa.getX(a), pa.getY(a), pa.getZ(a));
+      eAttr.setXYZ(ei+1, pa.getX(b), pa.getY(b), pa.getZ(b));
+      ei += 2;
+    }
+    eAttr.needsUpdate = true;
+
+    // Bokeh drift
+    bokehGroup.children.forEach(b => {
+      b.position.y += Math.sin(time * b.userData.speed + b.userData.phase) * 0.015;
+    });
+
+    // Smooth mouse parallax on camera
+    targetX += (mouseX * 6 - targetX) * 0.04;
+    targetY += (-mouseY * 3.5 - targetY) * 0.04;
+    camera.position.x = targetX;
+    camera.position.y = targetY;
+    camera.lookAt(scene.position);
+
+    renderer.render(scene, camera);
+  }
+  animate(0);
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    cancelAnimationFrame(raf);
+    pGeo.dispose(); pMat.dispose();
+    eGeo.dispose(); eMat.dispose();
+    renderer.dispose();
+  });
+})();
+</script>
+</body>
+</html>

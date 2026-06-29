@@ -1,0 +1,114 @@
+/* PageFX.module.css — supporting styles for the scroll-fx components
+   (Reveal, TiltCard, SkillRadar, AmbientDataField, TimelineFX).
+   Does not touch / duplicate page.module.css — purely additive. */
+
+/* ── Reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 28px));
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.revealIn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── TiltCard ── */
+.tiltCard {
+  position: relative;
+  transition: transform 0.25s ease-out;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+.tiltGlow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    rgba(255, 140, 66, 0.22),
+    transparent 60%
+  );
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.tiltCard:hover .tiltGlow {
+  opacity: 1;
+}
+
+/* ── SkillRadar ── */
+.radarWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+.radarSvg {
+  width: 100%;
+  max-width: 280px;
+}
+.radarPolygon {
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.radarNode {
+  transition: opacity 0.4s ease;
+}
+.radarLabels {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  width: 100%;
+  max-width: 300px;
+}
+.radarLabels li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.04em;
+}
+.radarLabels strong {
+  color: #ffd166;
+  font-weight: 600;
+}
+
+/* ── AmbientDataField ── */
+.ambientCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ── TimelineFX ── */
+.fxAnchor {
+  display: none;
+}
+.timelineProgress {
+  position: absolute;
+  left: 20px;
+  top: 8px;
+  bottom: 0;
+  width: 2px;
+  transform-origin: top;
+  transform: scaleY(0);
+  background: linear-gradient(180deg, #ff8c42 0%, #ffd166 100%);
+  box-shadow: 0 0 12px rgba(255, 140, 66, 0.55);
+  z-index: 1;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .timelineProgress {
+    left: 14px;
+  }
+}

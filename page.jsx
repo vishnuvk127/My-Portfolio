@@ -1,4 +1,10 @@
 import VideoIntro from '@/components/VideoIntro';
+import Reveal from '@/components/Reveal';
+import StatCounter from '@/components/StatCounter';
+import TiltCard from '@/components/TiltCard';
+import SkillRadar from '@/components/SkillRadar';
+import AmbientDataField from '@/components/AmbientDataField';
+import TimelineFX from '@/components/TimelineFX';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -107,62 +113,66 @@ export default function HomePage() {
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />
 
       {/* ── ABOUT ── */}
-      <section id="about" className={styles.about}>
+      <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'hidden' }}>
+        <AmbientDataField color="255,140,66" density={36} />
         <div className={styles.aboutLeft}>
           <span className={styles.secLabel}>About Me</span>
           <h2 className={styles.secTitle}>Turning complex<br/>data into decisions.</h2>
-          <p>Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</p>
-          <p>I've worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</p>
+          <Reveal as="p">Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</Reveal>
+          <Reveal as="p" delay={0.08}>I&apos;ve worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</Reveal>
           <div className={styles.aboutStats}>
             {[
               { num: '4+',   lbl: 'Years Experience' },
               { num: '$15M', lbl: 'Credit Losses Mitigated' },
               { num: '30%',  lbl: 'Fraud Alert Reduction' },
               { num: '0.89', lbl: 'ROC-AUC Achieved' },
-            ].map(({ num, lbl }) => (
-              <div key={lbl} className={styles.statCard}>
-                <div className={styles.statNum}>{num}</div>
+            ].map(({ num, lbl }, i) => (
+              <Reveal key={lbl} className={styles.statCard} delay={i * 0.08}>
+                <StatCounter value={num} className={styles.statNum} />
                 <div className={styles.statLbl}>{lbl}</div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
         <div className={styles.aboutRight}>
           <div className={styles.aboutVisual}>
-            <span className={styles.monogram}>VV</span>
+            <SkillRadar />
           </div>
         </div>
       </section>
 
       {/* ── SKILLS ── */}
-      <section id="skills" className={styles.skills}>
-        <div className={styles.sectionHeader}>
+      <section id="skills" className={styles.skills} style={{ position: 'relative', overflow: 'hidden' }}>
+        <AmbientDataField color="255,209,102" density={42} />
+        <Reveal className={styles.sectionHeader}>
           <span className={styles.secLabel}>Technical Stack</span>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Tools I work with.</h2>
           <p>End-to-end analytics — from raw ingestion to production models and executive dashboards.</p>
-        </div>
+        </Reveal>
         <div className={styles.skillsGrid}>
-          {skills.map(({ icon, title, tags }) => (
-            <div key={title} className={styles.skillCard}>
-              <div className={styles.cardIcon}>{icon}</div>
-              <h3>{title}</h3>
-              <div className={styles.skillTags}>
-                {tags.map(t => <span key={t} className={styles.skillTag}>{t}</span>)}
-              </div>
-            </div>
+          {skills.map(({ icon, title, tags }, i) => (
+            <Reveal key={title} delay={i * 0.06}>
+              <TiltCard className={styles.skillCard}>
+                <div className={styles.cardIcon}>{icon}</div>
+                <h3>{title}</h3>
+                <div className={styles.skillTags}>
+                  {tags.map(t => <span key={t} className={styles.skillTag}>{t}</span>)}
+                </div>
+              </TiltCard>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── EXPERIENCE ── */}
       <section id="experience" className={styles.experience}>
-        <div className={styles.sectionHeader}>
+        <Reveal className={styles.sectionHeader}>
           <span className={styles.secLabel}>Experience</span>
-          <h2 className={styles.secTitle}>Where I've built things.</h2>
-        </div>
+          <h2 className={styles.secTitle}>Where I&apos;ve built things.</h2>
+        </Reveal>
         <div className={styles.timeline}>
-          {experience.map(({ role, company, period, current, bullets }) => (
-            <div key={company} className={styles.tlItem}>
+          {experience.map(({ role, company, period, current, bullets }, i) => (
+            <Reveal key={company} className={styles.tlItem} delay={i * 0.1}>
               <div className={styles.tlDot} />
               <div className={styles.tlMeta}>
                 <span className={styles.dateBadge}>{period}</span>
@@ -171,27 +181,30 @@ export default function HomePage() {
               <h3>{role}</h3>
               <div className={styles.tlCompany}>{company}</div>
               <ul className={styles.tlBullets}>
-                {bullets.map((b, i) => <li key={i}>{b}</li>)}
+                {bullets.map((b, j) => <li key={j}>{b}</li>)}
               </ul>
-            </div>
+            </Reveal>
           ))}
+          <TimelineFX dotClass={styles.tlDot} />
         </div>
       </section>
 
       {/* ── PROJECTS ── */}
       <section id="projects" className={styles.projects}>
-        <div className={styles.sectionHeader}>
+        <Reveal className={styles.sectionHeader}>
           <span className={styles.secLabel}>Projects</span>
-          <h2 className={`${styles.secTitle} ${styles.light}`}>Things I've shipped.</h2>
-        </div>
+          <h2 className={`${styles.secTitle} ${styles.light}`}>Things I&apos;ve shipped.</h2>
+        </Reveal>
         <div className={styles.projectsGrid}>
-          {projects.map(({ icon, title, description, impact }) => (
-            <div key={title} className={styles.projCard}>
-              <div className={styles.projIcon}>{icon}</div>
-              <h3>{title}</h3>
-              <p>{description}</p>
-              <div className={styles.projImpact}>⚡ {impact}</div>
-            </div>
+          {projects.map(({ icon, title, description, impact }, i) => (
+            <Reveal key={title} delay={i * 0.08}>
+              <TiltCard className={styles.projCard}>
+                <div className={styles.projIcon}>{icon}</div>
+                <h3>{title}</h3>
+                <p>{description}</p>
+                <div className={styles.projImpact}>⚡ {impact}</div>
+              </TiltCard>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -199,33 +212,33 @@ export default function HomePage() {
       {/* ── EDUCATION & CERTS ── */}
       <section id="education" className={styles.education}>
         <div className={styles.eduCol}>
-          <div className={styles.sectionHeader}>
+          <Reveal className={styles.sectionHeader}>
             <span className={styles.secLabel}>Education</span>
             <h2 className={styles.secTitle}>Academic background.</h2>
-          </div>
-          <div className={styles.eduCard}>
+          </Reveal>
+          <Reveal className={styles.eduCard}>
             <div className={styles.eduIcon}>🎓</div>
             <div>
               <h3>M.S. in Computer Science</h3>
               <div className={styles.eduSchool}>University of North Texas · Denton, USA</div>
               <div className={styles.eduPeriod}>Jan 2023 – May 2024</div>
             </div>
-          </div>
+          </Reveal>
         </div>
         <div className={styles.certCol}>
-          <div className={styles.sectionHeader}>
+          <Reveal className={styles.sectionHeader}>
             <span className={styles.secLabel}>Certifications</span>
             <h2 className={styles.secTitle}>Credentials.</h2>
-          </div>
+          </Reveal>
           <div className={styles.certList}>
-            {certifications.map(({ name, issuer }) => (
-              <div key={name} className={styles.certItem}>
+            {certifications.map(({ name, issuer }, i) => (
+              <Reveal key={name} className={styles.certItem} delay={i * 0.06}>
                 <div className={styles.certDot} />
                 <div>
                   <strong>{name}</strong>
                   <span>{issuer}</span>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -233,10 +246,10 @@ export default function HomePage() {
 
       {/* ── ACHIEVEMENTS ── */}
       <section id="achievements" className={styles.achievements}>
-        <div className={styles.sectionHeader}>
+        <Reveal className={styles.sectionHeader}>
           <span className={styles.secLabel}>Recognition</span>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Milestones.</h2>
-        </div>
+        </Reveal>
         <div className={styles.achRow}>
           {[
             {
@@ -249,14 +262,14 @@ export default function HomePage() {
               title: 'National Startup Pitch — IIT Madras',
               desc: 'Selected to represent PESCE in a national startup pitch round alongside IIT-Madras (2021–22), competing among India\'s top engineering institutions.',
             },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} className={styles.achCard}>
+          ].map(({ icon, title, desc }, i) => (
+            <Reveal key={title} className={styles.achCard} delay={i * 0.1}>
               <div className={styles.achIcon}>{icon}</div>
               <div>
                 <h3>{title}</h3>
                 <p>{desc}</p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -266,12 +279,12 @@ export default function HomePage() {
         <span className={styles.secLabel}>Get In Touch</span>
         <h2 className={styles.secTitle}>Let&apos;s build something.</h2>
         <p className={styles.contactSub}>Open to data analytics, ML engineering, and BI architecture opportunities. Let&apos;s talk.</p>
-        <div className={styles.ctaLinks}>
+        <Reveal as="div" className={styles.ctaLinks}>
           <a className={`${styles.ctaBtn} ${styles.primary}`} href="mailto:vishnuvardhanvv127@gmail.com">Send an Email</a>
           <a className={`${styles.ctaBtn} ${styles.secondary}`} href="https://www.linkedin.com/in/vishnuvk12/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           <a className={`${styles.ctaBtn} ${styles.secondary}`} href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </div>
-        <div className={styles.contactInfoRow}>
+        </Reveal>
+        <Reveal as="div" className={styles.contactInfoRow} delay={0.1}>
           <div className={styles.ci}>
             <span className={styles.ciLabel}>Email</span>
             <a className={styles.ciVal} href="mailto:vishnuvardhanvv127@gmail.com">vishnuvardhanvv127@gmail.com</a>
@@ -284,7 +297,7 @@ export default function HomePage() {
             <span className={styles.ciLabel}>Location</span>
             <span className={styles.ciVal}>Dallas, Texas</span>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <footer className={styles.footer}>

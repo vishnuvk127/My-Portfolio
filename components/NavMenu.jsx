@@ -4,38 +4,27 @@ import { useCallback, useEffect, useState } from 'react';
 import styles from './NavMenu.module.css';
 
 /**
- * NavMenu — fixed hamburger toggle (top-right) that opens a vertical,
- * slide-in section menu. Rendered once from VideoIntro so it sits "at
- * the hero" but, being position:fixed, stays usable while scrolling
- * the rest of the page.
+ * NavMenu — small fixed hamburger toggle (top-right) that opens a
+ * compact, glassy dropdown anchored right under the button — not a
+ * full-height side drawer. Rendered once from VideoIntro so it sits
+ * "at the hero" but, being position:fixed, stays usable everywhere.
  *
- * Features: animated hamburger -> X, backdrop + Escape + outside-click
- * to close, body-scroll lock while open, staggered link entrance, and
- * a scrollspy that highlights whichever section is currently in view.
+ * Features: animated hamburger -> X, click-outside + Escape to close,
+ * and a scrollspy that highlights whichever section is in view.
  */
 const LINKS = [
+  { id: 'home', label: 'Home' },
   { id: 'about', label: 'About' },
   { id: 'skills', label: 'Skills' },
-  { id: 'experience', label: 'Experience' },
   { id: 'projects', label: 'Projects' },
-  { id: 'education', label: 'Education' },
-  { id: 'achievements', label: 'Achievements' },
   { id: 'contact', label: 'Contact' },
 ];
 
 export default function NavMenu() {
   const [open, setOpen] = useState(false);
-  const [activeId, setActiveId] = useState('');
+  const [activeId, setActiveId] = useState('home');
 
   const close = useCallback(() => setOpen(false), []);
-
-  // Lock background scroll while the drawer is open
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
 
   // Escape closes
   useEffect(() => {
@@ -78,7 +67,7 @@ export default function NavMenu() {
       </button>
 
       <div
-        className={`${styles.backdrop} ${open ? styles.backdropShow : ''}`}
+        className={`${styles.catcher} ${open ? styles.catcherShow : ''}`}
         onClick={close}
         aria-hidden="true"
       />
@@ -88,16 +77,14 @@ export default function NavMenu() {
         className={`${styles.panel} ${open ? styles.panelOpen : ''}`}
         aria-label="Section navigation"
       >
-        <span className={styles.panelLabel}>Navigate</span>
         <ul className={styles.linkList}>
-          {LINKS.map(({ id, label }, i) => (
-            <li key={id} style={{ transitionDelay: open ? `${0.06 + i * 0.04}s` : '0s' }}>
+          {LINKS.map(({ id, label }) => (
+            <li key={id}>
               <a
                 href={`#${id}`}
                 className={activeId === id ? styles.linkActive : ''}
                 onClick={close}
               >
-                <span className={styles.linkIndex}>{String(i + 1).padStart(2, '0')}</span>
                 {label}
               </a>
             </li>

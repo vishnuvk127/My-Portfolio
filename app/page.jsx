@@ -5,6 +5,9 @@ import TiltCard from '@/components/TiltCard';
 import SkillRadar from '@/components/SkillRadar';
 import AmbientDataField from '@/components/AmbientDataField';
 import TimelineFX from '@/components/TimelineFX';
+import KineticHeading from '@/components/KineticHeading';
+import MagneticButton from '@/components/MagneticButton';
+import Marquee from '@/components/Marquee';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -112,33 +115,29 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />
 
-      {/* ── ABOUT ── */}
+      {/* ── ABOUT (bento grid) ── */}
       <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientDataField color="255,140,66" density={36} />
-        <div className={styles.aboutLeft}>
+        <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
           <span className={styles.secLabel}>About Me</span>
-          <h2 className={styles.secTitle}>Turning complex<br/>data into decisions.</h2>
+          <KineticHeading as="h2" className={styles.secTitle}>Turning complex<br/>data into decisions.</KineticHeading>
           <Reveal as="p">Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</Reveal>
           <Reveal as="p" delay={0.08}>I&apos;ve worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</Reveal>
-          <div className={styles.aboutStats}>
-            {[
-              { num: '4+',   lbl: 'Years Experience' },
-              { num: '$15M', lbl: 'Credit Losses Mitigated' },
-              { num: '30%',  lbl: 'Fraud Alert Reduction' },
-              { num: '0.89', lbl: 'ROC-AUC Achieved' },
-            ].map(({ num, lbl }, i) => (
-              <Reveal key={lbl} className={styles.statCard} delay={i * 0.08}>
-                <StatCounter value={num} className={styles.statNum} />
-                <div className={styles.statLbl}>{lbl}</div>
-              </Reveal>
-            ))}
-          </div>
         </div>
-        <div className={styles.aboutRight}>
-          <div className={styles.aboutVisual}>
-            <SkillRadar />
-          </div>
+        <div className={`${styles.aboutVisual} ${styles.bentoVisual}`}>
+          <SkillRadar />
         </div>
+        {[
+          { num: '4+',   lbl: 'Years Experience' },
+          { num: '$15M', lbl: 'Credit Losses Mitigated' },
+          { num: '30%',  lbl: 'Fraud Alert Reduction' },
+          { num: '0.89', lbl: 'ROC-AUC Achieved' },
+        ].map(({ num, lbl }, i) => (
+          <Reveal key={lbl} className={`${styles.statCard} ${styles.bentoStat}`} delay={i * 0.08}>
+            <StatCounter value={num} className={styles.statNum} />
+            <div className={styles.statLbl}>{lbl}</div>
+          </Reveal>
+        ))}
       </section>
 
       {/* ── SKILLS ── */}
@@ -149,6 +148,11 @@ export default function HomePage() {
           <h2 className={`${styles.secTitle} ${styles.light}`}>Tools I work with.</h2>
           <p>End-to-end analytics — from raw ingestion to production models and executive dashboards.</p>
         </Reveal>
+        <Marquee
+          items={skills.flatMap(s => s.tags)}
+          speed={42}
+          className={styles.skillsMarquee}
+        />
         <div className={styles.skillsGrid}>
           {skills.map(({ icon, title, tags }, i) => (
             <Reveal key={title} delay={i * 0.06}>
@@ -178,7 +182,7 @@ export default function HomePage() {
                 <span className={styles.dateBadge}>{period}</span>
                 {current && <span className={styles.currBadge}>Current</span>}
               </div>
-              <h3>{role}</h3>
+              <KineticHeading as="h3">{role}</KineticHeading>
               <div className={styles.tlCompany}>{company}</div>
               <ul className={styles.tlBullets}>
                 {bullets.map((b, j) => <li key={j}>{b}</li>)}
@@ -197,7 +201,7 @@ export default function HomePage() {
         </Reveal>
         <div className={styles.projectsGrid}>
           {projects.map(({ icon, title, description, impact }, i) => (
-            <Reveal key={title} delay={i * 0.08}>
+            <Reveal key={title} delay={i * 0.08} className={i === 0 ? styles.projFeatured : ''}>
               <TiltCard className={styles.projCard}>
                 <div className={styles.projIcon}>{icon}</div>
                 <h3>{title}</h3>
@@ -277,12 +281,12 @@ export default function HomePage() {
       {/* ── CONTACT ── */}
       <section id="contact" className={styles.contact}>
         <span className={styles.secLabel}>Get In Touch</span>
-        <h2 className={styles.secTitle}>Let&apos;s build something.</h2>
+        <KineticHeading as="h2" className={styles.secTitle}>Let&apos;s build something.</KineticHeading>
         <p className={styles.contactSub}>Open to data analytics, ML engineering, and BI architecture opportunities. Let&apos;s talk.</p>
         <Reveal as="div" className={styles.ctaLinks}>
-          <a className={`${styles.ctaBtn} ${styles.primary}`} href="mailto:vishnuvardhanvv127@gmail.com">Send an Email</a>
-          <a className={`${styles.ctaBtn} ${styles.secondary}`} href="https://www.linkedin.com/in/vishnuvk12/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <a className={`${styles.ctaBtn} ${styles.secondary}`} href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <MagneticButton className={`${styles.ctaBtn} ${styles.primary}`} href="mailto:vishnuvardhanvv127@gmail.com">Send an Email</MagneticButton>
+          <MagneticButton className={`${styles.ctaBtn} ${styles.secondary}`} href="https://www.linkedin.com/in/vishnuvk12/" target="_blank" rel="noopener noreferrer">LinkedIn</MagneticButton>
+          <MagneticButton className={`${styles.ctaBtn} ${styles.secondary}`} href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</MagneticButton>
         </Reveal>
         <Reveal as="div" className={styles.contactInfoRow} delay={0.1}>
           <div className={styles.ci}>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { gsap } from 'gsap';
 import CinematicDataLayer from './CinematicDataLayer';
+import NavMenu from './NavMenu';
 import styles from './VideoIntro.module.css';
 
 /**
@@ -121,6 +122,8 @@ export default function VideoIntro({
   }, [nextId]);
 
   return (
+    <>
+    <NavMenu />
     <section ref={sectionRef} className={styles.heroSection} aria-label="Portfolio introduction">
 
       {/* Ambient blurred bg */}
@@ -176,5 +179,6 @@ export default function VideoIntro({
       </div>
 
     </section>
+    </>
   );
 }

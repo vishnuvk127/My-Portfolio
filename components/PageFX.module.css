@@ -54,11 +54,11 @@
 .radarStage {
   position: relative;
   width: 100%;
-  max-width: 280px;
+  max-width: 320px;
 }
 .radarSvg {
   width: 100%;
-  max-width: 280px;
+  max-width: 320px;
   display: block;
   overflow: visible;
 }
@@ -68,8 +68,8 @@
 .radarNode {
   transition: opacity 0.4s ease, r 0.18s ease-out, fill 0.18s ease-out;
 }
-.radarHit {
-  fill: transparent;
+.radarSpokeHit {
+  stroke: transparent;
   cursor: pointer;
   outline: none;
 }
@@ -116,7 +116,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px 18px;
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
 }
 .radarLabels li {
   display: flex;
@@ -128,6 +128,7 @@
   margin: -4px -7px;
   border-radius: 7px;
   cursor: pointer;
+  outline: none;
   transition: background 0.18s, color 0.18s;
 }
 .radarLabelActive {

@@ -1,0 +1,164 @@
+/* NavMenu.module.css — fixed hamburger toggle + vertical slide-in drawer */
+
+.toggle {
+  position: fixed;
+  top: 32px;
+  right: 6vw;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.toggle:hover {
+  background: rgba(255, 140, 66, 0.16);
+  border-color: rgba(255, 140, 66, 0.45);
+  transform: scale(1.05);
+}
+
+.bar {
+  display: block;
+  width: 19px;
+  height: 1.6px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.32s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.25s ease, width 0.25s ease;
+}
+
+.toggleOpen .bar:nth-child(1) {
+  transform: translateY(6.6px) rotate(45deg);
+}
+.toggleOpen .bar:nth-child(2) {
+  opacity: 0;
+  width: 0;
+}
+.toggleOpen .bar:nth-child(3) {
+  transform: translateY(-6.6px) rotate(-45deg);
+}
+
+/* ── Backdrop ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(5, 3, 8, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.backdropShow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Vertical drawer panel ── */
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  width: min(82vw, 320px);
+  background: rgba(8, 5, 14, 0.97);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 0 0 9vw;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.panelOpen {
+  transform: translateX(0);
+}
+
+.panelLabel {
+  position: absolute;
+  top: 48px;
+  left: 9vw;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #ff8c42;
+}
+
+.linkList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.linkList li {
+  overflow: hidden;
+}
+
+.linkList a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: 'Inter', 'SF Pro Display', sans-serif;
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  padding: 9px 0;
+  opacity: 0;
+  transform: translateX(22px);
+  transition: color 0.2s ease, opacity 0.4s ease, transform 0.4s ease;
+}
+
+.panelOpen .linkList a {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.linkList a:hover {
+  color: #fff;
+}
+
+.linkIndex {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 140, 66, 0.7);
+  letter-spacing: 0.04em;
+}
+
+.linkActive {
+  color: #fff !important;
+}
+.linkActive .linkIndex {
+  color: #ffd166;
+}
+
+@media (max-width: 640px) {
+  .toggle {
+    top: 22px;
+    right: 6vw;
+    width: 44px;
+    height: 44px;
+  }
+  .panel {
+    padding-left: 12vw;
+  }
+  .panelLabel {
+    left: 12vw;
+    top: 38px;
+  }
+}

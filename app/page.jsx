@@ -114,7 +114,7 @@ export default function HomePage() {
     <main className={styles.main}>
 
       {/* ── COVER SPLASH ── */}
-      <CoverSplash nextId="home" />
+      <CoverSplash />
 
       {/* ── HERO ── */}
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />

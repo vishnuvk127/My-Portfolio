@@ -224,7 +224,6 @@ export default function HomePage() {
       <section id="skills" className={styles.skills} style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientDataField color="255,209,102" density={42} />
         <Reveal className={styles.sectionHeader}>
-          <span className={styles.secLabel}>Technical Stack</span>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Tools I work with.</h2>
           <p>End-to-end analytics — from raw ingestion to production models and executive dashboards.</p>
         </Reveal>
@@ -277,7 +276,6 @@ export default function HomePage() {
       {/* ── PROJECTS ── */}
       <section id="projects" className={styles.projects}>
         <Reveal className={styles.sectionHeader}>
-          <span className={styles.secLabel}>Projects</span>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Things I&apos;ve shipped.</h2>
         </Reveal>
         <div className={styles.projectsGrid}>
@@ -298,7 +296,6 @@ export default function HomePage() {
       <section id="education" className={styles.education}>
         <div className={styles.eduCol}>
           <Reveal className={styles.sectionHeader}>
-            <span className={styles.secLabel}>Education</span>
             <h2 className={styles.secTitle}>Academic background.</h2>
           </Reveal>
           <Reveal className={styles.eduCard}>
@@ -312,7 +309,6 @@ export default function HomePage() {
         </div>
         <div className={styles.certCol}>
           <Reveal className={styles.sectionHeader}>
-            <span className={styles.secLabel}>Certifications</span>
             <h2 className={styles.secTitle}>Credentials.</h2>
           </Reveal>
           <div className={styles.certList}>
@@ -332,7 +328,6 @@ export default function HomePage() {
       {/* ── ACHIEVEMENTS ── */}
       <section id="achievements" className={styles.achievements}>
         <Reveal className={styles.sectionHeader}>
-          <span className={styles.secLabel}>Recognition</span>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Milestones.</h2>
         </Reveal>
         <div className={styles.achRow}>

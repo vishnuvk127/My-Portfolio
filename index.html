@@ -139,6 +139,7 @@ body { background: #000; color: #fff; font-family: 'Inter', -apple-system, sans-
   grid-template-columns: 1fr 1fr;
   gap: 80px;
   align-items: center;
+  position: relative;
 }
 #about .sec-label { color: var(--orange-dk); }
 #about .sec-title { margin-bottom: 1.6rem; }
@@ -184,7 +185,7 @@ body { background: #000; color: #fff; font-family: 'Inter', -apple-system, sans-
 /* ══════════════════════════════════════
    SKILLS
 ══════════════════════════════════════ */
-#skills { background: var(--bg-dark); padding: 120px 8vw; }
+#skills { background: var(--bg-dark); padding: 120px 8vw; position: relative; }
 #skills .header { text-align: center; margin-bottom: 72px; }
 #skills .header p { font-size: 16px; font-weight: 300; color: rgba(255,255,255,.4); margin-top: 1rem; }
 .skills-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(290px,1fr)); gap: 22px; }
@@ -385,6 +386,49 @@ footer span { color:var(--orange); }
   .contact-info-row { gap:28px; }
   #contentOverlay { padding:0 6vw 16vh; }
 }
+
+/* ══════════════════════════════════════
+   ADVANCED FX — reveal, tilt+glow, radar, ambient, timeline
+══════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+  will-change: opacity, transform;
+}
+.reveal.revealed { opacity: 1; transform: translateY(0); }
+
+.fx-canvas { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .55; }
+
+.skill-card, .proj-card {
+  position: relative;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+.tilt-glow {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: 0;
+  background: radial-gradient(circle at var(--glow-x,50%) var(--glow-y,50%), rgba(255,140,66,.28), transparent 60%);
+  transition: opacity .3s ease; pointer-events: none;
+}
+.skill-card:hover .tilt-glow, .proj-card:hover .tilt-glow { opacity: 1; }
+
+.radar-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; position:relative; z-index:1; width:100%; }
+.radar-svg { width:100%; max-width:230px; }
+.radar-polygon { transform-origin:140px 140px; transform:scale(0); transition:transform 1.1s cubic-bezier(.16,1,.3,1); }
+.radar-wrap.revealed .radar-polygon { transform:scale(1); }
+.radar-node { opacity:0; transition:opacity .4s ease; }
+.radar-wrap.revealed .radar-node { opacity:1; }
+.radar-labels { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:5px 16px; width:100%; max-width:260px; margin-top:4px; }
+.radar-labels li { display:flex; justify-content:space-between; font-size:10.5px; color:rgba(255,255,255,.55); letter-spacing:.04em; }
+.radar-labels strong { color:#FFD166; font-weight:600; }
+
+.tl-progress {
+  position:absolute; left:20px; top:8px; bottom:0; width:2px;
+  transform-origin:top; transform:scaleY(0);
+  background:linear-gradient(180deg,#FF8C42 0%,#FFD166 100%);
+  box-shadow:0 0 12px rgba(255,140,66,.55); z-index:1; pointer-events:none;
+}
+@media(max-width:640px){ .tl-progress{ left:14px; } }
 </style>
 </head>
 <body>
@@ -424,34 +468,71 @@ footer span { color:var(--orange); }
 
 <!-- ══════════════ ABOUT ══════════════ -->
 <section id="about">
+  <canvas class="fx-canvas" id="aboutCanvas" aria-hidden="true"></canvas>
   <div class="left">
-    <span class="sec-label">About Me</span>
-    <h2 class="sec-title">Turning complex<br>data into decisions.</h2>
-    <p>Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</p>
-    <p>I've worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</p>
+    <span class="sec-label reveal">About Me</span>
+    <h2 class="sec-title reveal">Turning complex<br>data into decisions.</h2>
+    <p class="reveal">Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</p>
+    <p class="reveal">I've worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</p>
     <div class="about-stats">
-      <div class="stat-card"><div class="num">4+</div><div class="lbl">Years Experience</div></div>
-      <div class="stat-card"><div class="num">$15M</div><div class="lbl">Credit Losses Mitigated</div></div>
-      <div class="stat-card"><div class="num">30%</div><div class="lbl">Fraud Alert Reduction</div></div>
-      <div class="stat-card"><div class="num">0.89</div><div class="lbl">ROC-AUC Achieved</div></div>
+      <div class="stat-card reveal"><div class="num">4+</div><div class="lbl">Years Experience</div></div>
+      <div class="stat-card reveal"><div class="num">$15M</div><div class="lbl">Credit Losses Mitigated</div></div>
+      <div class="stat-card reveal"><div class="num">30%</div><div class="lbl">Fraud Alert Reduction</div></div>
+      <div class="stat-card reveal"><div class="num">0.89</div><div class="lbl">ROC-AUC Achieved</div></div>
     </div>
   </div>
-  <div class="right">
+  <div class="right reveal">
     <div class="about-visual">
-      <span class="monogram">VV</span>
+      <div class="radar-wrap" id="skillRadar">
+        <svg viewBox="0 0 280 280" class="radar-svg">
+          <defs>
+            <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FF8C42" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#FFD166" stop-opacity="0.18"/>
+            </linearGradient>
+          </defs>
+          <polygon points="140,114.8 161.82,127.4 161.82,152.6 140,165.2 118.18,152.6 118.18,127.4" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+          <polygon points="140,89.6 183.65,114.8 183.65,165.2 140,190.4 96.35,165.2 96.35,114.8" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+          <polygon points="140,64.4 205.47,102.2 205.47,177.8 140,215.6 74.53,177.8 74.53,102.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+          <polygon points="140,39.2 227.3,89.6 227.3,190.4 140,240.8 52.7,190.4 52.7,89.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="140" y2="39.2" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="227.3" y2="89.6" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="227.3" y2="190.4" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="140" y2="240.8" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="52.7" y2="190.4" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <line x1="140" y1="140" x2="52.7" y2="89.6" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <polygon class="radar-polygon" points="140,47.26 216.82,95.65 214.2,182.84 140,230.72 66.67,182.34 70.16,99.68" fill="url(#radarFill)" stroke="#FF8C42" stroke-width="1.6"/>
+          <circle class="radar-node" cx="140" cy="47.26" r="3.2" fill="#FFD166" style="transition-delay:.5s"/>
+          <circle class="radar-node" cx="216.82" cy="95.65" r="3.2" fill="#FFD166" style="transition-delay:.56s"/>
+          <circle class="radar-node" cx="214.2" cy="182.84" r="3.2" fill="#FFD166" style="transition-delay:.62s"/>
+          <circle class="radar-node" cx="140" cy="230.72" r="3.2" fill="#FFD166" style="transition-delay:.68s"/>
+          <circle class="radar-node" cx="66.67" cy="182.34" r="3.2" fill="#FFD166" style="transition-delay:.74s"/>
+          <circle class="radar-node" cx="70.16" cy="99.68" r="3.2" fill="#FFD166" style="transition-delay:.8s"/>
+        </svg>
+        <ul class="radar-labels">
+          <li><span>Analytics</span><strong>92%</strong></li>
+          <li><span>Engineering</span><strong>88%</strong></li>
+          <li><span>Cloud / ETL</span><strong>85%</strong></li>
+          <li><span>ML</span><strong>90%</strong></li>
+          <li><span>BI / Viz</span><strong>84%</strong></li>
+          <li><span>Delivery</span><strong>80%</strong></li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ══════════════ SKILLS ══════════════ -->
 <section id="skills">
-  <div class="header">
+  <canvas class="fx-canvas" id="skillsCanvas" aria-hidden="true"></canvas>
+  <div class="header reveal">
     <span class="sec-label">Technical Stack</span>
     <h2 class="sec-title light">Tools I work with.</h2>
     <p>End-to-end analytics — from raw ingestion to production models and executive dashboards.</p>
   </div>
   <div class="skills-grid">
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">📊</div>
       <h3>Analysis & Modeling</h3>
       <div class="skill-tags">
@@ -461,7 +542,8 @@ footer span { color:var(--orange); }
         <span class="skill-tag">PD / LGD / EAD</span>
       </div>
     </div>
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">💻</div>
       <h3>Programming & Databases</h3>
       <div class="skill-tags">
@@ -471,7 +553,8 @@ footer span { color:var(--orange); }
         <span class="skill-tag">Azure Synapse</span><span class="skill-tag">PostgreSQL</span><span class="skill-tag">Oracle</span>
       </div>
     </div>
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">☁️</div>
       <h3>Cloud, Big Data & ETL</h3>
       <div class="skill-tags">
@@ -481,7 +564,8 @@ footer span { color:var(--orange); }
         <span class="skill-tag">Apache Airflow</span><span class="skill-tag">Airbyte</span>
       </div>
     </div>
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">🤖</div>
       <h3>Machine Learning</h3>
       <div class="skill-tags">
@@ -491,7 +575,8 @@ footer span { color:var(--orange); }
         <span class="skill-tag">NLP</span><span class="skill-tag">Clustering</span>
       </div>
     </div>
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">📈</div>
       <h3>Visualisation & MLOps</h3>
       <div class="skill-tags">
@@ -500,7 +585,8 @@ footer span { color:var(--orange); }
         <span class="skill-tag">CI/CD</span><span class="skill-tag">Git</span><span class="skill-tag">Confluence</span>
       </div>
     </div>
-    <div class="skill-card">
+    <div class="skill-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="card-icon">📋</div>
       <h3>Business & Delivery</h3>
       <div class="skill-tags">
@@ -514,13 +600,13 @@ footer span { color:var(--orange); }
 
 <!-- ══════════════ EXPERIENCE ══════════════ -->
 <section id="experience">
-  <div class="header">
+  <div class="header reveal">
     <span class="sec-label">Experience</span>
     <h2 class="sec-title">Where I've built things.</h2>
   </div>
   <div class="timeline">
 
-    <div class="tl-item">
+    <div class="tl-item reveal">
       <div class="tl-dot"></div>
       <div class="tl-meta">
         <span class="date-badge">Jan 2024 – Present</span>
@@ -538,7 +624,7 @@ footer span { color:var(--orange); }
       </ul>
     </div>
 
-    <div class="tl-item">
+    <div class="tl-item reveal">
       <div class="tl-dot"></div>
       <div class="tl-meta">
         <span class="date-badge">Jan 2021 – Dec 2022</span>
@@ -555,29 +641,33 @@ footer span { color:var(--orange); }
       </ul>
     </div>
 
+    <div class="tl-progress" id="tlProgress"></div>
   </div>
 </section>
 
 <!-- ══════════════ PROJECTS ══════════════ -->
 <section id="projects">
-  <div class="header">
+  <div class="header reveal">
     <span class="sec-label">Projects</span>
     <h2 class="sec-title light">Things I've shipped.</h2>
   </div>
   <div class="projects-grid">
-    <div class="proj-card">
+    <div class="proj-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="proj-icon">🔍</div>
       <h3>Regulatory Audit Lineage</h3>
       <p>Constructed an automated tracking framework using Apache Airflow to map Hadoop data flows, securing federal auditing records for a $5B+ corporate loan portfolio.</p>
       <div class="proj-impact">⚡ $5B+ portfolio compliance</div>
     </div>
-    <div class="proj-card">
+    <div class="proj-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="proj-icon">🔗</div>
       <h3>Entity Resolution Engine</h3>
       <p>Formulated an in-house fuzzy matching workflow to consolidate redundant customer records — eliminating $70k in annual vendor costs and accelerating reporting cycles by 4 days.</p>
       <div class="proj-impact">💰 $70k annual savings</div>
     </div>
-    <div class="proj-card">
+    <div class="proj-card reveal">
+      <span class="tilt-glow" aria-hidden="true"></span>
       <div class="proj-icon">📉</div>
       <h3>Macroeconomic Risk Simulation</h3>
       <p>Migrated Monte Carlo risk models from legacy SAS to PySpark — reducing loss distribution runtimes from hours to minutes and enabling intraday stress testing.</p>
@@ -589,11 +679,11 @@ footer span { color:var(--orange); }
 <!-- ══════════════ EDUCATION & CERTS ══════════════ -->
 <section id="education">
   <div class="edu-col">
-    <div class="header">
+    <div class="header reveal">
       <span class="sec-label">Education</span>
       <h2 class="sec-title">Academic background.</h2>
     </div>
-    <div class="edu-card">
+    <div class="edu-card reveal">
       <div class="edu-icon">🎓</div>
       <div class="edu-body">
         <h3>M.S. in Computer Science</h3>
@@ -604,40 +694,40 @@ footer span { color:var(--orange); }
   </div>
 
   <div class="cert-col">
-    <div class="header">
+    <div class="header reveal">
       <span class="sec-label">Certifications</span>
       <h2 class="sec-title">Credentials.</h2>
     </div>
     <div class="cert-list">
-      <div class="cert-item">
+      <div class="cert-item reveal">
         <div class="cert-dot"></div>
         <div>
           <strong>AWS Certified Solutions Architect</strong>
           <span>Amazon Web Services</span>
         </div>
       </div>
-      <div class="cert-item">
+      <div class="cert-item reveal">
         <div class="cert-dot"></div>
         <div>
           <strong>Microsoft Certified: Azure Data Engineer</strong>
           <span>Microsoft</span>
         </div>
       </div>
-      <div class="cert-item">
+      <div class="cert-item reveal">
         <div class="cert-dot"></div>
         <div>
           <strong>Snowflake SnowPro Core</strong>
           <span>Snowflake</span>
         </div>
       </div>
-      <div class="cert-item">
+      <div class="cert-item reveal">
         <div class="cert-dot"></div>
         <div>
           <strong>Google Professional Data Engineer</strong>
           <span>Google Cloud</span>
         </div>
       </div>
-      <div class="cert-item">
+      <div class="cert-item reveal">
         <div class="cert-dot"></div>
         <div>
           <strong>Tableau Desktop Specialist</strong>
@@ -650,19 +740,19 @@ footer span { color:var(--orange); }
 
 <!-- ══════════════ ACHIEVEMENTS ══════════════ -->
 <section id="achievements">
-  <div class="header">
+  <div class="header reveal">
     <span class="sec-label">Recognition</span>
     <h2 class="sec-title light">Milestones.</h2>
   </div>
   <div class="ach-row">
-    <div class="ach-card">
+    <div class="ach-card reveal">
       <div class="ach-icon">🏆</div>
       <div>
         <h3>$5,000 Grant Winner</h3>
         <p>Awarded by India's Ministry of MSME at Hackathon 2.0 for an IoT-based predictive maintenance solution that demonstrated real-world industrial impact.</p>
       </div>
     </div>
-    <div class="ach-card">
+    <div class="ach-card reveal">
       <div class="ach-icon">🚀</div>
       <div>
         <h3>National Startup Pitch — IIT Madras</h3>
@@ -677,7 +767,7 @@ footer span { color:var(--orange); }
   <span class="sec-label">Get In Touch</span>
   <h2 class="sec-title">Let's build something.</h2>
   <p class="sub">Open to data analytics, ML engineering, and BI architecture opportunities. Let's talk.</p>
-  <div class="cta-links">
+  <div class="cta-links reveal">
     <a class="cta-btn primary" href="mailto:vishnuvardhanvv127@gmail.com">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
       Send an Email
@@ -691,7 +781,7 @@ footer span { color:var(--orange); }
       GitHub
     </a>
   </div>
-  <div class="contact-info-row">
+  <div class="contact-info-row reveal">
     <div class="ci">
       <span class="ci-label">Email</span>
       <a class="ci-val" href="mailto:vishnuvardhanvv127@gmail.com">vishnuvardhanvv127@gmail.com</a>
@@ -714,6 +804,7 @@ footer span { color:var(--orange); }
 <!-- ══════════════ SCRIPTS ══════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script>
 /* ── Video: autoplay with sound, scroll-fade volume, pause/resume ── */
 const heroSection = document.getElementById('hero');
@@ -852,6 +943,178 @@ gsap.timeline({delay:.35})
     renderer.render(scene,camera);
   })(0);
   window.addEventListener('beforeunload',()=>{cancelAnimationFrame(raf);pGeo.dispose();pMat.dispose();eGeo.dispose();eMat.dispose();renderer.dispose();});
+})();
+</script>
+
+<!-- ══════════════ ADVANCED PAGE FX ══════════════ -->
+<script>
+(function(){
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+  }
+
+  /* ── 1. Scroll reveal ── */
+  var revealEls = document.querySelectorAll('.reveal');
+  var revealObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+  revealEls.forEach(function(el, i){
+    el.style.transitionDelay = (i % 6) * 0.06 + 's';
+    revealObserver.observe(el);
+  });
+
+  /* ── 2. Stat counters ── */
+  function parseStat(raw){
+    var m = String(raw).match(/^([^\d.]*)([\d.]+)(.*)$/);
+    if (!m) return { prefix:'', target:0, suffix:String(raw), decimals:0 };
+    var prefix = m[1], numStr = m[2], suffix = m[3];
+    var decimals = numStr.indexOf('.') > -1 ? numStr.split('.')[1].length : 0;
+    return { prefix:prefix, target:parseFloat(numStr), suffix:suffix, decimals:decimals };
+  }
+  document.querySelectorAll('.stat-card .num').forEach(function(el){
+    var parsed = parseStat(el.textContent.trim());
+    el.textContent = parsed.prefix + (0).toFixed(parsed.decimals) + parsed.suffix;
+    var started = false;
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting && !started) {
+          started = true;
+          var start = performance.now(), duration = 1400;
+          function tick(now){
+            var t = Math.min(1, (now - start) / duration);
+            var eased = 1 - Math.pow(1 - t, 3);
+            var current = (parsed.target * eased).toFixed(parsed.decimals);
+            el.textContent = parsed.prefix + current + parsed.suffix;
+            if (t < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.4 });
+    obs.observe(el);
+  });
+
+  /* ── 3. Tilt + glow cards ── */
+  document.querySelectorAll('.skill-card, .proj-card').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var rect = card.getBoundingClientRect();
+      var px = (e.clientX - rect.left) / rect.width;
+      var py = (e.clientY - rect.top) / rect.height;
+      var max = 9;
+      var rotateX = (0.5 - py) * max;
+      var rotateY = (px - 0.5) * max;
+      card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+      card.style.setProperty('--glow-x', (px * 100) + '%');
+      card.style.setProperty('--glow-y', (py * 100) + '%');
+    });
+    card.addEventListener('mouseleave', function(){
+      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+    });
+  });
+
+  /* ── 4. Skill radar reveal ── */
+  var radar = document.getElementById('skillRadar');
+  if (radar) {
+    var radarObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          radar.classList.add('revealed');
+          radarObs.disconnect();
+        }
+      });
+    }, { threshold: 0.35 });
+    radarObs.observe(radar);
+  }
+
+  /* ── 5. Ambient data-particle backdrop (canvas2D) ── */
+  function ambientField(canvas, density, color){
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w, h, points = [], visible = true, raf;
+
+    function resize(){
+      var parent = canvas.parentElement;
+      w = canvas.width = parent.clientWidth;
+      h = canvas.height = parent.clientHeight;
+      points = [];
+      for (var i = 0; i < density; i++){
+        points.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.12,
+          r: Math.random() * 1.6 + 0.6
+        });
+      }
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    var io = new IntersectionObserver(function(entries){ visible = entries[0].isIntersecting; }, { threshold: 0 });
+    io.observe(canvas);
+
+    function draw(){
+      raf = requestAnimationFrame(draw);
+      if (!visible) return;
+      var maxLinkDist = Math.min(w, h) * 0.18 || 120;
+      ctx.clearRect(0, 0, w, h);
+      points.forEach(function(p){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      });
+      for (var i = 0; i < points.length; i++){
+        for (var j = i + 1; j < points.length; j++){
+          var a = points[i], b = points[j];
+          var d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < maxLinkDist) {
+            ctx.strokeStyle = 'rgba(' + color + ',' + (0.08 * (1 - d / maxLinkDist)) + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      points.forEach(function(p){
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + color + ',0.35)';
+        ctx.fill();
+      });
+    }
+    draw();
+  }
+  ambientField(document.getElementById('aboutCanvas'), 36, '255,140,66');
+  ambientField(document.getElementById('skillsCanvas'), 42, '255,209,102');
+
+  /* ── 6. Timeline scroll-scrub + dot pulse ── */
+  if (typeof ScrollTrigger !== 'undefined') {
+    var timelineEl = document.querySelector('.timeline');
+    var progressLine = document.getElementById('tlProgress');
+    if (timelineEl && progressLine) {
+      ScrollTrigger.create({
+        trigger: timelineEl,
+        start: 'top 75%',
+        end: 'bottom 70%',
+        scrub: true,
+        onUpdate: function(self){
+          progressLine.style.transform = 'scaleY(' + self.progress + ')';
+        }
+      });
+    }
+    document.querySelectorAll('.tl-dot').forEach(function(dot){
+      gsap.fromTo(dot, { scale: 0.3, opacity: 0.4 }, {
+        scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(2)',
+        scrollTrigger: { trigger: dot, start: 'top 80%', toggleActions: 'play none none reverse' }
+      });
+    });
+  }
 })();
 </script>
 </body>

@@ -10,8 +10,13 @@ import styles from './VideoIntro.module.css';
  *
  * • No controls UI, no sound hint badge
  * • Autoplays with sound on load
- * • Volume fades 1→0 as hero scrolls out of view
+* • Volume fades 1→0 as hero scrolls out of view
  * • Video pauses when fully scrolled past, resumes on scroll back up
+ * Behaviour:
+ *  • Video autoplays WITH sound immediately on load (no controls, no hint)
+ *  • As user scrolls down, volume fades 1 → 0 proportionally
+ *  • Once hero is fully scrolled past, video pauses
+ *  • Scrolling back up resumes video and fades volume back in
  */
 export default function VideoIntro({
   videoSrc = '/videos/hero.mp4',
@@ -139,7 +144,7 @@ export default function VideoIntro({
       <div className={styles.warmVignette} aria-hidden="true" />
       <div className={styles.coolGlow}     aria-hidden="true" />
 
-      {/* Three.js data layer */}
+      {/* Three.js data particle layer */}
       <CinematicDataLayer className={styles.canvasLayer} />
 
       {/* Text */}

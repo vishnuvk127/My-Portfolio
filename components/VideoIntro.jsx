@@ -124,7 +124,7 @@ export default function VideoIntro({
   return (
     <>
     <NavMenu />
-    <section ref={sectionRef} className={styles.heroSection} aria-label="Portfolio introduction">
+    <section id="home" ref={sectionRef} className={styles.heroSection} aria-label="Portfolio introduction">
 
       {/* Ambient blurred bg */}
       <div className={styles.ambientLayer}>

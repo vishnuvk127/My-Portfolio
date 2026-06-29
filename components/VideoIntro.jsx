@@ -153,7 +153,7 @@ export default function VideoIntro({
       {/* Text */}
       <div className={styles.contentOverlay}>
         <p ref={greetRef} className={styles.greeting}>
-          Hi, I&apos;m <span className={styles.greetingName}>Kaitepalli Vishnu Vardhan</span>
+          <span className={styles.greetingName}>Kaitepalli Vishnu Vardhan</span>
         </p>
         <h1 ref={roleRef} className={styles.role}>Data Analyst</h1>
         <p ref={subRef} className={styles.subtitle}>

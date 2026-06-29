@@ -1,34 +1,62 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './CoverSplash.module.css';
 
 /**
- * CoverSplash — the very first thing a visitor sees.
- *
- * A light-orange entry screen with a full-bleed portrait photo and a
- * short "Hi, I'm ___ / Role" line. Clicking anywhere on the screen (the
- * photo included) smooth-scrolls past it into the rest of the site —
- * it's a normal in-flow section, not a fixed overlay, so a plain mouse
- * wheel / trackpad scroll or a Tab+Enter keypress moves past it too.
+ * CoverSplash — a fixed, full-screen entry overlay shown on top of the
+ * whole site. It locks page scroll while visible. The very first
+ * click anywhere, scroll/swipe attempt, or keypress dismisses it: it
+ * plays a quick fade/slide-up exit, then unmounts itself completely
+ * and unlocks scrolling, revealing the real site (already sitting at
+ * the top, behind it) underneath.
  *
  * The photo at /public/images/profile.jpg is a placeholder — swap that
  * file for the real photo (same filename) and it updates automatically,
  * no code changes needed.
  */
-export default function CoverSplash({ nextId = 'home' }) {
-  const enter = useCallback(() => {
-    document.getElementById(nextId)?.scrollIntoView({ behavior: 'smooth' });
-  }, [nextId]);
+export default function CoverSplash() {
+  const [exiting, setExiting] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const triggeredRef = useRef(false);
+
+  const dismiss = useCallback(() => {
+    if (triggeredRef.current) return;
+    triggeredRef.current = true;
+    setExiting(true);
+    setTimeout(() => setHidden(true), 520);
+  }, []);
+
+  // Lock page scroll while the splash is up; release it once dismissed.
+  // Any wheel, touch-scroll, or keypress also counts as "dismiss".
+  useEffect(() => {
+    if (hidden) return;
+
+    const html = document.documentElement;
+    const prevOverflow = html.style.overflow;
+    html.style.overflow = 'hidden';
+
+    window.addEventListener('wheel', dismiss, { passive: true });
+    window.addEventListener('touchmove', dismiss, { passive: true });
+    window.addEventListener('keydown', dismiss);
+
+    return () => {
+      html.style.overflow = prevOverflow;
+      window.removeEventListener('wheel', dismiss);
+      window.removeEventListener('touchmove', dismiss);
+      window.removeEventListener('keydown', dismiss);
+    };
+  }, [hidden, dismiss]);
+
+  if (hidden) return null;
 
   return (
     <section
-      className={styles.splash}
+      className={`${styles.splash} ${exiting ? styles.exiting : ''}`}
       role="button"
       tabIndex={0}
       aria-label="Enter site"
-      onClick={enter}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && enter()}
+      onClick={dismiss}
     >
       <div className={styles.photoWrap} aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}

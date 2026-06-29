@@ -54,11 +54,11 @@
 .radarStage {
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 400px;
 }
 .radarSvg {
   width: 100%;
-  max-width: 320px;
+  max-width: 400px;
   display: block;
   overflow: visible;
 }
@@ -116,7 +116,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px 18px;
   width: 100%;
-  max-width: 320px;
+  max-width: 400px;
 }
 .radarLabels li {
   display: flex;

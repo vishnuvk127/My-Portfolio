@@ -106,7 +106,6 @@
 
 .bentoStat {
   grid-column: span 1;
-  grid-row: 3;
   position: relative;
   z-index: 1;
 }
@@ -117,6 +116,32 @@
   color: var(--text-mid);
   line-height: 1.8;
   margin-bottom: 1.2rem;
+}
+
+/* Repositioned headline that now sits below the PhotoFrame — a medium
+   size, distinct from the large .secTitle treatment used elsewhere. */
+.aboutHeadline {
+  font-size: clamp(18px, 2.1vw, 25px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--text-hi);
+  max-width: 320px;
+  margin: 0;
+}
+
+/* Small uppercase divider label introducing each per-company stat row. */
+.statGroupLabel {
+  grid-column: 1 / -1;
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--orange);
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
 }
 
 .statCard {

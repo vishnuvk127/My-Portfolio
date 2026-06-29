@@ -13,7 +13,7 @@ const AXES = [
   { label: 'Delivery', value: 80 },
 ];
 
-const SIZE = 280;
+const SIZE = 320;
 const CENTER = SIZE / 2;
 const MAX_R = SIZE * 0.36;
 const LEVELS = 4;
@@ -32,6 +32,13 @@ function ringPoints(level) {
  * SkillRadar — animated SVG radar/spider chart of skill categories.
  * Draws in (scale 0 -> 1) once scrolled into view. Self-contained;
  * drop in place of a static visual (e.g. the "VV" monogram).
+ *
+ * Interactivity: each axis has a generously wide invisible hit-stroke
+ * laid directly over its full spoke line (center -> outer ring), so
+ * hovering or focusing ANY point along that line — not just the data
+ * dot — highlights the node, brightens the spoke, and shows a
+ * name + percentage tooltip. The legend rows below are two-way linked
+ * to the same hover state.
  */
 export default function SkillRadar() {
   const wrapRef = useRef(null);
@@ -90,20 +97,37 @@ export default function SkillRadar() {
             />
           ))}
 
-          {AXES.map((_, i) => {
+          {/* Spokes — visible thin line + a fat invisible hit-stroke
+              layered on top so the WHOLE line (not just the tip) reacts. */}
+          {AXES.map((a, i) => {
             const [x, y] = pointFor(i, AXES.length, MAX_R);
             const active = hovered === i;
             return (
-              <line
-                key={i}
-                x1={CENTER}
-                y1={CENTER}
-                x2={x}
-                y2={y}
-                stroke={active ? 'rgba(255,140,66,0.65)' : 'rgba(255,255,255,0.14)'}
-                strokeWidth={active ? 1.6 : 1}
-                style={{ transition: 'stroke 0.2s, stroke-width 0.2s' }}
-              />
+              <g key={i}>
+                <line
+                  x1={CENTER}
+                  y1={CENTER}
+                  x2={x}
+                  y2={y}
+                  stroke={active ? 'rgba(255,140,66,0.7)' : 'rgba(255,255,255,0.14)'}
+                  strokeWidth={active ? 1.8 : 1.1}
+                  style={{ transition: 'stroke 0.2s, stroke-width 0.2s' }}
+                />
+                <line
+                  x1={CENTER}
+                  y1={CENTER}
+                  x2={x}
+                  y2={y}
+                  strokeWidth="24"
+                  className={styles.radarSpokeHit}
+                  onMouseEnter={() => setHovered(i)}
+                  onFocus={() => setHovered(i)}
+                  onBlur={() => setHovered(null)}
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${a.label}: ${a.value}%`}
+                />
+              </g>
             );
           })}
 
@@ -111,7 +135,7 @@ export default function SkillRadar() {
             points={dataPoints}
             fill="url(#radarFill)"
             stroke="#FF8C42"
-            strokeWidth="1.6"
+            strokeWidth="1.8"
             className={styles.radarPolygon}
             style={{
               transform: inView ? 'scale(1)' : 'scale(0)',
@@ -126,30 +150,18 @@ export default function SkillRadar() {
             return (
               <g key={a.label}>
                 {active && (
-                  <circle cx={x} cy={y} r="9.5" fill="none" stroke="#FF8C42" strokeWidth="1.3" opacity="0.55" />
+                  <circle cx={x} cy={y} r="10.8" fill="none" stroke="#FF8C42" strokeWidth="1.5" opacity="0.55" />
                 )}
                 <circle
                   cx={x}
                   cy={y}
-                  r={active ? 5.5 : 3.2}
+                  r={active ? 6.2 : 3.6}
                   fill={active ? '#fff' : '#FFD166'}
                   className={styles.radarNode}
                   style={{
                     opacity: inView ? 1 : 0,
                     transitionDelay: `${0.5 + i * 0.06}s`,
                   }}
-                />
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="13"
-                  className={styles.radarHit}
-                  onMouseEnter={() => setHovered(i)}
-                  onFocus={() => setHovered(i)}
-                  onBlur={() => setHovered(null)}
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${a.label}: ${a.value}%`}
                 />
               </g>
             );
@@ -180,6 +192,9 @@ export default function SkillRadar() {
             className={hovered === i ? styles.radarLabelActive : ''}
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered(i)}
+            onBlur={() => setHovered(null)}
+            tabIndex={0}
           >
             <span>{a.label}</span>
             <strong>{a.value}%</strong>

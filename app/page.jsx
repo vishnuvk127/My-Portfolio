@@ -1,3 +1,4 @@
+import CoverSplash from '@/components/CoverSplash';
 import VideoIntro from '@/components/VideoIntro';
 import Reveal from '@/components/Reveal';
 import StatCounter from '@/components/StatCounter';
@@ -111,6 +112,9 @@ const certifications = [
 export default function HomePage() {
   return (
     <main className={styles.main}>
+
+      {/* ── COVER SPLASH ── */}
+      <CoverSplash nextId="home" />
 
       {/* ── HERO ── */}
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />

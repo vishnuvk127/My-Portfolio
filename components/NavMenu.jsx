@@ -53,6 +53,10 @@ export default function NavMenu() {
 
   return (
     <>
+      <a href="#home" className={styles.brand} aria-label="Kaitepalli Vishnu Vardhan — back to top">
+        Kaitepalli Vishnu Vardhan
+      </a>
+
       <button
         type="button"
         className={`${styles.toggle} ${open ? styles.toggleOpen : ''}`}

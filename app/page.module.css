@@ -346,10 +346,25 @@
   background: linear-gradient(180deg, var(--orange) 0%, rgba(255, 140, 66, 0.1) 100%);
 }
 
+/* Each entry is its own glass card — translucent panel + backdrop blur,
+   reusing the same tokens as the other card components (.statCard etc.)
+   so it matches the rest of the page. */
 .tlItem {
   position: relative;
-  padding-left: 64px;
-  margin-bottom: 60px;
+  padding: 32px 34px 32px 68px;
+  margin-bottom: 40px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.tlItem:hover {
+  background: var(--bg-panel-hi);
+  border-color: var(--border-hi);
 }
 
 .tlItem:last-child {
@@ -367,13 +382,14 @@
 .tlDot {
   position: absolute;
   left: 12px;
-  top: 6px;
+  top: 32px;
   width: 17px;
   height: 17px;
   border-radius: 50%;
   background: var(--bg-dark);
   border: 3px solid var(--orange);
   box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.18);
+  z-index: 1;
 }
 
 .tlMeta {
@@ -833,10 +849,11 @@
     left: 14px;
   }
   .tlItem {
-    padding-left: 48px;
+    padding: 24px 22px 24px 50px;
   }
   .tlDot {
     left: 6px;
+    top: 24px;
   }
   .ctaLinks {
     flex-direction: column;

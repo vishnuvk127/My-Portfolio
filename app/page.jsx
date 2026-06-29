@@ -138,7 +138,6 @@ export default function HomePage() {
       <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientDataField color="255,140,66" density={36} />
         <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
-          <span className={styles.secLabel}>About Me</span>
           <PhotoFrame />
           <KineticHeading as="p" className={styles.aboutHeadline}>
             Turning complex data into decisions.

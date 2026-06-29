@@ -130,7 +130,9 @@
   margin: 0;
 }
 
-/* Small uppercase divider label introducing each per-company stat row. */
+/* Small uppercase divider label introducing each per-company stat row.
+   Tight padding/margin — keeps the label close to the stat row above it,
+   rather than floating in a wide gap. */
 .statGroupLabel {
   grid-column: 1 / -1;
   display: block;
@@ -139,8 +141,8 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--orange);
-  padding-top: 14px;
-  margin-top: 6px;
+  padding-top: 4px;
+  margin-top: -6px;
   border-top: 1px solid var(--border);
 }
 

@@ -10,16 +10,18 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * PhotoFrame — a dark device-style bezel that holds the profile image.
- * Swap /public/images/profile.jpg for a 3D render any time — same
- * filename, no code changes needed.
+ * PhotoFrame — a small frame/badge that holds the profile image, hung
+ * from an off-centre ring so it rests with a slight clockwise list to
+ * the right, like a tag that's hanging a little askew. Swap
+ * /public/images/profile.jpg for a 3D render any time — same filename,
+ * no code changes needed.
  *
  * Scroll behaviour (GSAP ScrollTrigger, toggleActions "play reverse
  * play reverse" — all four directions wired, not a one-shot reveal):
- *  - onEnter      (scrolling down, frame enters view)        → drop in from the left
- *  - onLeave      (scrolling down further, frame exits view) → retreat back out left
- *  - onEnterBack  (scrolling back up, frame re-enters view)  → drop in again
- *  - onLeaveBack  (scrolling up past the section)            → retreat out left again
+ *  - onEnter      (scrolling down, frame enters view)        → swings in from the left
+ *  - onLeave      (scrolling down further, frame exits view) → retreats back out left
+ *  - onEnterBack  (scrolling back up, frame re-enters view)  → swings in again
+ *  - onLeaveBack  (scrolling up past the section)             → retreats out left again
  */
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
   const frameRef = useRef(null);
@@ -28,12 +30,15 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
     const el = frameRef.current;
     if (!el) return;
 
-    gsap.set(el, { x: -170, opacity: 0, rotate: -8 });
+    // Pivot near the hanging ring, off-centre to the left — this is what
+    // makes the resting tilt read as "hung from that point" rather than
+    // an arbitrary rotation.
+    gsap.set(el, { x: -170, opacity: 0, rotate: -16, transformOrigin: '30% -8px' });
 
     const tween = gsap.to(el, {
       x: 0,
       opacity: 1,
-      rotate: 0,
+      rotate: 6,
       duration: 0.9,
       ease: 'power3.out',
       scrollTrigger: {
@@ -52,13 +57,12 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
 
   return (
     <div ref={frameRef} className={styles.frameWrap}>
+      <span className={styles.frameHook} aria-hidden="true" />
       <div className={styles.frame}>
-        <span className={styles.frameNotch} aria-hidden="true" />
         <div className={styles.frameGlow} aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} className={styles.frameImg} />
       </div>
-      <span className={styles.frameStand} aria-hidden="true" />
     </div>
   );
 }

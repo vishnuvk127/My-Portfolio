@@ -36,6 +36,7 @@ function ringPoints(level) {
 export default function SkillRadar() {
   const wrapRef = useRef(null);
   const [inView, setInView] = useState(false);
+  const [hovered, setHovered] = useState(null);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -57,72 +58,129 @@ export default function SkillRadar() {
     .map((p) => p.join(','))
     .join(' ');
 
+  const activeAxis = hovered !== null ? AXES[hovered] : null;
+  let tooltipPos = null;
+  if (activeAxis) {
+    const [tx, ty] = pointFor(hovered, AXES.length, (activeAxis.value / 100) * MAX_R);
+    tooltipPos = { left: (tx / SIZE) * 100, top: (ty / SIZE) * 100, flipDown: ty / SIZE < 0.22 };
+  }
+
   return (
     <div ref={wrapRef} className={styles.radarWrap}>
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className={styles.radarSvg}>
-        <defs>
-          <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FF8C42" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#FFD166" stopOpacity="0.18" />
-          </linearGradient>
-        </defs>
+      <div className={styles.radarStage}>
+        <svg
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          className={styles.radarSvg}
+          onMouseLeave={() => setHovered(null)}
+        >
+          <defs>
+            <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#FF8C42" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#FFD166" stopOpacity="0.18" />
+            </linearGradient>
+          </defs>
 
-        {Array.from({ length: LEVELS }).map((_, lvl) => (
-          <polygon
-            key={lvl}
-            points={ringPoints(lvl + 1)}
-            fill="none"
-            stroke="rgba(255,255,255,0.12)"
-            strokeWidth="1"
-          />
-        ))}
-
-        {AXES.map((_, i) => {
-          const [x, y] = pointFor(i, AXES.length, MAX_R);
-          return (
-            <line
-              key={i}
-              x1={CENTER}
-              y1={CENTER}
-              x2={x}
-              y2={y}
-              stroke="rgba(255,255,255,0.14)"
+          {Array.from({ length: LEVELS }).map((_, lvl) => (
+            <polygon
+              key={lvl}
+              points={ringPoints(lvl + 1)}
+              fill="none"
+              stroke="rgba(255,255,255,0.12)"
               strokeWidth="1"
             />
-          );
-        })}
+          ))}
 
-        <polygon
-          points={dataPoints}
-          fill="url(#radarFill)"
-          stroke="#FF8C42"
-          strokeWidth="1.6"
-          className={styles.radarPolygon}
-          style={{
-            transform: inView ? 'scale(1)' : 'scale(0)',
-            transformOrigin: `${CENTER}px ${CENTER}px`,
-          }}
-        />
+          {AXES.map((_, i) => {
+            const [x, y] = pointFor(i, AXES.length, MAX_R);
+            const active = hovered === i;
+            return (
+              <line
+                key={i}
+                x1={CENTER}
+                y1={CENTER}
+                x2={x}
+                y2={y}
+                stroke={active ? 'rgba(255,140,66,0.65)' : 'rgba(255,255,255,0.14)'}
+                strokeWidth={active ? 1.6 : 1}
+                style={{ transition: 'stroke 0.2s, stroke-width 0.2s' }}
+              />
+            );
+          })}
 
-        {AXES.map((a, i) => {
-          const [x, y] = pointFor(i, AXES.length, (a.value / 100) * MAX_R);
-          return (
-            <circle
-              key={a.label}
-              cx={x}
-              cy={y}
-              r="3.2"
-              fill="#FFD166"
-              className={styles.radarNode}
-              style={{ opacity: inView ? 1 : 0, transitionDelay: `${0.5 + i * 0.06}s` }}
-            />
-          );
-        })}
-      </svg>
+          <polygon
+            points={dataPoints}
+            fill="url(#radarFill)"
+            stroke="#FF8C42"
+            strokeWidth="1.6"
+            className={styles.radarPolygon}
+            style={{
+              transform: inView ? 'scale(1)' : 'scale(0)',
+              transformOrigin: `${CENTER}px ${CENTER}px`,
+              filter: activeAxis ? 'drop-shadow(0 0 6px rgba(255,140,66,0.45))' : 'none',
+            }}
+          />
+
+          {AXES.map((a, i) => {
+            const [x, y] = pointFor(i, AXES.length, (a.value / 100) * MAX_R);
+            const active = hovered === i;
+            return (
+              <g key={a.label}>
+                {active && (
+                  <circle cx={x} cy={y} r="9.5" fill="none" stroke="#FF8C42" strokeWidth="1.3" opacity="0.55" />
+                )}
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={active ? 5.5 : 3.2}
+                  fill={active ? '#fff' : '#FFD166'}
+                  className={styles.radarNode}
+                  style={{
+                    opacity: inView ? 1 : 0,
+                    transitionDelay: `${0.5 + i * 0.06}s`,
+                  }}
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="13"
+                  className={styles.radarHit}
+                  onMouseEnter={() => setHovered(i)}
+                  onFocus={() => setHovered(i)}
+                  onBlur={() => setHovered(null)}
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${a.label}: ${a.value}%`}
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {activeAxis && tooltipPos && (
+          <div
+            className={styles.radarTooltip}
+            style={{
+              left: `${tooltipPos.left}%`,
+              top: `${tooltipPos.top}%`,
+              transform: `translate(-50%, ${tooltipPos.flipDown ? '16px' : 'calc(-100% - 16px)'})`,
+            }}
+          >
+            <div className={styles.radarTooltipInner}>
+              <strong>{activeAxis.value}%</strong>
+              <span>{activeAxis.label}</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       <ul className={styles.radarLabels}>
-        {AXES.map((a) => (
-          <li key={a.label}>
+        {AXES.map((a, i) => (
+          <li
+            key={a.label}
+            className={hovered === i ? styles.radarLabelActive : ''}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
             <span>{a.label}</span>
             <strong>{a.value}%</strong>
           </li>

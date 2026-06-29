@@ -100,42 +100,6 @@ body { background: #000; color: #fff; font-family: 'Inter', -apple-system, sans-
   line-height: 1.7; max-width: 480px; opacity: 0;
 }
 
-#controls {
-  position: absolute; bottom: 9vh; right: 4.5vw;
-  z-index: 6; display: flex; flex-direction: column;
-  gap: 11px; align-items: center; opacity: 0;
-}
-.ctrlBtn {
-  width: 46px; height: 46px; border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.16);
-  background: rgba(15,12,22,.45);
-  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  color: rgba(255,255,255,.85); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .22s,border-color .22s,transform .16s;
-  outline: none; -webkit-tap-highlight-color: transparent;
-}
-.ctrlBtn:hover { background: rgba(255,140,66,.12); border-color: rgba(255,140,66,.45); transform: scale(1.1); }
-.ctrlBtn:active { transform: scale(.97); }
-.ctrlBtn svg { width: 17px; height: 17px; }
-
-#soundHint {
-  position: absolute; top: 50%; right: 4.5vw; transform: translateY(-50%);
-  z-index: 6; display: flex; align-items: center; gap: 9px;
-  padding: 9px 17px; border-radius: 100px;
-  background: rgba(10,8,18,.5); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.68); font-size: 10.5px;
-  font-weight: 400; letter-spacing: .1em; text-transform: uppercase;
-  transition: opacity .8s; pointer-events: none;
-}
-#soundPulse {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(255,140,66,.95);
-  animation: hintPulse 1.8s ease-in-out infinite;
-}
-@keyframes hintPulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)} }
-
 #scrollIndicator {
   position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
   z-index: 6; display: flex; flex-direction: column; align-items: center;
@@ -420,7 +384,6 @@ footer span { color:var(--orange); }
   .cta-links { flex-direction:column; align-items:center; }
   .contact-info-row { gap:28px; }
   #contentOverlay { padding:0 6vw 16vh; }
-  #controls { bottom:16vh; right:5vw; }
 }
 </style>
 </head>
@@ -434,7 +397,7 @@ footer span { color:var(--orange); }
     </video>
   </div>
   <div id="mainVideoWrap">
-    <video id="mainVideo" autoplay loop muted playsinline preload="auto">
+    <video id="mainVideo" loop playsinline preload="auto">
       <source src="hero.mp4" type="video/mp4"/>
     </video>
   </div>
@@ -452,19 +415,6 @@ footer span { color:var(--orange); }
       <span id="lastName">VARDHAN</span>
     </div>
     <p id="subtitle">Specialising in ETL automation, risk scoring models,<br>and scalable business intelligence architecture.</p>
-  </div>
-  <div id="controls">
-    <button class="ctrlBtn" id="btnPlay" aria-label="Pause video">
-      <svg id="iPlay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      <svg id="iPause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-    </button>
-    <button class="ctrlBtn" id="btnMute" aria-label="Unmute video">
-      <svg id="iMute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-      <svg id="iSound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-    </button>
-  </div>
-  <div id="soundHint" aria-hidden="true">
-    <div id="soundPulse"></div><span>Tap for sound</span>
   </div>
   <div id="scrollIndicator" role="button" tabindex="0" aria-label="Scroll down">
     <div id="scrollLabel">Scroll</div>
@@ -765,25 +715,63 @@ footer span { color:var(--orange); }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
-/* ── Video controls ── */
+/* ── Video: autoplay with sound, scroll-fade volume, pause/resume ── */
+const heroSection = document.getElementById('hero');
 const mainVid = document.getElementById('mainVideo');
 const ambVid  = document.getElementById('ambientVideo');
-let playing = true, muted = true;
+let hasStarted = false;
 
-document.getElementById('btnPlay').addEventListener('click', () => {
-  playing = !playing;
-  playing ? (mainVid.play(), ambVid.play()) : (mainVid.pause(), ambVid.pause());
-  document.getElementById('iPlay').style.display  = playing ? 'none' : '';
-  document.getElementById('iPause').style.display = playing ? '' : 'none';
-});
-document.getElementById('btnMute').addEventListener('click', () => {
-  muted = !muted;
-  mainVid.muted = muted;
-  document.getElementById('iMute').style.display  = muted ? '' : 'none';
-  document.getElementById('iSound').style.display = muted ? 'none' : '';
-  if (!muted) gsap.to('#soundHint',{opacity:0,duration:.8});
-});
-setTimeout(() => gsap.to('#soundHint',{opacity:0,duration:1.2}), 5000);
+mainVid.muted  = false;
+mainVid.volume = 1;
+
+function tryPlay() {
+  mainVid.play().then(() => {
+    hasStarted = true;
+  }).catch(() => {
+    // Browser blocked unmuted autoplay — start muted, unmute on first interaction
+    mainVid.muted = true;
+    mainVid.play().catch(() => {});
+    hasStarted = true;
+
+    const unmute = () => {
+      mainVid.muted  = false;
+      mainVid.volume = 1;
+    };
+    window.addEventListener('click',      unmute, { once: true });
+    window.addEventListener('touchstart', unmute, { once: true, passive: true });
+    window.addEventListener('keydown',    unmute, { once: true });
+  });
+}
+tryPlay();
+
+let ticking = false;
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+
+  requestAnimationFrame(() => {
+    ticking = false;
+
+    const { top, height } = heroSection.getBoundingClientRect();
+
+    const scrolled  = Math.max(0, -top);
+    const fadeZone  = height * 0.6;          // volume hits 0 at 60% of hero height
+    const progress  = Math.min(1, scrolled / fadeZone);
+    const targetVol = 1 - progress;          // 1 → 0
+
+    if (!mainVid.muted) {
+      mainVid.volume = targetVol;
+    }
+
+    // Pause once fully past, resume when scrolled back in
+    if (progress >= 1) {
+      if (!mainVid.paused) mainVid.pause();
+    } else if (mainVid.paused && hasStarted) {
+      mainVid.play().catch(() => {});
+    }
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
 
 /* ── Scroll indicator ── */
 document.getElementById('scrollIndicator').addEventListener('click', () => {
@@ -796,7 +784,6 @@ gsap.timeline({delay:.35})
   .to('#firstName', {opacity:1,y:0,duration:1.2,ease:'power4.out'},'-=0.55')
   .to('#lastName',  {opacity:1,y:0,duration:1.2,ease:'power4.out'},'-=0.95')
   .to('#subtitle',  {opacity:1,duration:1.1,ease:'power2.out'},'-=0.6')
-  .to('#controls',  {opacity:1,duration:.9,ease:'power2.out'},'-=0.5')
   .to('#scrollIndicator',{opacity:.55,duration:1,ease:'power2.out'},'-=0.4');
 
 /* ── Three.js particle layer ── */

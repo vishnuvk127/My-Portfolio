@@ -261,6 +261,7 @@
 }
 
 .skillTag {
+  position: relative;
   padding: 5px 11px;
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.06);
@@ -268,6 +269,7 @@
   font-size: 11.5px;
   font-weight: 400;
   color: var(--text-mid);
+  cursor: default;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
@@ -275,6 +277,51 @@
   background: rgba(255, 140, 66, 0.15);
   color: var(--gold);
   border-color: rgba(255, 140, 66, 0.4);
+}
+
+/* Small percentage dialog on hover — value comes straight from the
+   tag's own data-level attribute (set in page.jsx), so updating a
+   number later is a one-line change there, no CSS edits needed. */
+.skillTag::after {
+  content: attr(data-level);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  background: var(--bg-mid);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 140, 66, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 5;
+}
+
+.skillTag::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  border: 5px solid transparent;
+  border-top-color: var(--bg-mid);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 5;
+}
+
+.skillTag:hover::after,
+.skillTag:hover::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 /* ── Experience ── */

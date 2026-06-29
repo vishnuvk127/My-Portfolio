@@ -9,6 +9,7 @@ import TimelineFX from '@/components/TimelineFX';
 import KineticHeading from '@/components/KineticHeading';
 import MagneticButton from '@/components/MagneticButton';
 import Marquee from '@/components/Marquee';
+import PhotoFrame from '@/components/PhotoFrame';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -77,6 +78,20 @@ const experience = [
   },
 ];
 
+const pncStats = [
+  { num: '2+',   lbl: 'Years at PNC' },
+  { num: '$15M', lbl: 'Credit Losses Mitigated' },
+  { num: '30%',  lbl: 'Fraud Alert Reduction' },
+  { num: '0.89', lbl: 'ROC-AUC Achieved' },
+];
+
+const ltiStats = [
+  { num: '2',      lbl: 'Years at LTI Mindtree' },
+  { num: '500GB+', lbl: 'Data Unified' },
+  { num: '70%',    lbl: 'MLOps Rework Reduced' },
+  { num: '60%',    lbl: 'Campaign Response Lift' },
+];
+
 const projects = [
   {
     icon: '🔍',
@@ -124,19 +139,25 @@ export default function HomePage() {
         <AmbientDataField color="255,140,66" density={36} />
         <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
           <span className={styles.secLabel}>About Me</span>
-          <KineticHeading as="h2" className={styles.secTitle}>Turning complex<br/>data into decisions.</KineticHeading>
-          <Reveal as="p">Data Analyst with 4+ years of experience in credit risk, ETL automation, time-series forecasting, and enterprise BI dashboards — operating at the intersection of financial analytics and engineering.</Reveal>
-          <Reveal as="p" delay={0.08}>I&apos;ve worked across PNC Financial Services and LTI Mindtree, building production-grade models that reduced fraud false-positives, mitigated $15M in credit losses, and accelerated decisioning pipelines from days to hours.</Reveal>
+          <PhotoFrame />
+          <KineticHeading as="p" className={styles.aboutHeadline}>
+            Turning complex data into decisions.
+          </KineticHeading>
         </div>
         <div className={`${styles.aboutVisual} ${styles.bentoVisual}`}>
           <SkillRadar />
         </div>
-        {[
-          { num: '4+',   lbl: 'Years Experience' },
-          { num: '$15M', lbl: 'Credit Losses Mitigated' },
-          { num: '30%',  lbl: 'Fraud Alert Reduction' },
-          { num: '0.89', lbl: 'ROC-AUC Achieved' },
-        ].map(({ num, lbl }, i) => (
+
+        <Reveal as="span" className={styles.statGroupLabel}>PNC Financial Services</Reveal>
+        {pncStats.map(({ num, lbl }, i) => (
+          <Reveal key={lbl} className={`${styles.statCard} ${styles.bentoStat}`} delay={i * 0.08}>
+            <StatCounter value={num} className={styles.statNum} />
+            <div className={styles.statLbl}>{lbl}</div>
+          </Reveal>
+        ))}
+
+        <Reveal as="span" className={styles.statGroupLabel}>LTI Mindtree</Reveal>
+        {ltiStats.map(({ num, lbl }, i) => (
           <Reveal key={lbl} className={`${styles.statCard} ${styles.bentoStat}`} delay={i * 0.08}>
             <StatCounter value={num} className={styles.statNum} />
             <div className={styles.statLbl}>{lbl}</div>

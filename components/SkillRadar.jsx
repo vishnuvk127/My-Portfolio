@@ -13,19 +13,27 @@ const AXES = [
   { label: 'Delivery', value: 80 },
 ];
 
-const SIZE = 320;
-const CENTER = SIZE / 2;
-const MAX_R = SIZE * 0.36;
+// Widened on the x-axis — an oval radar (400 wide x 300 tall) instead of
+// a square one, so the chart spreads out more and fills the bento panel.
+const SIZE_X = 400;
+const SIZE_Y = 300;
+const CENTER_X = SIZE_X / 2;
+const CENTER_Y = SIZE_Y / 2;
+const MAX_R_X = SIZE_X * 0.36;
+const MAX_R_Y = SIZE_Y * 0.38;
 const LEVELS = 4;
 
-function pointFor(i, total, r) {
+// `frac` is 0..1 — the fraction of the max radius along each axis. Using
+// a fraction (rather than an absolute radius) lets x and y scale by
+// different amounts, producing the elliptical/widened shape.
+function pointFor(i, total, frac) {
   const angle = (Math.PI * 2 * i) / total - Math.PI / 2;
-  return [CENTER + r * Math.cos(angle), CENTER + r * Math.sin(angle)];
+  return [CENTER_X + frac * MAX_R_X * Math.cos(angle), CENTER_Y + frac * MAX_R_Y * Math.sin(angle)];
 }
 
 function ringPoints(level) {
-  const r = (MAX_R * level) / LEVELS;
-  return AXES.map((_, i) => pointFor(i, AXES.length, r).join(',')).join(' ');
+  const frac = level / LEVELS;
+  return AXES.map((_, i) => pointFor(i, AXES.length, frac).join(',')).join(' ');
 }
 
 /**
@@ -61,22 +69,22 @@ export default function SkillRadar() {
     return () => observer.disconnect();
   }, []);
 
-  const dataPoints = AXES.map((a, i) => pointFor(i, AXES.length, (a.value / 100) * MAX_R))
+  const dataPoints = AXES.map((a, i) => pointFor(i, AXES.length, a.value / 100))
     .map((p) => p.join(','))
     .join(' ');
 
   const activeAxis = hovered !== null ? AXES[hovered] : null;
   let tooltipPos = null;
   if (activeAxis) {
-    const [tx, ty] = pointFor(hovered, AXES.length, (activeAxis.value / 100) * MAX_R);
-    tooltipPos = { left: (tx / SIZE) * 100, top: (ty / SIZE) * 100, flipDown: ty / SIZE < 0.22 };
+    const [tx, ty] = pointFor(hovered, AXES.length, activeAxis.value / 100);
+    tooltipPos = { left: (tx / SIZE_X) * 100, top: (ty / SIZE_Y) * 100, flipDown: ty / SIZE_Y < 0.22 };
   }
 
   return (
     <div ref={wrapRef} className={styles.radarWrap}>
       <div className={styles.radarStage}>
         <svg
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          viewBox={`0 0 ${SIZE_X} ${SIZE_Y}`}
           className={styles.radarSvg}
           onMouseLeave={() => setHovered(null)}
         >
@@ -100,13 +108,13 @@ export default function SkillRadar() {
           {/* Spokes — visible thin line + a fat invisible hit-stroke
               layered on top so the WHOLE line (not just the tip) reacts. */}
           {AXES.map((a, i) => {
-            const [x, y] = pointFor(i, AXES.length, MAX_R);
+            const [x, y] = pointFor(i, AXES.length, 1);
             const active = hovered === i;
             return (
               <g key={i}>
                 <line
-                  x1={CENTER}
-                  y1={CENTER}
+                  x1={CENTER_X}
+                  y1={CENTER_Y}
                   x2={x}
                   y2={y}
                   stroke={active ? 'rgba(255,140,66,0.7)' : 'rgba(255,255,255,0.14)'}
@@ -114,8 +122,8 @@ export default function SkillRadar() {
                   style={{ transition: 'stroke 0.2s, stroke-width 0.2s' }}
                 />
                 <line
-                  x1={CENTER}
-                  y1={CENTER}
+                  x1={CENTER_X}
+                  y1={CENTER_Y}
                   x2={x}
                   y2={y}
                   strokeWidth="24"
@@ -139,13 +147,13 @@ export default function SkillRadar() {
             className={styles.radarPolygon}
             style={{
               transform: inView ? 'scale(1)' : 'scale(0)',
-              transformOrigin: `${CENTER}px ${CENTER}px`,
+              transformOrigin: `${CENTER_X}px ${CENTER_Y}px`,
               filter: activeAxis ? 'drop-shadow(0 0 6px rgba(255,140,66,0.45))' : 'none',
             }}
           />
 
           {AXES.map((a, i) => {
-            const [x, y] = pointFor(i, AXES.length, (a.value / 100) * MAX_R);
+            const [x, y] = pointFor(i, AXES.length, a.value / 100);
             const active = hovered === i;
             return (
               <g key={a.label}>

@@ -10,6 +10,7 @@ import KineticHeading from '@/components/KineticHeading';
 import MagneticButton from '@/components/MagneticButton';
 import Marquee from '@/components/Marquee';
 import PhotoFrame from '@/components/PhotoFrame';
+import SlideIn from '@/components/SlideIn';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -20,30 +21,85 @@ export const metadata = {
 /* ─────────────────────────────────────────
    DATA
 ───────────────────────────────────────── */
+/* Each tag carries its own proficiency `level` (0-100), shown in a small
+   dialog box on hover (see .skillTag::after in page.module.css). Update
+   the numbers below any time — no other code needs to change. */
 const skills = [
   {
     icon: '📊', title: 'Analysis & Modeling',
-    tags: ['EDA','Time-Series Forecasting','A/B Testing','Risk Scoring','Root Cause Analysis','CECL / CCAR','PD / LGD / EAD'],
+    tags: [
+      { name: 'EDA', level: 92 },
+      { name: 'Time-Series Forecasting', level: 85 },
+      { name: 'A/B Testing', level: 88 },
+      { name: 'Risk Scoring', level: 90 },
+      { name: 'Root Cause Analysis', level: 87 },
+      { name: 'CECL / CCAR', level: 80 },
+      { name: 'PD / LGD / EAD', level: 82 },
+    ],
   },
   {
     icon: '💻', title: 'Programming & Databases',
-    tags: ['Python','SQL','R','SAS','SPSS','Snowflake','Amazon Redshift','Azure Synapse','PostgreSQL','Oracle'],
+    tags: [
+      { name: 'Python', level: 93 },
+      { name: 'SQL', level: 95 },
+      { name: 'R', level: 75 },
+      { name: 'SAS', level: 78 },
+      { name: 'SPSS', level: 76 },
+      { name: 'Snowflake', level: 85 },
+      { name: 'Amazon Redshift', level: 84 },
+      { name: 'Azure Synapse', level: 80 },
+      { name: 'PostgreSQL', level: 82 },
+      { name: 'Oracle', level: 78 },
+    ],
   },
   {
     icon: '☁️', title: 'Cloud, Big Data & ETL',
-    tags: ['AWS Glue','SageMaker','S3','Azure Data Factory','GCP','Hadoop','Apache Airflow','Airbyte'],
+    tags: [
+      { name: 'AWS Glue', level: 86 },
+      { name: 'SageMaker', level: 78 },
+      { name: 'S3', level: 85 },
+      { name: 'Azure Data Factory', level: 83 },
+      { name: 'GCP', level: 74 },
+      { name: 'Hadoop', level: 76 },
+      { name: 'Apache Airflow', level: 82 },
+      { name: 'Airbyte', level: 79 },
+    ],
   },
   {
     icon: '🤖', title: 'Machine Learning',
-    tags: ['LightGBM','XGBoost','LSTM','Deep Neural Networks','Factorization Machines','ARIMA','NLP','Clustering'],
+    tags: [
+      { name: 'LightGBM', level: 88 },
+      { name: 'XGBoost', level: 87 },
+      { name: 'LSTM', level: 80 },
+      { name: 'Deep Neural Networks', level: 78 },
+      { name: 'Factorization Machines', level: 75 },
+      { name: 'ARIMA', level: 82 },
+      { name: 'NLP', level: 77 },
+      { name: 'Clustering', level: 84 },
+    ],
   },
   {
     icon: '📈', title: 'Visualisation & MLOps',
-    tags: ['Power BI','DAX','Row-Level Security','Tableau','CI/CD','Git','Confluence'],
+    tags: [
+      { name: 'Power BI', level: 92 },
+      { name: 'DAX', level: 85 },
+      { name: 'Row-Level Security', level: 80 },
+      { name: 'Tableau', level: 86 },
+      { name: 'CI/CD', level: 78 },
+      { name: 'Git', level: 90 },
+      { name: 'Confluence', level: 82 },
+    ],
   },
   {
     icon: '📋', title: 'Business & Delivery',
-    tags: ['JIRA','Agile / SDLC','UAT','Data Quality Controls','SR 11-7 Governance','OPM'],
+    tags: [
+      { name: 'JIRA', level: 88 },
+      { name: 'Agile / SDLC', level: 90 },
+      { name: 'UAT', level: 84 },
+      { name: 'Data Quality Controls', level: 86 },
+      { name: 'SR 11-7 Governance', level: 80 },
+      { name: 'OPM', level: 76 },
+    ],
   },
 ];
 
@@ -173,7 +229,7 @@ export default function HomePage() {
           <p>End-to-end analytics — from raw ingestion to production models and executive dashboards.</p>
         </Reveal>
         <Marquee
-          items={skills.flatMap(s => s.tags)}
+          items={skills.flatMap(s => s.tags.map(t => t.name))}
           speed={42}
           className={styles.skillsMarquee}
         />
@@ -184,7 +240,9 @@ export default function HomePage() {
                 <div className={styles.cardIcon}>{icon}</div>
                 <h3>{title}</h3>
                 <div className={styles.skillTags}>
-                  {tags.map(t => <span key={t} className={styles.skillTag}>{t}</span>)}
+                  {tags.map(({ name, level }) => (
+                    <span key={name} className={styles.skillTag} data-level={`${level}%`}>{name}</span>
+                  ))}
                 </div>
               </TiltCard>
             </Reveal>
@@ -193,14 +251,13 @@ export default function HomePage() {
       </section>
 
       {/* ── EXPERIENCE ── */}
-      <section id="experience" className={styles.experience}>
+      <section id="experience" className={styles.experience} style={{ position: 'relative', overflow: 'hidden' }}>
         <Reveal className={styles.sectionHeader}>
-          <span className={styles.secLabel}>Experience</span>
           <h2 className={styles.secTitle}>Where I&apos;ve built things.</h2>
         </Reveal>
         <div className={styles.timeline}>
           {experience.map(({ role, company, period, current, bullets }, i) => (
-            <Reveal key={company} className={styles.tlItem} delay={i * 0.1}>
+            <SlideIn key={company} direction={i === 0 ? 'left' : 'right'} className={styles.tlItem}>
               <div className={styles.tlDot} />
               <div className={styles.tlMeta}>
                 <span className={styles.dateBadge}>{period}</span>
@@ -211,7 +268,7 @@ export default function HomePage() {
               <ul className={styles.tlBullets}>
                 {bullets.map((b, j) => <li key={j}>{b}</li>)}
               </ul>
-            </Reveal>
+            </SlideIn>
           ))}
           <TimelineFX dotClass={styles.tlDot} />
         </div>

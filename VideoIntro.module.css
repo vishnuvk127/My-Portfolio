@@ -1,8 +1,4 @@
-/* ─────────────────────────────────────────────
-   VideoIntro.module.css
-   Controls + sound hint removed.
-   Scroll-aware volume fade handled in JS.
-───────────────────────────────────────────── */
+/* VideoIntro.module.css — controls & sound hint fully removed */
 
 .heroSection {
   position: relative;
@@ -15,7 +11,7 @@
   justify-content: center;
 }
 
-/* ── Ambient blurred background duplicate ── */
+/* ── Ambient blurred background ── */
 .ambientLayer {
   position: absolute;
   inset: -30px;
@@ -48,18 +44,18 @@
   object-fit: cover;
 }
 
-/* ── Cinematic gradient overlays ── */
+/* ── Gradient overlays ── */
 .gradTop {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 40%;
   z-index: 3;
+  pointer-events: none;
   background: linear-gradient(180deg,
     rgba(0,0,0,0.85) 0%,
     rgba(0,0,0,0.4)  60%,
-    transparent       100%
+    transparent      100%
   );
-  pointer-events: none;
 }
 
 .gradBottom {
@@ -67,12 +63,12 @@
   bottom: 0; left: 0; right: 0;
   height: 55%;
   z-index: 3;
+  pointer-events: none;
   background: linear-gradient(0deg,
     rgba(0,0,0,0.92) 0%,
     rgba(0,0,0,0.6)  50%,
-    transparent       100%
+    transparent      100%
   );
-  pointer-events: none;
 }
 
 .gradLeft {
@@ -80,11 +76,8 @@
   top: 0; left: 0; bottom: 0;
   width: 35%;
   z-index: 3;
-  background: linear-gradient(90deg,
-    rgba(0,0,0,0.7) 0%,
-    transparent      100%
-  );
   pointer-events: none;
+  background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, transparent 100%);
 }
 
 .gradRight {
@@ -92,14 +85,10 @@
   top: 0; right: 0; bottom: 0;
   width: 35%;
   z-index: 3;
-  background: linear-gradient(270deg,
-    rgba(0,0,0,0.55) 0%,
-    transparent       100%
-  );
   pointer-events: none;
+  background: linear-gradient(270deg, rgba(0,0,0,0.55) 0%, transparent 100%);
 }
 
-/* ── Warm orange vignette (bottom-left) ── */
 .warmVignette {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -107,12 +96,10 @@
   z-index: 3;
   pointer-events: none;
   background: radial-gradient(ellipse 80% 60% at 20% 100%,
-    rgba(255,100,30,0.08) 0%,
-    transparent            70%
+    rgba(255,100,30,0.08) 0%, transparent 70%
   );
 }
 
-/* ── Cool monitor-blue glow (top-right) ── */
 .coolGlow {
   position: absolute;
   top: 0; right: 0;
@@ -120,8 +107,7 @@
   z-index: 3;
   pointer-events: none;
   background: radial-gradient(ellipse 80% 80% at 90% 10%,
-    rgba(40,120,220,0.09) 0%,
-    transparent            70%
+    rgba(40,120,220,0.09) 0%, transparent 70%
   );
 }
 
@@ -133,7 +119,7 @@
   pointer-events: none;
 }
 
-/* ── Text content overlay ── */
+/* ── Text overlay ── */
 .contentOverlay {
   position: absolute;
   inset: 0;
@@ -238,8 +224,7 @@
 .scrollLine::after {
   content: '';
   position: absolute;
-  top: -40%;
-  left: 0; right: 0;
+  top: -40%; left: 0; right: 0;
   height: 40%;
   background: rgba(255,140,66,0.8);
   animation: scrollPulse 2s ease-in-out infinite;
@@ -252,7 +237,5 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .contentOverlay {
-    padding: 0 6vw 14vh;
-  }
+  .contentOverlay { padding: 0 6vw 14vh; }
 }

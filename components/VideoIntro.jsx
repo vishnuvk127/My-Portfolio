@@ -26,10 +26,10 @@ export default function VideoIntro({
   const sectionRef = useRef(null);
   const mainRef    = useRef(null);
   const ambientRef = useRef(null);
-  const taglineRef = useRef(null);
-  const firstRef   = useRef(null);
-  const lastRef    = useRef(null);
+  const greetRef   = useRef(null);
+  const roleRef    = useRef(null);
   const subRef     = useRef(null);
+  const ctaRef     = useRef(null);
   const scrollRef  = useRef(null);
   const hasStarted = useRef(false);
 
@@ -108,11 +108,11 @@ export default function VideoIntro({
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.timeline({ delay: 0.4 })
-        .to(taglineRef.current, { opacity: 1, y: 0,  duration: 1.1, ease: 'power3.out' })
-        .to(firstRef.current,   { opacity: 1, y: 0,  duration: 1.2, ease: 'power4.out' }, '-=0.55')
-        .to(lastRef.current,    { opacity: 1, y: 0,  duration: 1.2, ease: 'power4.out' }, '-=0.95')
-        .to(subRef.current,     { opacity: 1,         duration: 1.1, ease: 'power2.out' }, '-=0.6')
-        .to(scrollRef.current,  { opacity: 0.55,      duration: 1.0, ease: 'power2.out' }, '-=0.4');
+        .to(greetRef.current,  { opacity: 1, y: 0,  duration: 1.1, ease: 'power3.out' })
+        .to(roleRef.current,   { opacity: 1, y: 0,  duration: 1.2, ease: 'power4.out' }, '-=0.6')
+        .to(subRef.current,    { opacity: 1,         duration: 1.1, ease: 'power2.out' }, '-=0.6')
+        .to(ctaRef.current,    { opacity: 1, y: 0,  duration: 0.9, ease: 'power2.out' }, '-=0.55')
+        .to(scrollRef.current, { opacity: 0.55,      duration: 1.0, ease: 'power2.out' }, '-=0.4');
     });
     return () => ctx.revert();
   }, []);
@@ -152,17 +152,25 @@ export default function VideoIntro({
 
       {/* Text */}
       <div className={styles.contentOverlay}>
-        <p ref={taglineRef} className={styles.tagline}>
-          Data Analytics &amp; Predictive Modeling
+        <p ref={greetRef} className={styles.greeting}>
+          Hi, I&apos;m <span className={styles.greetingName}>Kaitepalli Vishnu Vardhan</span>
         </p>
-        <div className={styles.nameBlock}>
-          <span ref={firstRef} className={styles.firstName}>VISHNU</span>
-          <span ref={lastRef}  className={styles.lastName}>VARDHAN</span>
-        </div>
+        <h1 ref={roleRef} className={styles.role}>Data Analyst</h1>
         <p ref={subRef} className={styles.subtitle}>
           Specialising in ETL automation, risk scoring models,
           <br />and scalable business intelligence architecture.
         </p>
+        <div ref={ctaRef} className={styles.ctaRow}>
+          <a href="#projects" className={styles.ctaPrimary}>View My Work</a>
+          <a href="#contact" className={styles.ctaAccent}>Contact Me</a>
+          <a href="/resume.pdf" download className={styles.ctaGhost}>
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M8 1.5v8.4M8 9.9 4.7 6.6M8 9.9l3.3-3.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2.5 11v1.8a1.7 1.7 0 0 0 1.7 1.7h7.6a1.7 1.7 0 0 0 1.7-1.7V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Download Resume
+          </a>
+        </div>
       </div>
 
       {/* Scroll indicator — only interactive element remaining */}

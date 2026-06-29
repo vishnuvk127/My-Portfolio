@@ -131,42 +131,30 @@
   pointer-events: none;
 }
 
-.tagline {
+.greeting {
   font-family: 'Inter', 'SF Pro Display', sans-serif;
-  font-size: clamp(9px, 1.1vw, 12px);
-  font-weight: 500;
-  letter-spacing: 0.28em;
-  color: rgba(255,165,80,0.85);
-  text-transform: uppercase;
-  margin: 0 0 1.4rem;
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: rgba(255,255,255,0.82);
+  margin: 0 0 0.55rem;
   opacity: 0;
 }
 
-.nameBlock {
-  margin: 0 0 1.6rem;
-  line-height: 0.88;
-  overflow: hidden;
-}
-
-.firstName {
-  display: block;
-  font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
-  font-size: clamp(64px, 10vw, 148px);
-  font-weight: 800;
+.greetingName {
+  font-weight: 700;
   color: #fff;
-  letter-spacing: -0.03em;
-  opacity: 0;
-  transform: translateY(60px);
 }
 
-.lastName {
+.role {
   display: block;
   font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
-  font-size: clamp(64px, 10vw, 148px);
+  font-size: clamp(34px, 4.6vw, 60px);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.3rem;
   opacity: 0;
-  transform: translateY(60px);
+  transform: translateY(40px);
   background: linear-gradient(135deg, #FF8C42 0%, #FFD166 55%, #FF6B35 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -181,8 +169,72 @@
   letter-spacing: 0.02em;
   line-height: 1.65;
   max-width: 520px;
-  margin: 0;
+  margin: 0 0 1.9rem;
   opacity: 0;
+}
+
+/* ── CTA buttons ── */
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(24px);
+  pointer-events: all;
+}
+
+.ctaPrimary,
+.ctaAccent,
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 13px 26px;
+  border-radius: 100px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+}
+
+.ctaPrimary {
+  background: #fff;
+  color: #1a0f08;
+}
+.ctaPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(255,255,255,0.18);
+}
+
+.ctaAccent {
+  background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+  color: #fff;
+}
+.ctaAccent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255,140,66,0.4);
+}
+
+.ctaGhost {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.ctaGhost:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(-2px);
+}
+.ctaGhost svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 /* ── Scroll indicator ── */
@@ -238,4 +290,13 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .contentOverlay { padding: 0 6vw 14vh; }
+}
+
+@media (max-width: 480px) {
+  .ctaPrimary,
+  .ctaAccent,
+  .ctaGhost {
+    padding: 11px 20px;
+    font-size: 13px;
+  }
 }

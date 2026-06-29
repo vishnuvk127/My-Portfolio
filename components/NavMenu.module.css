@@ -1,5 +1,38 @@
 /* NavMenu.module.css — tiny hamburger toggle + compact transparent dropdown */
 
+/* ── Ghost-text brand wordmark, top-left, visible across the whole site ── */
+.brand {
+  position: fixed;
+  top: 30px;
+  left: 6vw;
+  z-index: 1000;
+  max-width: 60vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: 'Inter', 'SF Pro Display', sans-serif;
+  font-size: clamp(13px, 1.6vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.14);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.55);
+  text-stroke: 1px rgba(255, 255, 255, 0.55);
+  transition: color 0.25s ease, -webkit-text-stroke-color 0.25s ease;
+}
+.brand:hover {
+  color: rgba(255, 255, 255, 0.22);
+  -webkit-text-stroke-color: rgba(255, 140, 66, 0.75);
+}
+
+@media (max-width: 640px) {
+  .brand {
+    top: 22px;
+    font-size: 13px;
+    max-width: 52vw;
+  }
+}
+
 .toggle {
   position: fixed;
   top: 28px;

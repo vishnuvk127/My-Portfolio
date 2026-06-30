@@ -153,24 +153,65 @@ const ltiStats = [
   { num: '60%',    lbl: 'Campaign Response Lift' },
 ];
 
+/* Same approach as Experience — condensed achievements + skills/tech
+   tags instead of dropping the resume project write-ups in verbatim. */
 const projects = [
   {
     icon: '🔍',
     title: 'Regulatory Audit Lineage',
-    description: 'Constructed an automated tracking framework using Apache Airflow to map Hadoop data flows, securing federal auditing records for a $5B+ corporate loan portfolio.',
-    impact: '$5B+ portfolio compliance',
+    subtitle: 'Automated Data Lineage & Compliance Tracking Framework',
+    achievements: [
+      'Built an automated lineage tracking framework to map Hadoop-based data flows across ingestion, transformation, and reporting layers for a $5B+ corporate loan portfolio.',
+      'Played a key role in improving audit readiness by making data movement, ownership, and transformation logic easier to trace for regulatory review.',
+      'Helped strengthen data governance by reducing manual tracking effort and creating a more reliable framework for compliance documentation.',
+    ],
+    skillsGained: [
+      'Data Lineage Tracking',
+      'Regulatory Audit Support',
+      'Data Governance',
+      'Workflow Automation',
+      'Compliance Documentation',
+      'Enterprise Data Mapping',
+    ],
+    technologies: ['Apache Airflow', 'Hadoop', 'SQL', 'Data Governance', 'ETL Workflows', 'Audit Tracking'],
   },
   {
     icon: '🔗',
     title: 'Entity Resolution Engine',
-    description: 'Formulated an in-house fuzzy matching workflow to consolidate redundant customer records — eliminating $70k in annual vendor costs and accelerating reporting cycles by 4 days.',
-    impact: '$70k annual savings',
+    subtitle: 'Customer Record Matching & Deduplication System',
+    achievements: [
+      'Developed an in-house fuzzy matching workflow to identify duplicate and inconsistent customer records across multiple business datasets.',
+      'Played a crucial role in improving data quality by consolidating redundant records, reducing reporting errors, and creating cleaner customer views for analytics teams.',
+      'Eliminated approximately $70K in annual vendor costs and accelerated reporting cycles by 4 days through internal automation.',
+    ],
+    skillsGained: [
+      'Fuzzy Matching',
+      'Data Deduplication',
+      'Data Quality Improvement',
+      'Customer Data Consolidation',
+      'Reporting Automation',
+      'Problem-Solving with Analytics',
+    ],
+    technologies: ['Python', 'SQL', 'Fuzzy Matching', 'Data Cleaning', 'Record Linkage', 'Data Validation'],
   },
   {
     icon: '📉',
     title: 'Macroeconomic Risk Simulation',
-    description: 'Migrated Monte Carlo risk models from legacy SAS to PySpark — reducing loss distribution runtimes from hours to minutes and enabling intraday stress testing.',
-    impact: 'Hours → minutes runtime',
+    subtitle: 'Monte Carlo Risk Modeling & Stress Testing Optimization',
+    achievements: [
+      'Migrated legacy Monte Carlo risk simulation models from SAS to PySpark to improve scalability and reduce model execution time.',
+      'Played a major role in modernizing the risk simulation workflow, enabling faster analysis of macroeconomic scenarios and portfolio loss distributions.',
+      'Reduced runtime from hours to minutes, supporting intraday stress testing and quicker risk decision-making for business teams.',
+    ],
+    skillsGained: [
+      'Risk Modeling',
+      'Monte Carlo Simulation',
+      'Stress Testing',
+      'Model Migration',
+      'Runtime Optimization',
+      'Financial Analytics',
+    ],
+    technologies: ['PySpark', 'SAS', 'Monte Carlo Simulation', 'Risk Modeling', 'Financial Analytics', 'Big Data Processing'],
   },
 ];
 
@@ -201,7 +242,7 @@ export default function HomePage() {
         <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
           <PhotoFrame />
           <KineticHeading as="p" className={styles.aboutHeadline}>
-            Turning complex data into decisions.
+            A collection of analytics, automation, and risk-focused projects where I improved data reliability, reduced manual effort, and helped teams make faster, more confident business decisions.
           </KineticHeading>
         </div>
         <div className={`${styles.aboutVisual} ${styles.bentoVisual}`}>
@@ -293,13 +334,29 @@ export default function HomePage() {
           <h2 className={`${styles.secTitle} ${styles.light}`}>Things I&apos;ve shipped.</h2>
         </Reveal>
         <div className={styles.projectsGrid}>
-          {projects.map(({ icon, title, description, impact }, i) => (
+          {projects.map(({ icon, title, subtitle, achievements, skillsGained, technologies }, i) => (
             <Reveal key={title} delay={i * 0.08} className={i === 0 ? styles.projFeatured : ''}>
               <TiltCard className={styles.projCard}>
                 <div className={styles.projIcon}>{icon}</div>
-                <h3>{title}</h3>
-                <p>{description}</p>
-                <div className={styles.projImpact}>⚡ {impact}</div>
+                <div>
+                  <h3>{title}</h3>
+                  <div className={styles.projSubtitle}>{subtitle}</div>
+                </div>
+                <ul className={styles.projAchievements}>
+                  {achievements.map((a, j) => <li key={j}>{a}</li>)}
+                </ul>
+                <div className={styles.tlSkills}>
+                  <span className={styles.tlSectionLabel}>Skills Gained:</span>
+                  <ul className={styles.tlSkillList}>
+                    {skillsGained.map((s, j) => <li key={j}>{s}</li>)}
+                  </ul>
+                </div>
+                <div className={styles.tlTech}>
+                  <span className={styles.tlSectionLabel}>Technologies Used:</span>
+                  <div className={styles.tlTechTags}>
+                    {technologies.map((t, j) => <span key={j} className={styles.tlTechTag}>{t}</span>)}
+                  </div>
+                </div>
               </TiltCard>
             </Reveal>
           ))}

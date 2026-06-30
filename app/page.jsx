@@ -11,6 +11,7 @@ import MagneticButton from '@/components/MagneticButton';
 import Marquee from '@/components/Marquee';
 import PhotoFrame from '@/components/PhotoFrame';
 import SlideIn from '@/components/SlideIn';
+import ProjectCarousel from '@/components/ProjectCarousel';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -333,34 +334,32 @@ export default function HomePage() {
         <Reveal className={styles.sectionHeader}>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Things I&apos;ve shipped.</h2>
         </Reveal>
-        <div className={styles.projectsGrid}>
-          {projects.map(({ icon, title, subtitle, achievements, skillsGained, technologies }, i) => (
-            <Reveal key={title} delay={i * 0.08} className={i === 0 ? styles.projFeatured : ''}>
-              <TiltCard className={styles.projCard}>
-                <div className={styles.projIcon}>{icon}</div>
-                <div>
-                  <h3>{title}</h3>
-                  <div className={styles.projSubtitle}>{subtitle}</div>
-                </div>
-                <ul className={styles.projAchievements}>
-                  {achievements.map((a, j) => <li key={j}>{a}</li>)}
+        <ProjectCarousel>
+          {projects.map(({ icon, title, subtitle, achievements, skillsGained, technologies }) => (
+            <TiltCard key={title} className={styles.projCard}>
+              <div className={styles.projIcon}>{icon}</div>
+              <div>
+                <h3>{title}</h3>
+                <div className={styles.projSubtitle}>{subtitle}</div>
+              </div>
+              <ul className={styles.projAchievements}>
+                {achievements.map((a, j) => <li key={j}>{a}</li>)}
+              </ul>
+              <div className={styles.tlSkills}>
+                <span className={styles.tlSectionLabel}>Skills Gained:</span>
+                <ul className={styles.tlSkillList}>
+                  {skillsGained.map((s, j) => <li key={j}>{s}</li>)}
                 </ul>
-                <div className={styles.tlSkills}>
-                  <span className={styles.tlSectionLabel}>Skills Gained:</span>
-                  <ul className={styles.tlSkillList}>
-                    {skillsGained.map((s, j) => <li key={j}>{s}</li>)}
-                  </ul>
+              </div>
+              <div className={styles.tlTech}>
+                <span className={styles.tlSectionLabel}>Technologies Used:</span>
+                <div className={styles.tlTechTags}>
+                  {technologies.map((t, j) => <span key={j} className={styles.tlTechTag}>{t}</span>)}
                 </div>
-                <div className={styles.tlTech}>
-                  <span className={styles.tlSectionLabel}>Technologies Used:</span>
-                  <div className={styles.tlTechTags}>
-                    {technologies.map((t, j) => <span key={j} className={styles.tlTechTag}>{t}</span>)}
-                  </div>
-                </div>
-              </TiltCard>
-            </Reveal>
+              </div>
+            </TiltCard>
           ))}
-        </div>
+        </ProjectCarousel>
       </section>
 
       {/* ── EDUCATION & CERTS ── */}

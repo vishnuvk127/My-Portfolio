@@ -44,7 +44,7 @@ export default function TimelineFX({ dotClass }) {
       end: 'bottom 70%',
       scrub: true,
       onUpdate: (self) => {
-        line.style.transform = `scaleY(${self.progress})`;
+        line.style.setProperty('--tl-progress', self.progress);
       },
     });
 

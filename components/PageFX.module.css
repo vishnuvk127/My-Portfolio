@@ -157,16 +157,30 @@
 }
 .timelineProgress {
   position: absolute;
-  left: 20px;
-  top: 8px;
-  bottom: 0;
-  width: 2px;
-  transform-origin: top;
-  transform: scaleY(0);
-  background: linear-gradient(180deg, #ff8c42 0%, #ffd166 100%);
+  left: 0;
+  right: 0;
+  top: 20px;
+  height: 2px;
+  width: auto;
+  transform-origin: left;
+  transform: scaleX(var(--tl-progress, 0));
+  background: linear-gradient(90deg, #ff8c42 0%, #ffd166 100%);
   box-shadow: 0 0 12px rgba(255, 140, 66, 0.55);
   z-index: 1;
   pointer-events: none;
+}
+@media (max-width: 880px) {
+  .timelineProgress {
+    left: 20px;
+    right: auto;
+    top: 8px;
+    bottom: 0;
+    height: auto;
+    width: 2px;
+    transform-origin: top;
+    transform: scaleY(var(--tl-progress, 0));
+    background: linear-gradient(180deg, #ff8c42 0%, #ffd166 100%);
+  }
 }
 @media (max-width: 640px) {
   .timelineProgress {

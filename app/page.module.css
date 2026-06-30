@@ -332,27 +332,35 @@
 
 .timeline {
   position: relative;
-  max-width: 860px;
+  max-width: 1040px;
   z-index: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+  padding-top: 28px;
 }
 
 .timeline::before {
   content: '';
   position: absolute;
-  left: 20px;
-  top: 8px;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(180deg, var(--orange) 0%, rgba(255, 140, 66, 0.1) 100%);
+  left: 0;
+  right: 0;
+  top: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--orange) 0%, rgba(255, 140, 66, 0.1) 100%);
 }
 
-/* Each entry is its own glass card — translucent panel + backdrop blur,
-   reusing the same tokens as the other card components (.statCard etc.)
-   so it matches the rest of the page. */
+/* Each entry is its own vertical glass card — translucent panel + backdrop
+   blur, sitting side-by-side in a horizontal row. Reuses the same tokens
+   as the other card components (.statCard etc.) so it matches the rest
+   of the page. */
 .tlItem {
   position: relative;
-  padding: 32px 34px 32px 68px;
-  margin-bottom: 40px;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 36px 30px 30px;
   background: var(--bg-panel);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -367,22 +375,21 @@
   border-color: var(--border-hi);
 }
 
-.tlItem:last-child {
-  margin-bottom: 0;
-}
-
 .tlItem h3 {
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-size: clamp(18px, 2vw, 23px);
   font-weight: 800;
   color: var(--text-hi);
   letter-spacing: -0.02em;
   margin-bottom: 4px;
 }
 
+/* Dot sits centered above each card, overlapping the horizontal guide
+   line — mirrors the old vertical layout's left-edge dot, rotated 90°. */
 .tlDot {
   position: absolute;
-  left: 12px;
-  top: 32px;
+  left: 50%;
+  top: -16px;
+  transform: translateX(-50%);
   width: 17px;
   height: 17px;
   border-radius: 50%;
@@ -453,6 +460,38 @@
   color: var(--orange);
   font-size: 12px;
   top: 3px;
+}
+
+/* Below this width the two cards no longer have room to breathe side by
+   side — fall back to a vertical stacked timeline with the guide line
+   and dots running down the left edge instead. */
+@media (max-width: 880px) {
+  .timeline {
+    flex-direction: column;
+    padding-top: 0;
+    gap: 0;
+  }
+  .timeline::before {
+    left: 20px;
+    right: auto;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, var(--orange) 0%, rgba(255, 140, 66, 0.1) 100%);
+  }
+  .tlItem {
+    padding: 32px 34px 32px 68px;
+    margin-bottom: 40px;
+  }
+  .tlItem:last-child {
+    margin-bottom: 0;
+  }
+  .tlDot {
+    left: 12px;
+    top: 32px;
+    transform: none;
+  }
 }
 
 /* ── Projects — bento grid ── */

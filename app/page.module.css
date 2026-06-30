@@ -541,25 +541,15 @@
   }
 }
 
-/* ── Projects — bento grid ── */
+/* ── Projects — pinned stacked-card carousel ── */
 .projects {
   background: var(--bg-mid);
   padding: 80px 8vw;
 }
 
-.projectsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  position: relative;
-  z-index: 1;
-}
-
-.projFeatured {
-  grid-column: span 2;
-}
-
 .projCard {
+  width: 100%;
+  max-width: 640px;
   height: 100%;
   background: var(--bg-panel);
   border: 1px solid var(--border);
@@ -629,12 +619,6 @@
   top: 0;
   color: var(--orange);
   font-size: 12px;
-}
-
-@media (max-width: 900px) {
-  .projFeatured {
-    grid-column: span 1;
-  }
 }
 
 /* ── Education ── */

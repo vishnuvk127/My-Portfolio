@@ -5,12 +5,13 @@
  * An interactive, premium dark analytics-dashboard section for a
  * Data Analyst / AI-ML Engineer portfolio.
  *
- * Self-contained: all data + styles live in this file. Styling uses Next.js'
- * built-in styled-jsx (no Tailwind required), so it drops straight into a
- * CSS-Modules project without any global config.
+ * Layout: interactive vertical workflow journey on the LEFT, and a live
+ * dashboard "box" on the RIGHT (with the Recruiter / Technical toggle docked
+ * at its top-right). Selecting a stage on the left updates the right panel,
+ * the chart, the animated metrics and KPI chips in real time.
  *
+ * Styling lives in DataProductProcess.module.css (a CSS Module).
  * Requires: framer-motion, recharts, lucide-react
- *   npm install framer-motion recharts lucide-react
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -23,6 +24,9 @@ import {
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
+import styles from './DataProductProcess.module.css';
+
+const cx = (...c) => c.filter(Boolean).join(' ');
 
 /* ──────────────────────────────────────────────────────────────────────────
    DATA — single source of truth. Cards/dashboard/chart all map from here.
@@ -186,12 +190,47 @@ const BADGES = [
 const ACCENT = '#ff2b2b';
 
 /* ──────────────────────────────────────────────────────────────────────────
+   AnimatedNumber — counts up to the numeric part of a metric string while
+   preserving any prefix/suffix (e.g. "+35%", "60+"). Non-numeric values
+   (e.g. "Hours → min") render as-is.
+   ────────────────────────────────────────────────────────────────────────── */
+function splitMetric(str) {
+  const m = String(str).match(/^([^\d-]*)(-?\d+(?:\.\d+)?)(.*)$/);
+  if (!m) return { pre: '', num: null, post: String(str) };
+  return { pre: m[1], num: parseFloat(m[2]), post: m[3] };
+}
+
+function AnimatedNumber({ value }) {
+  const { pre, num, post } = splitMetric(value);
+  const [disp, setDisp] = useState(0);
+
+  useEffect(() => {
+    if (num == null) return undefined;
+    let raf;
+    const start = performance.now();
+    const dur = 850;
+    const tick = (t) => {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisp(num * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [num, value]);
+
+  if (num == null) return <>{value}</>;
+  const shown = Number.isInteger(num) ? Math.round(disp) : disp.toFixed(1);
+  return <>{pre}{shown}{post}</>;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    SkillPill
    ────────────────────────────────────────────────────────────────────────── */
 function SkillPill({ children }) {
   return (
     <motion.span
-      className="dps-pill"
+      className={styles.pill}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 400, damping: 18 }}
     >
@@ -208,7 +247,7 @@ function MetricBadge({ label, active, onClick }) {
     <motion.button
       type="button"
       onClick={onClick}
-      className={`dps-badge ${active ? 'on' : ''}`}
+      className={cx(styles.badge, active && styles.on)}
       whileHover={{ y: -3, scale: 1.03 }}
       whileTap={{ scale: 0.96 }}
       animate={active ? { boxShadow: '0 0 24px rgba(255,43,43,0.45)' } : { boxShadow: '0 0 0 rgba(255,43,43,0)' }}
@@ -221,51 +260,44 @@ function MetricBadge({ label, active, onClick }) {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   ProcessCard — one workflow stage (node + card). Renders its own connector
-   segment so the timeline stays continuous on mobile regardless of height.
+   StageRow — one workflow stage in the left-hand vertical journey.
    ────────────────────────────────────────────────────────────────────────── */
-function ProcessCard({ stage, index, isActive, isDone, onSelect }) {
+function StageRow({ stage, isActive, isDone, onSelect }) {
   const { number, title, Icon, tagline, metricValue } = stage;
   return (
-    <motion.div
-      className={`dps-step ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
-      variants={{
-        hidden: { opacity: 0, y: 26 },
-        show: { opacity: 1, y: 0 },
-      }}
+    <motion.button
+      type="button"
+      onClick={onSelect}
+      aria-label={`Stage ${number}: ${title}`}
+      aria-pressed={isActive}
+      className={cx(styles.row, isActive && styles.rowActive, isDone && styles.rowDone)}
+      variants={{ hidden: { opacity: 0, x: -22 }, show: { opacity: 1, x: 0 } }}
+      whileHover={{ x: 5 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 24 }}
     >
-      {/* vertical connector segment (mobile timeline only) */}
-      {index > 0 && <span className={`dps-seg ${isDone || isActive ? 'lit' : ''}`} aria-hidden />}
+      <span className={styles.rowNode}>
+        <Icon size={20} strokeWidth={2.1} />
+        {isActive && (
+          <motion.span
+            className={styles.pulse}
+            initial={{ opacity: 0.6, scale: 1 }}
+            animate={{ opacity: 0, scale: 1.9 }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            aria-hidden
+          />
+        )}
+      </span>
 
-      <button type="button" className="dps-nodeWrap" onClick={onSelect} aria-label={`Stage ${number}: ${title}`}>
-        <motion.span
-          className="dps-node"
-          animate={isActive
-            ? { scale: 1.12, boxShadow: '0 0 0 4px rgba(255,43,43,0.18), 0 0 30px rgba(255,43,43,0.55)' }
-            : { scale: 1, boxShadow: '0 0 0 0 rgba(255,43,43,0)' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-        >
-          <Icon size={22} strokeWidth={2.1} />
-        </motion.span>
-      </button>
+      <span className={styles.rowBody}>
+        <span className={styles.rowTop}>
+          <span className={styles.rowNum}>{number}</span>
+          <span className={styles.rowTitle}>{title}</span>
+        </span>
+        <span className={styles.rowTag}>{tagline}</span>
+      </span>
 
-      <motion.button
-        type="button"
-        onClick={onSelect}
-        className="dps-card"
-        animate={{
-          scale: isActive ? 1.04 : 1,
-          opacity: isActive ? 1 : 0.62,
-        }}
-        whileHover={{ opacity: 1, y: -2 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      >
-        <span className="dps-card-num">{number}</span>
-        <span className="dps-card-title">{title}</span>
-        <span className="dps-card-tag">{tagline}</span>
-        <span className="dps-card-metric">{metricValue}</span>
-      </motion.button>
-    </motion.div>
+      <span className={styles.rowMetric}>{metricValue}</span>
+    </motion.button>
   );
 }
 
@@ -275,134 +307,217 @@ function ProcessCard({ stage, index, isActive, isDone, onSelect }) {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="dps-tip">
-      <span className="dps-tip-x">{label}</span>
-      <span className="dps-tip-v">{payload[0].value}</span>
+    <div className={styles.tip}>
+      <span className={styles.tipX}>{label}</span>
+      <span className={styles.tipV}>{payload[0].value}</span>
     </div>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   ImpactDashboard — dynamic panel that reflects the active stage + view mode
+   ViewToggle — Recruiter / Technical, docked top-right of the dashboard box.
    ────────────────────────────────────────────────────────────────────────── */
-function ImpactDashboard({ stage, mode, open, onToggle }) {
+function ViewToggle({ mode, setMode }) {
+  return (
+    <div className={styles.toggle} role="tablist" aria-label="View mode">
+      <button
+        type="button" role="tab" aria-selected={mode === 'recruiter'}
+        className={mode === 'recruiter' ? styles.on : undefined}
+        onClick={() => setMode('recruiter')}
+      >
+        <Briefcase size={15} strokeWidth={2.2} /> Recruiter
+      </button>
+      <button
+        type="button" role="tab" aria-selected={mode === 'technical'}
+        className={mode === 'technical' ? styles.on : undefined}
+        onClick={() => setMode('technical')}
+      >
+        <Code2 size={15} strokeWidth={2.2} /> Technical
+      </button>
+      <motion.span
+        className={styles.toggleInd}
+        animate={{ x: mode === 'recruiter' ? 0 : '100%' }}
+        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+      />
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ImpactDashboard — the right-hand "box". Reflects active stage + view mode.
+   ────────────────────────────────────────────────────────────────────────── */
+function ImpactDashboard({ stage, index, mode, setMode, open, onToggle, shipped }) {
   const description = mode === 'recruiter' ? stage.descRecruiter : stage.descTechnical;
   const details = mode === 'recruiter' ? stage.detailsRecruiter : stage.detailsTechnical;
   const { Icon } = stage;
+  const progress = ((index + 1) / STAGES.length) * 100;
 
   return (
-    <div className="dps-dash">
+    <div className={styles.panel}>
+      {/* top bar: live label + stage counter (left), toggle (right) */}
+      <div className={styles.panelTop}>
+        <div className={styles.panelId}>
+          <span className={styles.liveDot} aria-hidden />
+          <div>
+            <span className={styles.panelKicker}>Live Dashboard</span>
+            <div className={styles.panelStage}>
+              Stage <strong>{stage.number}</strong> <span>/ {STAGES.length.toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+        </div>
+        <ViewToggle mode={mode} setMode={setMode} />
+      </div>
+
+      {/* progress bar tied to active stage */}
+      <div className={styles.progress} aria-hidden>
+        <motion.span
+          className={styles.progressFill}
+          animate={{ width: `${progress}%` }}
+          transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+        />
+      </div>
+
+      {/* shipped toast */}
+      <AnimatePresence>
+        {shipped && (
+          <motion.div
+            className={styles.shipped}
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+          >
+            <CheckCircle2 size={17} strokeWidth={2.4} />
+            Data product shipped successfully.
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         <motion.div
           key={stage.number + mode}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -14 }}
-          transition={{ duration: 0.32, ease: 'easeOut' }}
-          className="dps-dash-grid"
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={styles.panelBody}
         >
-          {/* LEFT — narrative */}
-          <div className="dps-dash-main">
-            <div className="dps-dash-head">
-              <span className="dps-dash-icon"><Icon size={20} strokeWidth={2.1} /></span>
-              <div>
-                <span className="dps-dash-kicker">Stage {stage.number}</span>
-                <h3 className="dps-dash-title">{stage.title}</h3>
-              </div>
-            </div>
-
-            <p className="dps-dash-desc">{description}</p>
-
-            <div className="dps-impact">
-              <CheckCircle2 size={16} strokeWidth={2.3} />
-              <span>{stage.impact}</span>
-            </div>
-
-            <div className="dps-group">
-              <span className="dps-group-label">{mode === 'recruiter' ? 'Capabilities' : 'Skills'}</span>
-              <div className="dps-pills">
-                {stage.skills.map((s) => <SkillPill key={s}>{s}</SkillPill>)}
-              </div>
-            </div>
-
-            <div className="dps-group">
-              <span className="dps-group-label">{mode === 'recruiter' ? 'Tooling' : 'Related technologies'}</span>
-              <div className="dps-pills">
-                {stage.tech.map((t) => <SkillPill key={t}>{t}</SkillPill>)}
-              </div>
-            </div>
-
-            <button type="button" className="dps-details-btn" onClick={onToggle}>
-              <span>{open ? 'Hide details' : 'View details'}</span>
-              <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }}>
-                <ChevronDown size={16} strokeWidth={2.4} />
-              </motion.span>
-            </button>
-
-            <AnimatePresence initial={false}>
-              {open && (
-                <motion.ul
-                  className="dps-drawer"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.32, ease: 'easeInOut' }}
-                >
-                  {details.map((d, i) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.06 * i + 0.05 }}
-                    >
-                      <ArrowUpRight size={15} strokeWidth={2.4} />
-                      <span>{d}</span>
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* RIGHT — metric + chart */}
-          <div className="dps-dash-side">
-            <div className="dps-metric">
-              <span className="dps-metric-value">{stage.metricValue}</span>
-              <span className="dps-metric-label">{stage.metricLabel}</span>
-            </div>
-
-            <div className="dps-chart-head">
-              <span>Impact over time</span>
-              <Sparkles size={14} strokeWidth={2.2} />
-            </div>
-
-            <div className="dps-chartWrap">
-              <ResponsiveContainer width="100%" height={150}>
-                <AreaChart data={stage.chart} margin={{ top: 8, right: 6, left: -22, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="dpsFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={ACCENT} stopOpacity={0.55} />
-                      <stop offset="100%" stopColor={ACCENT} stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={34} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: ACCENT, strokeOpacity: 0.4 }} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={ACCENT}
-                    strokeWidth={2.4}
-                    fill="url(#dpsFill)"
-                    activeDot={{ r: 4, fill: ACCENT, stroke: '#fff', strokeWidth: 1 }}
-                    isAnimationActive
-                    animationDuration={650}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+          {/* header */}
+          <div className={styles.pHead}>
+            <span className={styles.pIcon}><Icon size={20} strokeWidth={2.1} /></span>
+            <div>
+              <span className={styles.pKicker}>{stage.tagline}</span>
+              <h3 className={styles.pTitle}>{stage.title}</h3>
             </div>
           </div>
+
+          <p className={styles.pDesc}>{description}</p>
+
+          {/* big metric + live KPI chips */}
+          <div className={styles.metricRow}>
+            <div className={styles.metricMain}>
+              <span className={styles.metricValue}><AnimatedNumber value={stage.metricValue} /></span>
+              <span className={styles.metricLabel}>{stage.metricLabel}</span>
+            </div>
+            <div className={styles.stats}>
+              <div className={styles.stat}>
+                <span className={styles.statNum}><AnimatedNumber value={String(stage.skills.length)} /></span>
+                <span className={styles.statLbl}>Skills</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statNum}><AnimatedNumber value={String(stage.tech.length)} /></span>
+                <span className={styles.statLbl}>Tools</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statNum}><AnimatedNumber value={String(index + 1)} />/{STAGES.length}</span>
+                <span className={styles.statLbl}>Stage</span>
+              </div>
+            </div>
+          </div>
+
+          {/* chart */}
+          <div className={styles.chartHead}>
+            <span>Impact over time</span>
+            <Sparkles size={14} strokeWidth={2.2} />
+          </div>
+          <div className={styles.chartWrap}>
+            <ResponsiveContainer width="100%" height={140}>
+              <AreaChart data={stage.chart} margin={{ top: 8, right: 6, left: -22, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="dpsFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={ACCENT} stopOpacity={0.55} />
+                    <stop offset="100%" stopColor={ACCENT} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={34} />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: ACCENT, strokeOpacity: 0.4 }} />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke={ACCENT}
+                  strokeWidth={2.4}
+                  fill="url(#dpsFill)"
+                  activeDot={{ r: 4, fill: ACCENT, stroke: '#fff', strokeWidth: 1 }}
+                  isAnimationActive
+                  animationDuration={650}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* impact */}
+          <div className={styles.impact}>
+            <CheckCircle2 size={16} strokeWidth={2.3} />
+            <span>{stage.impact}</span>
+          </div>
+
+          {/* skills + tech */}
+          <div className={styles.group}>
+            <span className={styles.groupLabel}>{mode === 'recruiter' ? 'Capabilities' : 'Skills'}</span>
+            <div className={styles.pills}>
+              {stage.skills.map((s) => <SkillPill key={s}>{s}</SkillPill>)}
+            </div>
+          </div>
+          <div className={styles.group}>
+            <span className={styles.groupLabel}>{mode === 'recruiter' ? 'Tooling' : 'Related technologies'}</span>
+            <div className={styles.pills}>
+              {stage.tech.map((t) => <SkillPill key={t}>{t}</SkillPill>)}
+            </div>
+          </div>
+
+          {/* details drawer */}
+          <button type="button" className={styles.detailsBtn} onClick={onToggle}>
+            <span>{open ? 'Hide details' : 'View details'}</span>
+            <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }}>
+              <ChevronDown size={16} strokeWidth={2.4} />
+            </motion.span>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.ul
+                className={styles.drawer}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.32, ease: 'easeInOut' }}
+              >
+                {details.map((d, i) => (
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.06 * i + 0.05 }}
+                  >
+                    <ArrowUpRight size={15} strokeWidth={2.4} />
+                    <span>{d}</span>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -453,422 +568,80 @@ export default function DataProductProcess() {
 
   useEffect(() => () => clearInterval(simRef.current), []);
 
-  const activeBadge = (b) => b.stage === active;
-  const fillWidth = `${(active / (STAGES.length - 1)) * 80}%`;
-
   return (
     <motion.section
       id="process"
-      className="dps"
+      className={styles.section}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <div className="dps-inner">
+      <div className={styles.inner}>
         {/* HEADER */}
-        <div className="dps-header">
-          <div className="dps-heading">
-            <span className="dps-eyebrow"><Sparkles size={14} strokeWidth={2.3} /> Workflow</span>
-            <h2 className="dps-title">How I Ship Data Products</h2>
-            <p className="dps-sub">From raw data to dashboards, models, automation, and measurable business impact.</p>
-          </div>
-
-          <div className="dps-toggle" role="tablist" aria-label="View mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'recruiter'}
-              className={mode === 'recruiter' ? 'on' : ''}
-              onClick={() => setMode('recruiter')}
-            >
-              <Briefcase size={15} strokeWidth={2.2} /> Recruiter
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'technical'}
-              className={mode === 'technical' ? 'on' : ''}
-              onClick={() => setMode('technical')}
-            >
-              <Code2 size={15} strokeWidth={2.2} /> Technical
-            </button>
-            <motion.span
-              className="dps-toggle-ind"
-              animate={{ x: mode === 'recruiter' ? 0 : '100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            />
-          </div>
+        <div className={styles.header}>
+          <span className={styles.eyebrow}><Sparkles size={14} strokeWidth={2.3} /> Workflow</span>
+          <h2 className={styles.title}>How I Ship Data Products</h2>
+          <p className={styles.sub}>From raw data to dashboards, models, automation, and measurable business impact.</p>
         </div>
 
-        {/* WORKFLOW */}
-        <motion.div
-          className="dps-steps"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {/* horizontal pipeline (desktop/tablet) */}
-          <span className="dps-track" aria-hidden />
-          <span className="dps-trackFill" style={{ width: fillWidth }} aria-hidden />
-
-          {STAGES.map((stage, i) => (
-            <ProcessCard
-              key={stage.number}
-              stage={stage}
-              index={i}
-              isActive={i === active}
-              isDone={i < active}
-              onSelect={() => selectStage(i)}
-            />
-          ))}
-        </motion.div>
-
-        {/* CONTROLS: metric badges + simulation */}
-        <div className="dps-controls">
-          <div className="dps-badges">
-            {BADGES.map((b) => (
-              <MetricBadge key={b.label} label={b.label} active={activeBadge(b)} onClick={() => selectStage(b.stage)} />
-            ))}
-          </div>
-
-          <button type="button" className={`dps-sim ${simRunning ? 'running' : ''}`} onClick={startSim}>
-            {simRunning ? <Square size={15} strokeWidth={2.4} /> : <Play size={15} strokeWidth={2.4} />}
-            {simRunning ? 'Stop simulation' : 'Live Workflow Simulation'}
-          </button>
-        </div>
-
-        {/* SUCCESS MESSAGE */}
-        <AnimatePresence>
-          {shipped && (
+        {/* TWO-COLUMN LAYOUT: workflow journey (left) + dashboard box (right) */}
+        <div className={styles.layout}>
+          {/* LEFT — interactive vertical workflow */}
+          <div className={styles.left}>
             <motion.div
-              className="dps-shipped"
-              initial={{ opacity: 0, y: 12, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              className={styles.flow}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09 } } }}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.25 }}
             >
-              <CheckCircle2 size={18} strokeWidth={2.4} />
-              Data product shipped successfully.
+              <span className={styles.flowTrack} aria-hidden />
+              <motion.span
+                className={styles.flowFill}
+                animate={{ height: `${(active / (STAGES.length - 1)) * 100}%` }}
+                transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+                aria-hidden
+              />
+              {STAGES.map((stage, i) => (
+                <StageRow
+                  key={stage.number}
+                  stage={stage}
+                  isActive={i === active}
+                  isDone={i < active}
+                  onSelect={() => selectStage(i)}
+                />
+              ))}
             </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* DASHBOARD PANEL */}
-        <ImpactDashboard
-          stage={STAGES[active]}
-          mode={mode}
-          open={drawerOpen}
-          onToggle={() => setDrawerOpen((v) => !v)}
-        />
+            {/* metric badges */}
+            <div className={styles.badges}>
+              {BADGES.map((b) => (
+                <MetricBadge key={b.label} label={b.label} active={b.stage === active} onClick={() => selectStage(b.stage)} />
+              ))}
+            </div>
+
+            {/* simulation control */}
+            <button type="button" className={cx(styles.sim, simRunning && styles.running)} onClick={startSim}>
+              {simRunning ? <Square size={15} strokeWidth={2.4} /> : <Play size={15} strokeWidth={2.4} />}
+              {simRunning ? 'Stop simulation' : 'Live Workflow Simulation'}
+            </button>
+          </div>
+
+          {/* RIGHT — dashboard box */}
+          <div className={styles.right}>
+            <ImpactDashboard
+              stage={STAGES[active]}
+              index={active}
+              mode={mode}
+              setMode={setMode}
+              open={drawerOpen}
+              onToggle={() => setDrawerOpen((v) => !v)}
+              shipped={shipped}
+            />
+          </div>
+        </div>
       </div>
-
-      {/* ───────────────────────────── STYLES ───────────────────────────── */}
-      <style jsx>{`
-        .dps {
-          position: relative;
-          background: #0b0b0f;
-          color: #fff;
-          padding: 96px 6vw;
-          overflow: hidden;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        /* dotted data-grid + soft red glow */
-        .dps::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-          background-size: 22px 22px;
-          mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 100%);
-          pointer-events: none;
-        }
-        .dps::after {
-          content: '';
-          position: absolute;
-          top: -10%;
-          left: 50%;
-          width: 70vw;
-          height: 480px;
-          transform: translateX(-50%);
-          background: radial-gradient(circle, rgba(255, 43, 43, 0.16), transparent 65%);
-          filter: blur(40px);
-          pointer-events: none;
-        }
-        .dps-inner { position: relative; max-width: 1180px; margin: 0 auto; z-index: 1; }
-
-        /* HEADER */
-        .dps-header {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 28px;
-          margin-bottom: 56px;
-          flex-wrap: wrap;
-        }
-        .dps-eyebrow {
-          display: inline-flex; align-items: center; gap: 7px;
-          color: ${ACCENT}; font-size: 12.5px; font-weight: 700;
-          letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 14px;
-        }
-        .dps-title {
-          font-size: clamp(28px, 4vw, 46px); font-weight: 800;
-          letter-spacing: -0.025em; line-height: 1.05; margin: 0;
-          background: linear-gradient(180deg, #fff, #c7c7cf);
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .dps-sub {
-          margin-top: 14px; max-width: 560px; color: rgba(255, 255, 255, 0.55);
-          font-size: 15px; line-height: 1.6;
-        }
-
-        /* VIEW TOGGLE */
-        .dps-toggle {
-          position: relative; display: inline-flex; padding: 5px;
-          background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09);
-          border-radius: 14px; backdrop-filter: blur(10px); flex-shrink: 0;
-        }
-        .dps-toggle button {
-          position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px;
-          padding: 9px 16px; border: none; background: transparent; cursor: pointer;
-          color: rgba(255, 255, 255, 0.55); font-size: 13.5px; font-weight: 600;
-          border-radius: 10px; transition: color 0.25s; font-family: inherit;
-        }
-        .dps-toggle button.on { color: #fff; }
-        .dps-toggle-ind {
-          position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px);
-          background: linear-gradient(135deg, rgba(255, 43, 43, 0.9), rgba(255, 90, 90, 0.8));
-          border-radius: 10px; box-shadow: 0 0 20px rgba(255, 43, 43, 0.5); z-index: 0;
-        }
-
-        /* WORKFLOW STEPS */
-        .dps-steps {
-          position: relative;
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 14px;
-          margin-bottom: 30px;
-        }
-        .dps-track, .dps-trackFill {
-          position: absolute; top: 31px; left: 10%; height: 2px; border-radius: 2px;
-        }
-        .dps-track { right: 10%; background: rgba(255, 255, 255, 0.1); }
-        .dps-trackFill {
-          background: linear-gradient(90deg, ${ACCENT}, #ff6b6b);
-          box-shadow: 0 0 14px rgba(255, 43, 43, 0.7);
-          transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .dps-step { position: relative; display: flex; flex-direction: column; align-items: center; }
-        .dps-seg { display: none; }
-
-        .dps-nodeWrap {
-          position: relative; z-index: 2; height: 64px; display: flex; align-items: center; justify-content: center;
-          background: none; border: none; cursor: pointer; padding: 0;
-        }
-        .dps-node {
-          display: flex; align-items: center; justify-content: center;
-          width: 54px; height: 54px; border-radius: 50%;
-          background: rgba(20, 20, 26, 0.9); border: 1px solid rgba(255, 255, 255, 0.12);
-          color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(8px); transition: color 0.3s, border-color 0.3s;
-        }
-        .dps-step.done .dps-node { color: #fff; border-color: rgba(255, 43, 43, 0.45); }
-        .dps-step.active .dps-node {
-          color: #fff; border-color: ${ACCENT};
-          background: linear-gradient(135deg, rgba(255, 43, 43, 0.28), rgba(255, 43, 43, 0.08));
-        }
-
-        .dps-card {
-          width: 100%; margin-top: 12px; text-align: center; cursor: pointer;
-          display: flex; flex-direction: column; align-items: center; gap: 4px;
-          padding: 16px 12px 18px; border-radius: 16px;
-          background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(12px); font-family: inherit; transition: border-color 0.3s, background 0.3s;
-        }
-        .dps-step.active .dps-card {
-          border-color: ${ACCENT};
-          background: rgba(255, 43, 43, 0.07);
-          box-shadow: 0 0 0 1px rgba(255, 43, 43, 0.4), 0 14px 40px rgba(255, 43, 43, 0.16);
-        }
-        .dps-card-num { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255, 43, 43, 0.85); }
-        .dps-card-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
-        .dps-card-tag { font-size: 12px; color: rgba(255, 255, 255, 0.45); }
-        .dps-card-metric {
-          margin-top: 6px; font-size: 12.5px; font-weight: 700; color: #fff;
-          padding: 4px 10px; border-radius: 999px; background: rgba(255, 43, 43, 0.12);
-          border: 1px solid rgba(255, 43, 43, 0.25);
-        }
-
-        /* CONTROLS */
-        .dps-controls {
-          display: flex; align-items: center; justify-content: space-between;
-          gap: 18px; flex-wrap: wrap; margin-bottom: 26px;
-        }
-        .dps-badges { display: flex; flex-wrap: wrap; gap: 10px; }
-        .dps-badge {
-          display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
-          padding: 9px 15px; border-radius: 999px; font-family: inherit;
-          font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.7);
-          background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(8px); transition: color 0.25s, border-color 0.25s, background 0.25s;
-        }
-        .dps-badge :global(svg) { color: ${ACCENT}; }
-        .dps-badge:hover { color: #fff; border-color: rgba(255, 43, 43, 0.45); }
-        .dps-badge.on {
-          color: #fff; border-color: ${ACCENT};
-          background: linear-gradient(135deg, rgba(255, 43, 43, 0.22), rgba(255, 43, 43, 0.08));
-        }
-
-        .dps-sim {
-          display: inline-flex; align-items: center; gap: 9px; cursor: pointer; flex-shrink: 0;
-          padding: 11px 18px; border-radius: 12px; font-family: inherit;
-          font-size: 13.5px; font-weight: 700; color: #fff;
-          background: linear-gradient(135deg, ${ACCENT}, #ff5b5b);
-          border: 1px solid rgba(255, 43, 43, 0.6); box-shadow: 0 8px 30px rgba(255, 43, 43, 0.32);
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .dps-sim:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(255, 43, 43, 0.45); }
-        .dps-sim.running {
-          background: rgba(255, 255, 255, 0.06); color: #fff;
-          border-color: rgba(255, 255, 255, 0.18); box-shadow: none;
-        }
-
-        .dps-shipped {
-          display: flex; align-items: center; gap: 10px; width: fit-content;
-          margin: 0 auto 26px; padding: 12px 20px; border-radius: 12px;
-          font-size: 14.5px; font-weight: 700; color: #fff;
-          background: linear-gradient(135deg, rgba(255, 43, 43, 0.2), rgba(255, 43, 43, 0.06));
-          border: 1px solid ${ACCENT}; box-shadow: 0 0 34px rgba(255, 43, 43, 0.4);
-        }
-        .dps-shipped :global(svg) { color: ${ACCENT}; }
-
-        /* DASHBOARD PANEL */
-        .dps-dash {
-          border-radius: 22px; padding: 30px;
-          background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.09);
-          backdrop-filter: blur(16px); box-shadow: 0 0 0 1px rgba(255, 43, 43, 0.12), 0 30px 80px rgba(0, 0, 0, 0.4);
-        }
-        .dps-dash-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 34px; }
-        .dps-dash-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-        .dps-dash-icon {
-          display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
-          border-radius: 13px; color: ${ACCENT};
-          background: linear-gradient(135deg, rgba(255, 43, 43, 0.22), rgba(255, 43, 43, 0.05));
-          border: 1px solid rgba(255, 43, 43, 0.3); flex-shrink: 0;
-        }
-        .dps-dash-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 43, 43, 0.85); }
-        .dps-dash-title { margin: 2px 0 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
-        .dps-dash-desc { color: rgba(255, 255, 255, 0.62); font-size: 15px; line-height: 1.65; margin: 0 0 18px; }
-
-        .dps-impact {
-          display: flex; align-items: center; gap: 9px; padding: 12px 14px; margin-bottom: 22px;
-          border-radius: 12px; background: rgba(255, 43, 43, 0.06); border: 1px solid rgba(255, 43, 43, 0.2);
-          color: #fff; font-size: 14px; font-weight: 600;
-        }
-        .dps-impact :global(svg) { color: ${ACCENT}; flex-shrink: 0; }
-
-        .dps-group { margin-bottom: 18px; }
-        .dps-group-label {
-          display: block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em;
-          text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 10px;
-        }
-        .dps-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-        .dps-pill {
-          display: inline-flex; cursor: pointer; padding: 7px 13px; border-radius: 999px;
-          font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, 0.8);
-          background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-          transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
-        }
-        .dps-pill:hover {
-          color: #fff; border-color: ${ACCENT}; background: rgba(255, 43, 43, 0.12);
-          box-shadow: 0 0 18px rgba(255, 43, 43, 0.35);
-        }
-
-        .dps-details-btn {
-          display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px;
-          padding: 10px 16px; border-radius: 11px; font-family: inherit; font-size: 13.5px; font-weight: 700;
-          color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 43, 43, 0.4);
-          transition: background 0.2s, box-shadow 0.2s;
-        }
-        .dps-details-btn:hover { background: rgba(255, 43, 43, 0.12); box-shadow: 0 0 20px rgba(255, 43, 43, 0.3); }
-        .dps-details-btn :global(svg) { color: ${ACCENT}; }
-
-        .dps-drawer { list-style: none; margin: 16px 0 0; padding: 0; overflow: hidden; }
-        .dps-drawer li {
-          display: flex; gap: 10px; padding: 11px 0; color: rgba(255, 255, 255, 0.72);
-          font-size: 14px; line-height: 1.55; border-top: 1px solid rgba(255, 255, 255, 0.07);
-        }
-        .dps-drawer li :global(svg) { color: ${ACCENT}; flex-shrink: 0; margin-top: 3px; }
-
-        /* DASHBOARD SIDE */
-        .dps-dash-side {
-          border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 30px;
-          display: flex; flex-direction: column;
-        }
-        .dps-metric { margin-bottom: 22px; }
-        .dps-metric-value {
-          display: block; font-size: clamp(34px, 4vw, 46px); font-weight: 800; letter-spacing: -0.03em; line-height: 1;
-          background: linear-gradient(135deg, #fff, ${ACCENT});
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .dps-metric-label { display: block; margin-top: 8px; font-size: 13.5px; color: rgba(255, 255, 255, 0.5); font-weight: 500; }
-        .dps-chart-head {
-          display: flex; align-items: center; justify-content: space-between;
-          font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.55); margin-bottom: 6px;
-        }
-        .dps-chart-head :global(svg) { color: ${ACCENT}; }
-        .dps-chartWrap :global(.recharts-area-curve) { filter: drop-shadow(0 0 6px rgba(255, 43, 43, 0.7)); }
-
-        .dps-tip {
-          display: flex; flex-direction: column; gap: 2px; padding: 8px 11px; border-radius: 9px;
-          background: rgba(12, 12, 16, 0.92); border: 1px solid rgba(255, 43, 43, 0.4);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-        .dps-tip-x { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
-        .dps-tip-v { font-size: 15px; font-weight: 700; color: ${ACCENT}; }
-
-        /* ───── TABLET: cards wrap to two rows, dashboard full width ───── */
-        @media (max-width: 900px) {
-          .dps-dash-grid { grid-template-columns: 1fr; gap: 26px; }
-          .dps-dash-side { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-left: 0; padding-top: 24px; }
-          .dps-steps { grid-template-columns: repeat(3, 1fr); gap: 18px 14px; }
-          .dps-track, .dps-trackFill { display: none; }
-        }
-
-        /* ───── MOBILE: vertical interactive timeline ───── */
-        @media (max-width: 620px) {
-          .dps { padding: 72px 5vw; }
-          .dps-header { flex-direction: column; align-items: stretch; }
-          .dps-toggle { align-self: flex-start; }
-          .dps-steps { grid-template-columns: 1fr; gap: 0; }
-          .dps-track, .dps-trackFill { display: none; }
-
-          .dps-step { flex-direction: row; align-items: stretch; gap: 16px; padding-bottom: 14px; }
-          .dps-seg {
-            display: block; position: absolute; left: 31px; top: 0; bottom: 0; width: 2px;
-            background: rgba(255, 255, 255, 0.12);
-          }
-          .dps-seg.lit { background: linear-gradient(180deg, ${ACCENT}, #ff6b6b); box-shadow: 0 0 12px rgba(255, 43, 43, 0.6); }
-          .dps-nodeWrap { height: auto; align-items: flex-start; padding-top: 4px; }
-          .dps-card {
-            margin-top: 0; text-align: left; align-items: flex-start; flex: 1;
-            display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'num title metric' 'tag tag metric';
-            column-gap: 10px; row-gap: 2px;
-          }
-          .dps-card-num { grid-area: num; }
-          .dps-card-title { grid-area: title; }
-          .dps-card-tag { grid-area: tag; }
-          .dps-card-metric { grid-area: metric; align-self: center; margin-top: 0; }
-          .dps-controls { flex-direction: column; align-items: stretch; }
-          .dps-sim { justify-content: center; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .dps *, .dps::before, .dps::after { animation: none !important; transition: none !important; }
-        }
-      `}</style>
     </motion.section>
   );
 }

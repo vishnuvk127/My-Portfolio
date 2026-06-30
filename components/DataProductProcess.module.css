@@ -1,0 +1,327 @@
+/* DataProductProcess.module.css — styles for the "How I Ship Data Products"
+   interactive section. Two-column dashboard: vertical workflow journey on the
+   LEFT, live dashboard box (with the Recruiter/Technical toggle) on the RIGHT. */
+
+.section {
+  position: relative;
+  background: #0b0b0f;
+  color: #fff;
+  padding: 96px 6vw;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+/* dotted data-grid + soft red glow */
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 25%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 25%, #000 40%, transparent 100%);
+  pointer-events: none;
+}
+.section::after {
+  content: '';
+  position: absolute;
+  top: -8%;
+  right: 6%;
+  width: 60vw;
+  height: 520px;
+  background: radial-gradient(circle, rgba(255, 43, 43, 0.16), transparent 65%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+.inner { position: relative; max-width: 1200px; margin: 0 auto; z-index: 1; }
+
+/* HEADER */
+.header { margin-bottom: 46px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: #ff2b2b; font-size: 12.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 14px;
+}
+.title {
+  font-size: clamp(28px, 4vw, 46px); font-weight: 800;
+  letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  background: linear-gradient(180deg, #fff, #c7c7cf);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sub {
+  margin-top: 14px; max-width: 560px; color: rgba(255, 255, 255, 0.55);
+  font-size: 15px; line-height: 1.6;
+}
+
+/* TWO-COLUMN LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 36px;
+  align-items: start;
+}
+.left { min-width: 0; }
+.right { position: sticky; top: 24px; align-self: start; min-width: 0; }
+
+/* ───── LEFT: vertical workflow journey ───── */
+.flow { position: relative; display: flex; flex-direction: column; gap: 14px; }
+.flowTrack {
+  position: absolute; left: 37px; top: 30px; bottom: 30px; width: 2px;
+  background: rgba(255, 255, 255, 0.1); border-radius: 2px; z-index: 0;
+}
+.flowFill {
+  position: absolute; left: 37px; top: 30px; width: 2px; min-height: 0;
+  background: linear-gradient(180deg, #ff2b2b, #ff6b6b);
+  box-shadow: 0 0 14px rgba(255, 43, 43, 0.7); border-radius: 2px; z-index: 0;
+}
+
+.row {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 14px;
+  width: 100%; text-align: left; cursor: pointer; opacity: 0.7;
+  padding: 14px 16px; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px); font-family: inherit;
+  transition: border-color 0.3s, background 0.3s, opacity 0.3s;
+}
+.row:hover { opacity: 1; border-color: rgba(255, 43, 43, 0.4); }
+.rowDone { opacity: 0.92; }
+.rowActive {
+  opacity: 1; border-color: #ff2b2b; background: rgba(255, 43, 43, 0.06);
+  box-shadow: 0 0 0 1px rgba(255, 43, 43, 0.35), 0 14px 40px rgba(255, 43, 43, 0.12);
+}
+
+.rowNode {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(20, 20, 26, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6); transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.rowDone .rowNode { color: #fff; border-color: rgba(255, 43, 43, 0.45); }
+.rowActive .rowNode {
+  color: #fff; border-color: #ff2b2b;
+  background: linear-gradient(135deg, rgba(255, 43, 43, 0.32), rgba(255, 43, 43, 0.1));
+  box-shadow: 0 0 0 4px rgba(255, 43, 43, 0.15), 0 0 26px rgba(255, 43, 43, 0.5);
+}
+.pulse { position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #ff2b2b; pointer-events: none; }
+
+.rowBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rowTop { display: flex; align-items: baseline; gap: 8px; }
+.rowNum { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255, 43, 43, 0.85); }
+.rowTitle { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+.rowTag { font-size: 12.5px; color: rgba(255, 255, 255, 0.5); }
+.rowMetric {
+  font-size: 12.5px; font-weight: 700; color: #fff; white-space: nowrap;
+  padding: 5px 11px; border-radius: 999px;
+  background: rgba(255, 43, 43, 0.12); border: 1px solid rgba(255, 43, 43, 0.25);
+}
+
+/* metric badges */
+.badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 9px 15px; border-radius: 999px; font-family: inherit;
+  font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px); transition: color 0.25s, border-color 0.25s, background 0.25s;
+}
+.badge svg { color: #ff2b2b; }
+.badge:hover { color: #fff; border-color: rgba(255, 43, 43, 0.45); }
+.badge.on {
+  color: #fff; border-color: #ff2b2b;
+  background: linear-gradient(135deg, rgba(255, 43, 43, 0.22), rgba(255, 43, 43, 0.08));
+}
+
+/* simulation control */
+.sim {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer; width: fit-content;
+  margin-top: 18px; padding: 11px 18px; border-radius: 12px; font-family: inherit;
+  font-size: 13.5px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, #ff2b2b, #ff5b5b);
+  border: 1px solid rgba(255, 43, 43, 0.6); box-shadow: 0 8px 30px rgba(255, 43, 43, 0.32);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.sim:hover { transform: translateY(-2px); box-shadow: 0 12px 38px rgba(255, 43, 43, 0.45); }
+.sim.running {
+  background: rgba(255, 255, 255, 0.06); color: #fff;
+  border-color: rgba(255, 255, 255, 0.18); box-shadow: none;
+}
+
+/* ───── RIGHT: dashboard box ───── */
+.panel {
+  position: relative; border-radius: 24px; padding: 26px;
+  background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 0 1px rgba(255, 43, 43, 0.12), 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+.panelTop {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.panelId { display: flex; align-items: center; gap: 11px; }
+.liveDot {
+  width: 9px; height: 9px; border-radius: 50%; background: #ff2b2b; flex-shrink: 0;
+  animation: livePulse 1.8s infinite;
+}
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 43, 43, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0); }
+}
+.panelKicker { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255, 43, 43, 0.85); }
+.panelStage { font-size: 14px; color: rgba(255, 255, 255, 0.5); margin-top: 2px; }
+.panelStage strong { color: #fff; font-weight: 800; }
+
+/* view toggle (docked top-right of the box) */
+.toggle {
+  position: relative; display: inline-flex; padding: 5px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px; backdrop-filter: blur(10px); flex-shrink: 0;
+}
+.toggle button {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border: none; background: transparent; cursor: pointer;
+  color: rgba(255, 255, 255, 0.55); font-size: 13px; font-weight: 600;
+  border-radius: 9px; transition: color 0.25s; font-family: inherit;
+}
+.toggle button.on { color: #fff; }
+.toggleInd {
+  position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px);
+  background: linear-gradient(135deg, rgba(255, 43, 43, 0.9), rgba(255, 90, 90, 0.8));
+  border-radius: 9px; box-shadow: 0 0 20px rgba(255, 43, 43, 0.5); z-index: 0;
+}
+
+/* progress bar */
+.progress {
+  position: relative; height: 4px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08); overflow: hidden; margin-bottom: 20px;
+}
+.progressFill {
+  position: absolute; left: 0; top: 0; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #ff2b2b, #ff6b6b); box-shadow: 0 0 12px rgba(255, 43, 43, 0.6);
+}
+
+/* shipped toast */
+.shipped {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  padding: 11px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, rgba(255, 43, 43, 0.2), rgba(255, 43, 43, 0.06));
+  border: 1px solid #ff2b2b; box-shadow: 0 0 34px rgba(255, 43, 43, 0.4);
+}
+.shipped svg { color: #ff2b2b; flex-shrink: 0; }
+
+/* panel body */
+.panelBody { min-width: 0; }
+.pHead { display: flex; align-items: center; gap: 13px; margin-bottom: 14px; }
+.pIcon {
+  display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
+  border-radius: 13px; color: #ff2b2b; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(255, 43, 43, 0.22), rgba(255, 43, 43, 0.05));
+  border: 1px solid rgba(255, 43, 43, 0.3);
+}
+.pKicker { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 43, 43, 0.85); }
+.pTitle { margin: 2px 0 0; font-size: 23px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.pDesc { color: rgba(255, 255, 255, 0.62); font-size: 14.5px; line-height: 1.6; margin: 0 0 20px; }
+
+/* big metric + KPI chips */
+.metricRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
+.metricMain { min-width: 0; }
+.metricValue {
+  display: block; font-size: clamp(32px, 4.4vw, 44px); font-weight: 800; letter-spacing: -0.03em; line-height: 1;
+  background: linear-gradient(135deg, #fff, #ff2b2b);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.metricLabel { display: block; margin-top: 7px; font-size: 13px; color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+.stats { display: flex; gap: 10px; }
+.stat {
+  display: flex; flex-direction: column; align-items: center; min-width: 56px;
+  padding: 9px 10px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.statNum { font-size: 17px; font-weight: 800; color: #fff; line-height: 1; }
+.statLbl { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.45); margin-top: 5px; }
+
+/* chart */
+.chartHead {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55); margin-bottom: 8px;
+}
+.chartHead svg { color: #ff2b2b; }
+.chartWrap {
+  padding: 10px 6px 4px; border-radius: 14px; margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.chartWrap :global(.recharts-area-curve) { filter: drop-shadow(0 0 6px rgba(255, 43, 43, 0.7)); }
+.tip {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 11px; border-radius: 9px;
+  background: rgba(12, 12, 16, 0.92); border: 1px solid rgba(255, 43, 43, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.tipX { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+.tipV { font-size: 15px; font-weight: 700; color: #ff2b2b; }
+
+/* impact */
+.impact {
+  display: flex; align-items: center; gap: 9px; padding: 12px 14px; margin-bottom: 20px;
+  border-radius: 12px; background: rgba(255, 43, 43, 0.06); border: 1px solid rgba(255, 43, 43, 0.2);
+  color: #fff; font-size: 14px; font-weight: 600;
+}
+.impact svg { color: #ff2b2b; flex-shrink: 0; }
+
+/* skills + tech */
+.group { margin-bottom: 18px; }
+.groupLabel {
+  display: block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 10px;
+}
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  display: inline-flex; cursor: pointer; padding: 7px 13px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.pill:hover {
+  color: #fff; border-color: #ff2b2b; background: rgba(255, 43, 43, 0.12);
+  box-shadow: 0 0 18px rgba(255, 43, 43, 0.35);
+}
+
+/* details drawer */
+.detailsBtn {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px;
+  padding: 10px 16px; border-radius: 11px; font-family: inherit; font-size: 13.5px; font-weight: 700;
+  color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 43, 43, 0.4);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.detailsBtn:hover { background: rgba(255, 43, 43, 0.12); box-shadow: 0 0 20px rgba(255, 43, 43, 0.3); }
+.detailsBtn svg { color: #ff2b2b; }
+.drawer { list-style: none; margin: 16px 0 0; padding: 0; overflow: hidden; }
+.drawer li {
+  display: flex; gap: 10px; padding: 11px 0; color: rgba(255, 255, 255, 0.72);
+  font-size: 14px; line-height: 1.55; border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.drawer li svg { color: #ff2b2b; flex-shrink: 0; margin-top: 3px; }
+
+/* ───── TABLET / STACK: dashboard drops below the workflow ───── */
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; gap: 28px; }
+  .right { position: static; }
+}
+
+/* ───── MOBILE ───── */
+@media (max-width: 620px) {
+  .section { padding: 72px 5vw; }
+  .panel { padding: 20px; }
+  .panelTop { flex-direction: column; align-items: stretch; }
+  .toggle { align-self: flex-start; }
+  .metricRow { align-items: flex-start; }
+  .stats { flex-wrap: wrap; }
+  .row { padding: 12px 13px; gap: 12px; grid-template-columns: 40px 1fr auto; }
+  .rowNode { width: 40px; height: 40px; }
+  .flowTrack, .flowFill { left: 33px; }
+  .sim { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section *, .section::before, .section::after, .liveDot { animation: none !important; transition: none !important; }
+}

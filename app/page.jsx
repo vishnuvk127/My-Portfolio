@@ -103,34 +103,39 @@ const skills = [
   },
 ];
 
+/* Cards show a condensed "skills gained + tech stack" view rather than
+   the full resume bullet text — keeps the timeline scannable and avoids
+   duplicating the resume verbatim. */
 const experience = [
   {
     role: 'Data Analyst',
     company: 'PNC Financial Services · Dallas, Texas (Remote)',
     period: 'Jan 2024 – Present',
     current: true,
-    bullets: [
-      'Overhauled AWS Glue and Snowflake data pipelines feeding Pega risk models (PD, LGD, EAD), accelerating credit decisioning from days to hours.',
-      'Implemented LightGBM and deep neural network credit risk scoring models using Amazon Redshift — improved validation ROC-AUC from 0.76 to 0.89.',
-      'Developed stochastic CECL and CCAR models with NLP-derived loan covenant risk signals, mitigating $15M in annual portfolio credit losses.',
-      'Automated transactional anomaly detection for Enterprise Fraud Organization using LSTMs and Factorization Machines — reduced false-positive fraud alerts by 30%.',
-      'Drove a 30% increase in risk-dashboard engagement via Power BI row-level security, CI/CD pipelines, and optimised DAX.',
-      'Instituted Ongoing Performance Monitoring and automated back-testing via Git and Confluence ensuring strict SR 11-7 model governance.',
+    skillsGained: [
+      'Credit Risk Analytics',
+      'ETL Automation',
+      'Fraud Detection',
+      'Risk Dashboarding',
+      'Model Monitoring',
+      'Business Intelligence',
     ],
+    technologies: ['SQL', 'Python', 'AWS Glue', 'Snowflake', 'Amazon Redshift', 'Power BI', 'LightGBM', 'LSTM'],
   },
   {
     role: 'Data Analyst',
     company: 'LTI Mindtree · Andhra Pradesh, India',
     period: 'Jan 2021 – Dec 2022',
     current: false,
-    bullets: [
-      'Unified 500GB+ of disparate data across SQL Server, Azure SQL DB, and Oracle using Azure Data Factory and Airbyte — accelerated dashboard load times by 30%.',
-      'Reduced downstream MLOps rework by 70% and accelerated data handoffs by 40% through normalised modular ETL outputs.',
-      'Improved sales forecast accuracy by 22% using ARIMA-based models in Azure Synapse for executive planning dashboards.',
-      'Architected customer-behaviour segmentation models using clustering and XGBoost — improved campaign response by 60%.',
-      'Enabled 60+ cross-functional leaders to track KPIs, forecast accuracy, and campaign ROI through Power BI and Tableau dashboards.',
-      'Isolated post-lunch performance shifts via hypothesis testing in SAS and SPSS to quantify a 15% regional sales increase.',
+    skillsGained: [
+      'Data Cleaning',
+      'ETL Pipeline Development',
+      'Sales Forecasting',
+      'Customer Segmentation',
+      'KPI Reporting',
+      'Statistical Analysis',
     ],
+    technologies: ['SQL Server', 'Azure SQL', 'Oracle', 'Azure Data Factory', 'Airbyte', 'Azure Synapse', 'Power BI', 'Tableau', 'SAS', 'SPSS'],
   },
 ];
 
@@ -255,7 +260,7 @@ export default function HomePage() {
           <h2 className={styles.secTitle}>Where I&apos;ve built things.</h2>
         </Reveal>
         <div className={styles.timeline}>
-          {experience.map(({ role, company, period, current, bullets }, i) => (
+          {experience.map(({ role, company, period, current, skillsGained, technologies }, i) => (
             <SlideIn key={company} direction={i === 0 ? 'left' : 'right'} className={styles.tlItem}>
               <div className={styles.tlDot} />
               <div className={styles.tlMeta}>
@@ -264,9 +269,18 @@ export default function HomePage() {
               </div>
               <KineticHeading as="h3">{role}</KineticHeading>
               <div className={styles.tlCompany}>{company}</div>
-              <ul className={styles.tlBullets}>
-                {bullets.map((b, j) => <li key={j}>{b}</li>)}
-              </ul>
+              <div className={styles.tlSkills}>
+                <span className={styles.tlSectionLabel}>Skills Gained:</span>
+                <ul className={styles.tlSkillList}>
+                  {skillsGained.map((s, j) => <li key={j}>{s}</li>)}
+                </ul>
+              </div>
+              <div className={styles.tlTech}>
+                <span className={styles.tlSectionLabel}>Technologies:</span>
+                <div className={styles.tlTechTags}>
+                  {technologies.map((t, j) => <span key={j} className={styles.tlTechTag}>{t}</span>)}
+                </div>
+              </div>
             </SlideIn>
           ))}
           <TimelineFX dotClass={styles.tlDot} />

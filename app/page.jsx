@@ -12,7 +12,7 @@ import Marquee from '@/components/Marquee';
 import PhotoFrame from '@/components/PhotoFrame';
 import SlideIn from '@/components/SlideIn';
 import ProjectCarousel from '@/components/ProjectCarousel';
-import DataProductProcess from '@/components/DataProductProcess';
+import DataProductProcessSection from '@/components/DataProductProcessSection';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -364,7 +364,7 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW I SHIP DATA PRODUCTS ── */}
-      <DataProductProcess />
+      <DataProductProcessSection />
 
       {/* ── EDUCATION & CERTS ── */}
       <section id="education" className={styles.education}>

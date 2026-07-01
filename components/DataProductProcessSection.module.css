@@ -203,6 +203,64 @@
   50% { box-shadow: 0 0 0 8px rgba(255, 43, 43, 0.10), 0 0 26px rgba(255, 43, 43, 0.85); }
 }
 
+/* ─────────── WORKFLOW WRAPPER + PER-STAGE STAT REVEAL ─────────── */
+.workflow { position: relative; }
+.cardCell { position: relative; display: flex; flex-direction: column; }
+.statInlineMobile { display: none; }
+
+.statRow {
+  position: relative; display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 14px; align-items: start; justify-items: center;
+  min-height: 150px; margin-top: 10px;
+}
+.statHint {
+  grid-column: 1 / -1; align-self: center; margin: 0; text-align: center;
+  color: rgba(255, 255, 255, 0.32); font-size: 13px; font-weight: 500;
+}
+.statCell { position: relative; display: flex; flex-direction: column; align-items: center; }
+.statCellDouble { max-width: 340px; }
+
+/* connector wire (single stat) — magnetic pulse flow */
+.wire {
+  width: 2px; height: 40px; border-radius: 2px; margin-bottom: 8px;
+  background: linear-gradient(180deg, rgba(255, 43, 43, 0.12), #ff2b2b);
+  background-size: 100% 200%;
+  box-shadow: 0 0 12px rgba(255, 43, 43, 0.75);
+  animation: wireFlow 1.4s linear infinite;
+}
+@keyframes wireFlow { 0% { background-position: 0 200%; } 100% { background-position: 0 0%; } }
+
+/* branching connector (Stage 2 → two stats) */
+.branch { width: 100%; max-width: 300px; height: 46px; margin-bottom: 4px; }
+.branchPath {
+  fill: none; stroke: #ff2b2b; stroke-width: 2; stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255, 43, 43, 0.7));
+  stroke-dasharray: 7 6; animation: branchFlow 1s linear infinite;
+}
+@keyframes branchFlow { to { stroke-dashoffset: -13; } }
+
+.statBoxes { display: flex; gap: 14px; justify-content: center; }
+.statBox {
+  position: relative; display: flex; flex-direction: column; gap: 3px;
+  min-width: 148px; padding: 14px 16px; border-radius: 16px;
+  background: rgba(255, 43, 43, 0.06); border: 1px solid rgba(255, 43, 43, 0.42);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  animation: statPop 0.8s ease-out;
+}
+@keyframes statPop {
+  0% { box-shadow: 0 0 0 rgba(255, 43, 43, 0); }
+  30% { box-shadow: 0 0 34px rgba(255, 43, 43, 0.6); }
+  100% { box-shadow: 0 0 16px rgba(255, 43, 43, 0.18); }
+}
+.statBoxIcon { display: inline-flex; color: #ff2b2b; margin-bottom: 2px; }
+.statBoxValue {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+  background: linear-gradient(135deg, #fff, #ff2b2b);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.statBoxLabel { font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, 0.72); }
+.statBoxStage { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 43, 43, 0.75); margin-top: 2px; }
+
 /* ─────────── METRIC BADGES ─────────── */
 .badges { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
 .badge {
@@ -418,6 +476,8 @@
   .headRight { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
   .cards { grid-template-columns: repeat(3, 1fr); }
   .pipeline { display: none; }
+  .statRow { grid-template-columns: 1fr; min-height: 0; margin-top: 20px; }
+  .statCell { grid-column: 1 / -1 !important; }
   .panelGrid { grid-template-columns: 1fr; gap: 26px; }
   .panelSide { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-left: 0; padding-top: 24px; }
 }
@@ -437,6 +497,12 @@
   }
   .cardActive::before { border-color: #ff2b2b; box-shadow: 0 0 12px rgba(255, 43, 43, 0.7); background: #ff2b2b; }
   .cardTilt { transform: none; } /* no tilt on touch */
+  .statRow { display: none; }
+  .statInlineMobile { display: block; }
+  .statCellMobile { margin-top: 4px; align-items: stretch; }
+  .statCellMobile .statBoxes { flex-direction: column; align-items: stretch; }
+  .statCellMobile .statBox { width: 100%; min-width: 0; }
+  .statCellMobile .wire { align-self: center; }
   .badges { display: grid; grid-template-columns: 1fr 1fr; }
   .badge { justify-content: center; }
   .simBar { flex-direction: column; align-items: stretch; text-align: center; }

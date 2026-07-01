@@ -2,23 +2,30 @@
 
 /**
  * DataProductProcessSection — "How I Ship Data Products"
- * A premium, interactive dark analytics-dashboard section for a
- * Data Analyst / AI-ML Engineer portfolio.
+ * Premium interactive dark analytics-dashboard section.
  *
  * Stack: Next.js (App Router) · JavaScript · CSS Modules ·
- *        Framer Motion · Recharts · Lucide React
- * Install: npm install framer-motion recharts lucide-react
+ *        Framer Motion · Recharts · Lucide React · React Icons (Simple Icons)
+ * Install: npm install framer-motion recharts lucide-react react-icons
  *
- * All styling lives in DataProductProcessSection.module.css.
+ * Recruiter View and Technical View render fully distinct content, and every
+ * Skills Gained / Technologies Used item shows a matching icon/logo.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Target, Database, Brain, BarChart3, Rocket,
-  Play, Square, Sparkles, CheckCircle2, ChevronDown,
-  ArrowUpRight, Briefcase, Code2, Activity, Wrench, Lightbulb,
+  Play, Square, Sparkles, CheckCircle2, ChevronDown, ArrowUpRight,
+  Briefcase, BriefcaseBusiness, Code2, Activity, Gauge, ClipboardList,
+  FileCheck, Users, Workflow, Filter, ShieldCheck, LineChart, Settings,
+  Sigma, Presentation, PieChart, GitBranch, Cog, TrendingUp, Cloud,
+  FileSpreadsheet, Boxes, Layers,
 } from 'lucide-react';
+import {
+  SiPython, SiSnowflake, SiApacheairflow, SiScikitlearn, SiPandas, SiNumpy,
+  SiGit, SiJira, SiConfluence, SiPostgresql, SiMysql,
+} from 'react-icons/si';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
@@ -28,7 +35,73 @@ const cx = (...c) => c.filter(Boolean).join(' ');
 const ACCENT = '#ff2b2b';
 
 /* ──────────────────────────────────────────────────────────────────────────
-   DATA — single source of truth
+   ICON MAPS
+   Skills → Lucide icons (fallback: Layers)
+   Technologies → Simple Icons logos where available, else clean Lucide
+   semantic icons (fallback: Code2). Everything renders in monochrome and
+   inherits the pill's colour (red / white), never brand colours.
+   ────────────────────────────────────────────────────────────────────────── */
+const skillIconMap = {
+  'Business Analysis': BriefcaseBusiness,
+  'KPI Definition': Gauge,
+  'Requirement Gathering': ClipboardList,
+  'Data Validation': FileCheck,
+  'Stakeholder Communication': Users,
+  'SQL Development': Database,
+  'Python Automation': Code2,
+  'ETL Pipeline Design': Workflow,
+  'Data Cleaning': Filter,
+  'Data Quality Control': ShieldCheck,
+  'Workflow Automation': Workflow,
+  'Machine Learning': Brain,
+  'Forecasting': LineChart,
+  'Risk Scoring': ShieldCheck,
+  'Feature Engineering': Settings,
+  'Model Validation': FileCheck,
+  'Statistical Analysis': Sigma,
+  'Dashboard Design': BarChart3,
+  'KPI Reporting': Gauge,
+  'Data Storytelling': Presentation,
+  'DAX': Sigma,
+  'Executive Reporting': ClipboardList,
+  'Data Visualization': PieChart,
+  'Automation': Workflow,
+  'CI/CD': GitBranch,
+  'Model Monitoring': Activity,
+  'Documentation': FileCheck,
+  'Workflow Scheduling': Cog,
+  'Production Handoff': Rocket,
+};
+
+const techIconMap = {
+  JIRA: SiJira,
+  Confluence: SiConfluence,
+  Excel: FileSpreadsheet,        // Simple Icons dropped the Excel logo
+  SQL: Database,
+  Python: SiPython,
+  'AWS Glue': Cloud,             // Simple Icons dropped the AWS logo
+  Snowflake: SiSnowflake,
+  Airflow: SiApacheairflow,
+  'Scikit-learn': SiScikitlearn,
+  Pandas: SiPandas,
+  NumPy: SiNumpy,
+  XGBoost: Boxes,
+  LightGBM: Boxes,
+  ARIMA: LineChart,
+  'Power BI': BarChart3,         // Simple Icons dropped the Power BI logo
+  Tableau: PieChart,            // Simple Icons dropped the Tableau logo
+  DAX: Sigma,
+  Git: SiGit,
+  'CI/CD': GitBranch,
+  PostgreSQL: SiPostgresql,
+  MySQL: SiMysql,
+};
+
+const SKILL_FALLBACK = Layers;
+const TECH_FALLBACK = Code2;
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DATA — 5 stages, each with fully separate recruiter + technical content
    ────────────────────────────────────────────────────────────────────────── */
 const stages = [
   {
@@ -36,177 +109,239 @@ const stages = [
     title: 'Understand',
     Icon: Target,
     tagline: 'Frame the problem',
-    descRecruiter:
-      'Clarify the business problem, define KPIs, success metrics, users, and expected decision impact.',
-    descTechnical:
-      'Run discovery, translate ambiguous asks into measurable KPIs, define data contracts and acceptance criteria, and map metric trees to source-table grain.',
-    skills: ['Business Analysis', 'KPI Definition', 'Requirement Gathering'],
-    technologies: ['JIRA', 'Confluence', 'Excel', 'SQL'],
-    impact: 'Improved project clarity before development.',
     metricValue: '+35%',
     metricLabel: 'Requirements clarity',
-    whatIBuilt:
-      'Turned vague stakeholder requests into clearly defined KPIs, success metrics, and a documented scope.',
-    howISolved:
-      'Ran discovery sessions, built metric trees mapping each question to source data, and set acceptance criteria up front.',
-    businessImpact:
-      'Improved project clarity ~35% before development, heading off rework and scope creep.',
+    description: 'Clarify the business problem, define KPIs, success metrics, users, and expected decision impact.',
+    skills: ['Business Analysis', 'KPI Definition', 'Requirement Gathering', 'Data Validation', 'Stakeholder Communication'],
+    technologies: ['JIRA', 'Confluence', 'Excel', 'SQL'],
+    recruiter: {
+      headline: 'Turning unclear business needs into a clear analytics roadmap.',
+      summary:
+        'I start by understanding the business problem, the people who will use the solution, and the decisions the work needs to support. This helps avoid building dashboards or models that look good but do not solve the real problem.',
+      role: 'I translated stakeholder needs into clear KPIs, success measures, and project requirements before development started.',
+      businessImpact: 'Improved project clarity by 35% and reduced the risk of rework by aligning data work with business goals from the beginning.',
+      points: [
+        'Built a clear requirement structure before any dashboard or model development.',
+        'Defined KPIs and success metrics so the final output had measurable value.',
+        'Reduced confusion between business users and technical implementation by documenting the workflow clearly.',
+      ],
+    },
+    technical: {
+      headline: 'Requirement mapping, KPI design, and source-system discovery.',
+      summary:
+        'I converted business questions into measurable analytical requirements, identified source systems, defined data validation rules, and documented how each KPI should be calculated.',
+      contribution: 'Mapped business requirements to data fields, created KPI definitions, reviewed source availability, and prepared documentation in JIRA and Confluence.',
+      implementation: 'Used SQL checks, Excel validation, requirement documentation, and stakeholder feedback loops to confirm that the analysis had a reliable foundation.',
+      points: [
+        'Mapped business requirements to source data fields and defined precise KPI calculation logic.',
+        'Reviewed source-system availability and set data validation rules before development.',
+        'Documented requirements and feedback loops in JIRA and Confluence with SQL / Excel validation checks.',
+      ],
+    },
   },
   {
     number: '02',
     title: 'Engineer',
     Icon: Database,
     tagline: 'Build the pipeline',
-    descRecruiter:
-      'Build reliable data pipelines, clean raw data, validate quality, and prepare structured datasets for analysis.',
-    descTechnical:
-      'Engineer modular ETL/ELT in SQL & Python, enforce schema and data-quality gates, model curated tables in Snowflake, and orchestrate ingestion with AWS Glue + Airflow.',
-    skills: ['SQL', 'Python', 'ETL', 'Data Validation', 'Snowflake', 'AWS Glue'],
-    technologies: ['SQL', 'Python', 'AWS Glue', 'Snowflake', 'Airflow'],
-    impact: 'Accelerated dashboard and reporting data readiness.',
     metricValue: '30%',
     metricLabel: 'Faster dashboards',
-    whatIBuilt:
-      'Built SQL/Python-based data preparation workflows to clean and validate raw business datasets.',
-    howISolved:
-      'Automated repeatable ETL steps, added data-quality checks, and optimized pipeline performance.',
-    businessImpact:
-      'Accelerated dashboard readiness by 30%, improved data reliability, and supported faster decisions.',
+    description: 'Build reliable data pipelines, clean raw data, validate quality, and prepare structured datasets for analysis.',
+    skills: ['SQL Development', 'Python Automation', 'ETL Pipeline Design', 'Data Cleaning', 'Data Quality Control', 'Workflow Automation'],
+    technologies: ['SQL', 'Python', 'AWS Glue', 'Snowflake', 'Airflow'],
+    recruiter: {
+      headline: 'Building reliable data foundations for faster reporting.',
+      summary:
+        'I focused on making raw business data clean, trusted, and ready for decision-making. Instead of relying on manual reporting steps, I helped create repeatable workflows that made dashboards faster and more reliable.',
+      role: 'I played a key role in preparing structured datasets, improving data quality, and reducing delays in dashboard refresh cycles.',
+      businessImpact: 'Improved dashboard readiness by 30% and helped business teams access cleaner insights faster.',
+      points: [
+        'Built repeatable data preparation workflows instead of relying on manual cleanup.',
+        'Added validation checks to improve trust in dashboard and reporting data.',
+        'Helped reduce dashboard delays by preparing cleaner and faster datasets.',
+      ],
+    },
+    technical: {
+      headline: 'ETL automation, validation logic, and analytics-ready data modeling.',
+      summary:
+        'I built SQL and Python-based data preparation workflows to clean, transform, validate, and structure data for reporting and downstream analytics.',
+      contribution: 'Created ETL workflows, added validation checks, handled missing or inconsistent values, and optimized transformations for faster dashboard performance.',
+      implementation: 'Used SQL, Python, AWS Glue, Snowflake, and Airflow-style workflow logic to automate repeatable data preparation steps.',
+      points: [
+        'Built SQL + Python ETL workflows to clean, transform, and structure raw data.',
+        'Added validation checks and handled missing / inconsistent values for trusted datasets.',
+        'Automated repeatable preparation using AWS Glue, Snowflake, and Airflow-style scheduling.',
+      ],
+    },
   },
   {
     number: '03',
     title: 'Model',
     Icon: Brain,
     tagline: 'Predict & uncover',
-    descRecruiter:
-      'Apply forecasting, segmentation, anomaly detection, and risk scoring models to uncover patterns and predict outcomes.',
-    descTechnical:
-      'Engineer features and train forecasting, clustering, anomaly-detection and risk-scoring models; validate with time-aware backtests and track MAPE / AUC.',
-    skills: ['Machine Learning', 'Forecasting', 'Risk Scoring', 'Statistical Analysis'],
-    technologies: ['Python', 'LightGBM', 'XGBoost', 'ARIMA', 'Scikit-learn'],
-    impact: 'Improved forecast accuracy and analytical confidence.',
     metricValue: '+22%',
     metricLabel: 'Better forecast accuracy',
-    whatIBuilt:
-      'Built forecasting, segmentation, anomaly detection, and risk scoring models using Python and ML libraries.',
-    howISolved:
-      'Engineered features, trained and validated models, handled data-quality issues, and optimized model accuracy.',
-    businessImpact:
-      'Improved forecast accuracy by 22%, helping teams make faster and more confident business decisions.',
+    description: 'Apply forecasting, segmentation, anomaly detection, and risk scoring models to uncover patterns and predict outcomes.',
+    skills: ['Machine Learning', 'Forecasting', 'Risk Scoring', 'Feature Engineering', 'Model Validation', 'Statistical Analysis'],
+    technologies: ['Python', 'Scikit-learn', 'Pandas', 'NumPy', 'XGBoost', 'LightGBM', 'ARIMA'],
+    recruiter: {
+      headline: 'Using models to turn data patterns into business predictions.',
+      summary:
+        'I used analytical and machine learning methods to help teams understand trends, predict outcomes, and identify risk earlier. This made the work more valuable than basic reporting because it supported forward-looking decisions.',
+      role: 'I contributed to building forecasting, segmentation, anomaly detection, and risk-scoring logic that improved decision confidence.',
+      businessImpact: 'Improved forecast accuracy by 22% and helped teams make faster, more confident planning decisions.',
+      points: [
+        'Prepared model-ready datasets through feature engineering and validation.',
+        'Tested forecasting and risk-scoring approaches to improve prediction quality.',
+        'Improved forecast accuracy by 22%, helping teams rely more confidently on model outputs.',
+      ],
+    },
+    technical: {
+      headline: 'Feature engineering, model training, validation, and performance improvement.',
+      summary:
+        'I worked on model workflows involving feature preparation, algorithm selection, validation, and performance comparison to improve prediction quality.',
+      contribution: 'Applied statistical modeling and machine learning techniques including ARIMA, XGBoost, LightGBM, anomaly detection logic, and risk scoring methods.',
+      implementation: 'Used Python, Scikit-learn, Pandas, NumPy, ARIMA, XGBoost, and LightGBM-style workflows to test patterns, validate accuracy, and improve model output.',
+      points: [
+        'Engineered features and prepared model-ready datasets for training.',
+        'Applied ARIMA, XGBoost, LightGBM, anomaly detection, and risk-scoring techniques.',
+        'Validated accuracy with Scikit-learn, Pandas, and NumPy workflows and compared model performance.',
+      ],
+    },
   },
   {
     number: '04',
     title: 'Visualize',
     Icon: BarChart3,
     tagline: 'Make it decision-ready',
-    descRecruiter:
-      'Create dashboards and executive reports that make complex data easy to understand and act on.',
-    descTechnical:
-      'Model semantic layers and DAX measures, design performant Power BI / Tableau dashboards with drill-through, and apply data-storytelling for executive consumption.',
-    skills: ['Power BI', 'Tableau', 'DAX', 'Data Storytelling'],
-    technologies: ['Power BI', 'Tableau', 'DAX', 'SQL'],
-    impact: 'Turned complex data into clear business decisions.',
     metricValue: '60+',
     metricLabel: 'Leaders supported',
-    whatIBuilt:
-      'Designed executive dashboards and reports that turned dense data into clear, self-serve views.',
-    howISolved:
-      'Built optimized DAX measures and a clean semantic model, tuned for load performance and readability.',
-    businessImpact:
-      'Supported 60+ leaders with decision-ready dashboards, driving faster and more confident action.',
+    description: 'Create dashboards and executive reports that make complex data easy to understand and act on.',
+    skills: ['Dashboard Design', 'KPI Reporting', 'Data Storytelling', 'DAX', 'Executive Reporting', 'Data Visualization'],
+    technologies: ['Power BI', 'Tableau', 'DAX', 'SQL', 'Excel'],
+    recruiter: {
+      headline: 'Making complex data easy for leaders to act on.',
+      summary:
+        'I designed dashboards that helped business users quickly understand performance, trends, risks, and opportunities without needing to dig through raw data.',
+      role: 'I converted complex analytical outputs into clean dashboards, KPI views, and reporting layouts that supported leadership decisions.',
+      businessImpact: 'Supported 60+ leaders with dashboards and reports that improved visibility into business performance.',
+      points: [
+        'Built dashboards that simplified complex business and analytical data.',
+        'Created KPI views and filters that helped users explore trends faster.',
+        'Supported leadership reporting by making insights easier to understand and act on.',
+      ],
+    },
+    technical: {
+      headline: 'Dashboard modeling, DAX logic, KPI design, and reporting optimization.',
+      summary:
+        'I built dashboard layers that connected cleaned datasets with business KPIs, interactive filters, executive summaries, and performance-focused visuals.',
+      contribution: 'Created Power BI and Tableau dashboards, wrote DAX measures, optimized SQL queries, and designed KPI layouts for usability and clarity.',
+      implementation: 'Used Power BI, Tableau, DAX, SQL, and dashboard design principles to create reporting views for business and leadership teams.',
+      points: [
+        'Built Power BI and Tableau dashboards connected to cleaned datasets and KPIs.',
+        'Wrote DAX measures and optimized SQL queries for reporting performance.',
+        'Designed KPI layouts, filters, and executive summaries for usability.',
+      ],
+    },
   },
   {
     number: '05',
     title: 'Deliver',
     Icon: Rocket,
     tagline: 'Ship & sustain',
-    descRecruiter:
-      'Automate reporting, monitor model performance, document workflows, and ship solutions used by real teams.',
-    descTechnical:
-      'Automate refreshes and CI/CD, instrument model-performance and freshness monitoring with alerting, and document runbooks for reliable handoff.',
-    skills: ['Automation', 'CI/CD', 'Model Monitoring', 'Documentation'],
-    technologies: ['Git', 'CI/CD', 'Confluence', 'Airflow'],
-    impact: 'Reduced manual effort and improved delivery speed.',
     metricValue: 'Hours → min',
     metricLabel: 'Runtime',
-    whatIBuilt:
-      'Automated reporting and delivery pipelines, with monitoring and documentation for real teams.',
-    howISolved:
-      'Built CI/CD for data jobs, added drift and freshness monitoring, and authored runbooks for handoff.',
-    businessImpact:
-      'Cut runtime from hours to minutes and reduced manual effort across delivery.',
+    description: 'Automate reporting, monitor model performance, document workflows, and ship solutions used by real teams.',
+    skills: ['Automation', 'CI/CD', 'Model Monitoring', 'Documentation', 'Workflow Scheduling', 'Production Handoff'],
+    technologies: ['Git', 'CI/CD', 'Confluence', 'Airflow', 'SQL', 'Python'],
+    recruiter: {
+      headline: 'Shipping solutions that teams can actually use.',
+      summary:
+        'I focused on delivering work that was not just technically complete, but practical, repeatable, documented, and useful for real business users.',
+      role: 'I helped move analytics work from one-time analysis into repeatable dashboards, automated workflows, and documented processes.',
+      businessImpact: 'Reduced manual effort and improved delivery speed by turning slow workflows from hours into minutes.',
+      points: [
+        'Converted manual analytical work into repeatable and documented workflows.',
+        'Improved maintainability by organizing logic, assumptions, and handoff notes.',
+        'Helped reduce runtime from hours to minutes through automation and workflow optimization.',
+      ],
+    },
+    technical: {
+      headline: 'Automation, monitoring, documentation, and production-ready delivery.',
+      summary:
+        'I supported delivery by automating repeatable tasks, documenting workflows, monitoring outputs, and creating handoff-ready analytics solutions.',
+      contribution: 'Used Git, CI/CD concepts, Airflow-style scheduling, documentation, and monitoring logic to make solutions easier to maintain.',
+      implementation: 'Created reusable workflows, documented assumptions, tracked changes, and improved repeatability across analytics and reporting processes.',
+      points: [
+        'Automated repeatable tasks with Git, CI/CD concepts, and Airflow-style scheduling.',
+        'Added monitoring and documentation for maintainable, handoff-ready solutions.',
+        'Tracked changes and organized logic / assumptions to improve repeatability.',
+      ],
+    },
   },
 ];
 
-/* Clickable metric badges → each maps to the stage index it highlights. */
+/* Clickable metric badges (icon + metric + stage label). */
 const metrics = [
-  { label: '30% faster dashboards', stage: 1 },
-  { label: '22% better forecast accuracy', stage: 2 },
-  { label: '$70K annual savings', stage: 4 },
-  { label: 'Hours → Minutes runtime', stage: 4 },
+  { label: 'Requirements clarity +35%', stageLabel: 'Understand', stage: 0, Icon: Gauge },
+  { label: '30% faster dashboards', stageLabel: 'Engineer', stage: 1, Icon: Database },
+  { label: '22% better forecast accuracy', stageLabel: 'Model', stage: 2, Icon: Brain },
+  { label: '60+ leaders supported', stageLabel: 'Visualize', stage: 3, Icon: BarChart3 },
+  { label: 'Hours → minutes runtime', stageLabel: 'Deliver', stage: 4, Icon: Rocket },
+  { label: '$70K annual savings', stageLabel: 'Engineer', stage: 1, Icon: TrendingUp },
 ];
 
 /* Chart series keyed by stage number → "Impact over time". */
 const chartDataByStage = {
-  '01': [
-    { name: 'W1', value: 18 }, { name: 'W2', value: 26 }, { name: 'W3', value: 33 },
-    { name: 'W4', value: 41 }, { name: 'W5', value: 47 }, { name: 'W6', value: 54 },
-  ],
-  '02': [
-    { name: 'W1', value: 30 }, { name: 'W2', value: 38 }, { name: 'W3', value: 49 },
-    { name: 'W4', value: 58 }, { name: 'W5', value: 66 }, { name: 'W6', value: 72 },
-  ],
-  '03': [
-    { name: 'W1', value: 40 }, { name: 'W2', value: 44 }, { name: 'W3', value: 53 },
-    { name: 'W4', value: 61 }, { name: 'W5', value: 70 }, { name: 'W6', value: 78 },
-  ],
-  '04': [
-    { name: 'W1', value: 35 }, { name: 'W2', value: 47 }, { name: 'W3', value: 56 },
-    { name: 'W4', value: 68 }, { name: 'W5', value: 79 }, { name: 'W6', value: 88 },
-  ],
-  '05': [
-    { name: 'W1', value: 50 }, { name: 'W2', value: 60 }, { name: 'W3', value: 71 },
-    { name: 'W4', value: 82 }, { name: 'W5', value: 90 }, { name: 'W6', value: 96 },
-  ],
+  '01': [{ name: 'W1', value: 18 }, { name: 'W2', value: 26 }, { name: 'W3', value: 33 }, { name: 'W4', value: 41 }, { name: 'W5', value: 47 }, { name: 'W6', value: 54 }],
+  '02': [{ name: 'W1', value: 30 }, { name: 'W2', value: 38 }, { name: 'W3', value: 49 }, { name: 'W4', value: 58 }, { name: 'W5', value: 66 }, { name: 'W6', value: 72 }],
+  '03': [{ name: 'W1', value: 40 }, { name: 'W2', value: 44 }, { name: 'W3', value: 53 }, { name: 'W4', value: 61 }, { name: 'W5', value: 70 }, { name: 'W6', value: 78 }],
+  '04': [{ name: 'W1', value: 35 }, { name: 'W2', value: 47 }, { name: 'W3', value: 56 }, { name: 'W4', value: 68 }, { name: 'W5', value: 79 }, { name: 'W6', value: 88 }],
+  '05': [{ name: 'W1', value: 50 }, { name: 'W2', value: 60 }, { name: 'W3', value: 71 }, { name: 'W4', value: 82 }, { name: 'W5', value: 90 }, { name: 'W6', value: 96 }],
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
-   SkillPill / TechPill
+   SkillPill / TechPill — icon + label, monochrome, hover glow, aria-label
    ────────────────────────────────────────────────────────────────────────── */
-function SkillPill({ children }) {
+function SkillPill({ label }) {
+  const Ic = skillIconMap[label] || SKILL_FALLBACK;
   return (
     <motion.span
       className={styles.pill}
+      role="listitem"
+      aria-label={`Skill: ${label}`}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 400, damping: 18 }}
     >
-      {children}
+      <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
+      {label}
     </motion.span>
   );
 }
 
-function TechPill({ children }) {
+function TechPill({ label }) {
+  const Ic = techIconMap[label] || TECH_FALLBACK;
   return (
     <motion.span
       className={cx(styles.pill, styles.techPill)}
+      role="listitem"
+      aria-label={`Technology: ${label}`}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 400, damping: 18 }}
     >
-      <span className={styles.techDot} aria-hidden />
-      {children}
+      <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
+      {label}
     </motion.span>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   ProcessCard — one clickable workflow stage
+   ProcessCard — clickable workflow stage with mouse-follow glow + 3D tilt
    ────────────────────────────────────────────────────────────────────────── */
 function ProcessCard({ stage, isActive, isDone, onSelect }) {
-  const { number, title, Icon, descRecruiter } = stage;
+  const { number, title, Icon, description } = stage;
   const ref = useRef(null);
 
-  // Feed pointer position into CSS variables: --mx/--my drive the mouse-follow
-  // glow, --rx/--ry drive the 3D tilt. All the visuals live in the CSS Module.
   const handleMove = (e) => {
     const el = ref.current;
     if (!el) return;
@@ -244,21 +379,19 @@ function ProcessCard({ stage, isActive, isDone, onSelect }) {
       <span className={styles.cardTilt}>
         <span className={styles.cardTop}>
           <span className={styles.cardNum}>{number}</span>
-          <span className={styles.cardIcon} aria-hidden>
-            <Icon size={22} strokeWidth={2.1} />
-          </span>
+          <span className={styles.cardIcon} aria-hidden><Icon size={22} strokeWidth={2.1} /></span>
         </span>
         <span className={styles.cardTitle}>{title}</span>
-        <span className={styles.cardDesc}>{descRecruiter}</span>
+        <span className={styles.cardDesc}>{description}</span>
       </span>
     </motion.button>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   MetricBadge
+   MetricBadge — icon + metric + stage label
    ────────────────────────────────────────────────────────────────────────── */
-function MetricBadge({ label, active, onClick }) {
+function MetricBadge({ label, stageLabel, Icon, active, onClick }) {
   return (
     <motion.button
       type="button"
@@ -269,15 +402,16 @@ function MetricBadge({ label, active, onClick }) {
       whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 380, damping: 20 }}
     >
-      <span className={styles.badgeIcon} aria-hidden><Activity size={15} strokeWidth={2.4} /></span>
-      {label}
+      <span className={styles.badgeIcon} aria-hidden><Icon size={16} strokeWidth={2.2} /></span>
+      <span className={styles.badgeText}>
+        <span className={styles.badgeMetric}>{label}</span>
+        <span className={styles.badgeStage}>{stageLabel}</span>
+      </span>
     </motion.button>
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   Pipeline — glowing connector under the cards (decorative)
-   ────────────────────────────────────────────────────────────────────────── */
+/* Pipeline — glowing connector under the cards (decorative). */
 function Pipeline({ active }) {
   const fill = `${(active / (stages.length - 1)) * 80}%`;
   return (
@@ -293,9 +427,6 @@ function Pipeline({ active }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   Chart tooltip
-   ────────────────────────────────────────────────────────────────────────── */
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
@@ -306,19 +437,24 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
+/* InfoBlock — labelled paragraph used for role / impact / contribution / etc. */
+function InfoBlock({ label, text, accent }) {
+  return (
+    <div className={cx(styles.info, accent && styles.infoAccent)}>
+      <span className={styles.infoLabel}>{label}</span>
+      <p className={styles.infoText}>{text}</p>
+    </div>
+  );
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
-   ImpactDashboard — dynamic panel reflecting active stage + view mode
+   ImpactDashboard — renders DISTINCT recruiter vs technical content
    ────────────────────────────────────────────────────────────────────────── */
 function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
   const { Icon } = stage;
-  const description = mode === 'recruiter' ? stage.descRecruiter : stage.descTechnical;
+  const view = mode === 'recruiter' ? stage.recruiter : stage.technical;
   const chartData = chartDataByStage[stage.number];
-
-  const drawer = [
-    { Icon: Wrench, label: 'What I built', text: stage.whatIBuilt },
-    { Icon: Lightbulb, label: 'How I solved it', text: stage.howISolved },
-    { Icon: ArrowUpRight, label: 'Business impact', text: stage.businessImpact },
-  ];
+  const BulletIcon = mode === 'recruiter' ? CheckCircle2 : Code2;
 
   return (
     <div className={styles.panel}>
@@ -331,22 +467,32 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className={styles.panelGrid}
         >
-          {/* LEFT — identity, description, impact, metric, chart */}
+          {/* LEFT — narrative differs entirely by view */}
           <div className={styles.panelMain}>
             <div className={styles.panelHead}>
               <span className={styles.panelIcon} aria-hidden><Icon size={22} strokeWidth={2.1} /></span>
               <div>
-                <span className={styles.panelKicker}>Stage {stage.number} · {stage.tagline}</span>
+                <span className={styles.panelKicker}>
+                  Stage {stage.number} · {mode === 'recruiter' ? 'Recruiter View' : 'Technical View'}
+                </span>
                 <h3 className={styles.panelTitle}>{stage.title}</h3>
               </div>
             </div>
 
-            <p className={styles.panelDesc}>{description}</p>
+            <p className={styles.panelHeadline}>{view.headline}</p>
+            <p className={styles.panelDesc}>{view.summary}</p>
 
-            <div className={styles.impact}>
-              <CheckCircle2 size={16} strokeWidth={2.3} aria-hidden />
-              <span><strong>Impact:</strong> {stage.impact}</span>
-            </div>
+            {mode === 'recruiter' ? (
+              <>
+                <InfoBlock label="My Role" text={view.role} />
+                <InfoBlock label="Business Impact" text={view.businessImpact} accent />
+              </>
+            ) : (
+              <>
+                <InfoBlock label="Technical Contribution" text={view.contribution} />
+                <InfoBlock label="Implementation Details" text={view.implementation} />
+              </>
+            )}
 
             <div className={styles.metricBox}>
               <span className={styles.metricValue}>{stage.metricValue}</span>
@@ -370,34 +516,25 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
                   <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} width={34} />
                   <Tooltip content={<ChartTooltip />} cursor={{ stroke: ACCENT, strokeOpacity: 0.4 }} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={ACCENT}
-                    strokeWidth={2.4}
-                    fill="url(#dppFill)"
-                    activeDot={{ r: 4, fill: ACCENT, stroke: '#fff', strokeWidth: 1 }}
-                    isAnimationActive
-                    animationDuration={650}
-                  />
+                  <Area type="monotone" dataKey="value" stroke={ACCENT} strokeWidth={2.4} fill="url(#dppFill)" activeDot={{ r: 4, fill: ACCENT, stroke: '#fff', strokeWidth: 1 }} isAnimationActive animationDuration={650} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* RIGHT — skills, technologies, details drawer */}
+          {/* RIGHT — skills, technologies (with icons), contribution drawer */}
           <div className={styles.panelSide}>
             <div className={styles.group}>
-              <span className={styles.groupLabel}>{mode === 'recruiter' ? 'Skills gained' : 'Skills'}</span>
-              <div className={styles.pills}>
-                {stage.skills.map((s) => <SkillPill key={s}>{s}</SkillPill>)}
+              <span className={styles.groupLabel}>Skills Gained</span>
+              <div className={styles.pills} role="list">
+                {stage.skills.map((s) => <SkillPill key={s} label={s} />)}
               </div>
             </div>
 
             <div className={styles.group}>
-              <span className={styles.groupLabel}>Technologies used</span>
-              <div className={styles.pills}>
-                {stage.technologies.map((t) => <TechPill key={t}>{t}</TechPill>)}
+              <span className={styles.groupLabel}>Technologies Used</span>
+              <div className={styles.pills} role="list">
+                {stage.technologies.map((t) => <TechPill key={t} label={t} />)}
               </div>
             </div>
 
@@ -407,7 +544,7 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
               onClick={onToggleDrawer}
               aria-expanded={drawerOpen}
             >
-              <span>{drawerOpen ? 'Hide details' : 'View details'}</span>
+              <span>{drawerOpen ? 'Hide contribution' : `View ${mode === 'recruiter' ? 'business impact' : 'technical'} details`}</span>
               <motion.span animate={{ rotate: drawerOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }} aria-hidden>
                 <ChevronDown size={16} strokeWidth={2.4} />
               </motion.span>
@@ -422,18 +559,15 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.32, ease: 'easeInOut' }}
                 >
-                  {drawer.map((d, i) => (
+                  {view.points.map((p, i) => (
                     <motion.li
-                      key={d.label}
+                      key={i}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.06 * i + 0.05 }}
                     >
-                      <span className={styles.drawerIcon} aria-hidden><d.Icon size={15} strokeWidth={2.4} /></span>
-                      <span>
-                        <strong className={styles.drawerLabel}>{d.label}</strong>
-                        {d.text}
-                      </span>
+                      <span className={styles.drawerIcon} aria-hidden><BulletIcon size={15} strokeWidth={2.3} /></span>
+                      <span>{p}</span>
                     </motion.li>
                   ))}
                 </motion.ul>
@@ -446,9 +580,7 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   SimulationProgress — bottom status bar with 01…05 markers
-   ────────────────────────────────────────────────────────────────────────── */
+/* SimulationProgress — bottom status bar with 01…05 markers. */
 function SimulationProgress({ active, running }) {
   return (
     <div className={styles.simBar}>
@@ -458,9 +590,7 @@ function SimulationProgress({ active, running }) {
         </span>
         <div>
           <span className={styles.simStatusLabel}>Simulation status</span>
-          <span className={cx(styles.simStatusValue, running && styles.simStatusValueRun)}>
-            {running ? 'Running' : 'Ready'}
-          </span>
+          <span className={cx(styles.simStatusValue, running && styles.simStatusValueRun)}>{running ? 'Running' : 'Ready'}</span>
         </div>
       </div>
 
@@ -468,9 +598,7 @@ function SimulationProgress({ active, running }) {
         {stages.map((s, i) => (
           <div key={s.number} className={styles.simStep}>
             {i > 0 && <span className={cx(styles.simLine, (i <= active) && styles.simLineOn)} />}
-            <span className={cx(styles.simNode, (i < active) && styles.simNodeDone, (i === active) && styles.simNodeActive)}>
-              {s.number}
-            </span>
+            <span className={cx(styles.simNode, (i < active) && styles.simNodeDone, (i === active) && styles.simNodeActive)}>{s.number}</span>
           </div>
         ))}
       </div>
@@ -483,9 +611,7 @@ function SimulationProgress({ active, running }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   SuccessToast
-   ────────────────────────────────────────────────────────────────────────── */
+/* SuccessToast */
 function SuccessToast({ show }) {
   return (
     <AnimatePresence>
@@ -549,7 +675,6 @@ export default function DataProductProcessSection() {
     }, 1500);
   };
 
-  // Clean up the interval on unmount to avoid memory leaks.
   useEffect(() => () => { if (simRef.current) clearInterval(simRef.current); }, []);
 
   const activeStage = stages[active];
@@ -558,29 +683,18 @@ export default function DataProductProcessSection() {
     : { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.12 }, transition: { duration: 0.6, ease: 'easeOut' } };
 
   return (
-    <motion.section
-      id="process"
-      className={styles.section}
-      aria-labelledby="dpp-heading"
-      {...fadeIn}
-    >
+    <motion.section id="process" className={styles.section} aria-labelledby="dpp-heading" {...fadeIn}>
       <div className={styles.inner}>
         {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.headLeft}>
             <span className={styles.eyebrow}><Sparkles size={14} strokeWidth={2.3} aria-hidden /> My Process</span>
-            <h2 id="dpp-heading" className={styles.title}>
-              How I Ship <span className={styles.titleAccent}>Data Products</span>
-            </h2>
+            <h2 id="dpp-heading" className={styles.title}>How I Ship <span className={styles.titleAccent}>Data Products</span></h2>
             <p className={styles.sub}>From raw data to dashboards, models, automation, and measurable business impact.</p>
           </div>
 
           <div className={styles.headRight}>
-            <button
-              type="button"
-              className={cx(styles.sim, running && styles.simRunning)}
-              onClick={startSim}
-            >
+            <button type="button" className={cx(styles.sim, running && styles.simRunning)} onClick={startSim}>
               {running ? <Square size={15} strokeWidth={2.4} aria-hidden /> : <Play size={15} strokeWidth={2.4} aria-hidden />}
               {running ? 'Stop simulation' : 'Live Workflow Simulation'}
             </button>
@@ -615,13 +729,7 @@ export default function DataProductProcessSection() {
           viewport={{ once: true, amount: 0.2 }}
         >
           {stages.map((stage, i) => (
-            <ProcessCard
-              key={stage.number}
-              stage={stage}
-              isActive={i === active}
-              isDone={i < active}
-              onSelect={() => selectStage(i)}
-            />
+            <ProcessCard key={stage.number} stage={stage} isActive={i === active} isDone={i < active} onSelect={() => selectStage(i)} />
           ))}
         </motion.div>
 
@@ -630,28 +738,17 @@ export default function DataProductProcessSection() {
         {/* METRIC BADGES */}
         <div className={styles.badges}>
           {metrics.map((m) => (
-            <MetricBadge
-              key={m.label}
-              label={m.label}
-              active={m.stage === active}
-              onClick={() => selectStage(m.stage)}
-            />
+            <MetricBadge key={m.label} label={m.label} stageLabel={m.stageLabel} Icon={m.Icon} active={m.stage === active} onClick={() => selectStage(m.stage)} />
           ))}
         </div>
 
         {/* DASHBOARD PANEL */}
-        <ImpactDashboard
-          stage={activeStage}
-          mode={mode}
-          drawerOpen={drawerOpen}
-          onToggleDrawer={() => setDrawerOpen((v) => !v)}
-        />
+        <ImpactDashboard stage={activeStage} mode={mode} drawerOpen={drawerOpen} onToggleDrawer={() => setDrawerOpen((v) => !v)} />
 
         {/* SIMULATION STATUS BAR */}
         <SimulationProgress active={active} running={running} />
       </div>
 
-      {/* SUCCESS TOAST */}
       <SuccessToast show={shipped} />
     </motion.section>
   );

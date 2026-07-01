@@ -39,9 +39,13 @@ import styles from './DataProductProcessSection.module.css';
 const cx = (...c) => c.filter(Boolean).join(' ');
 const ACCENT = '#ff2b2b';
 
-/* Timing for the automatic click flow (ms) — tweak freely. */
-const METRIC_VISIBLE_MS = 5000; // stats stay for 5s after a stage click
-const VIEW_SWITCH_MS = 10000;   // Recruiter → Technical auto-switch
+/* Timing for the click / simulation flow (ms) — tweak freely. */
+const METRIC_VISIBLE_MS = 5000; // metric stays visible before the pulse
+const PULSE_MS = 1000;          // magnetic pulse flow duration (metric → dashboard)
+const RECRUITER_MS = 5000;      // Recruiter View shown before auto-switch to Technical
+const DASH_GLOW_MS = 1500;      // dashboard focus glow duration
+const TECH_PULSE_MS = 1200;     // Technical-view arrival pulse duration
+const SIM_STEP_GAP_MS = 1500;   // pause on Technical before the next simulation stage
 
 /* ──────────────────────────────────────────────────────────────────────────
    ICON MAPS — Skills (Lucide) / Technologies (Simple Icons + Lucide fallbacks)
@@ -537,7 +541,7 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
             </div>
 
             <button type="button" className={styles.detailsBtn} onClick={onToggleDrawer} aria-expanded={drawerOpen}>
-              <span>{drawerOpen ? 'Hide contribution' : `View ${mode === 'recruiter' ? 'business impact' : 'technical'} details`}</span>
+              <span>Contribution</span>
               <motion.span animate={{ rotate: drawerOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }} aria-hidden>
                 <ChevronDown size={16} strokeWidth={2.4} />
               </motion.span>
@@ -582,94 +586,112 @@ function SuccessToast({ show }) {
 export default function DataProductProcessSection() {
   const [activeStageIndex, setActiveStageIndex] = useState(0);
   const [viewMode, setViewMode] = useState('recruiter'); // 'recruiter' | 'technical'
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [shipped, setShipped] = useState(false);
+  const [contributionOpen, setContributionOpen] = useState(false);
   const [visibleMetricStageIndex, setVisibleMetricStageIndex] = useState(null);
   const [isMetricVisible, setIsMetricVisible] = useState(false);
-  const [hasUserManuallyChangedView, setHasUserManuallyChangedView] = useState(false);
+  const [isPulseActive, setIsPulseActive] = useState(false);
+  const [isDashboardFocused, setIsDashboardFocused] = useState(false);
+  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+  const [successToastVisible, setSuccessToastVisible] = useState(false);
+  const [techPulse, setTechPulse] = useState(false);
 
-  const timersRef = useRef({ metricHide: null, viewSwitch: null });
-  const simRef = useRef(null);
+  const timersRef = useRef([]);
   const manualRef = useRef(false);
+  const simRunningRef = useRef(false);
+  const metricAreaRef = useRef(null);
+  const dashboardRef = useRef(null);
   const reduceMotion = useReducedMotion();
 
-  const clearFlowTimers = () => {
-    const t = timersRef.current;
-    if (t.metricHide) clearTimeout(t.metricHide);
-    if (t.viewSwitch) clearTimeout(t.viewSwitch);
-    t.metricHide = null;
-    t.viewSwitch = null;
+  const addTimer = (id) => { timersRef.current.push(id); return id; };
+  const clearTimers = () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
+  const scrollTo = (ref) => {
+    if (ref.current && typeof ref.current.scrollIntoView === 'function') {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
-  const stopSim = () => {
-    if (simRef.current) clearInterval(simRef.current);
-    simRef.current = null;
-    setRunning(false);
-  };
-
-  // Click a stage card → run the timed reveal + auto view-switch flow.
-  const selectStage = (i) => {
-    stopSim();
-    clearFlowTimers();
+  // The full timed flow for one stage — used by both a manual click and the
+  // Live Workflow Simulation. See the timing constants above for each step.
+  const runStageFlow = (i) => {
+    clearTimers();
     manualRef.current = false;
-    setHasUserManuallyChangedView(false);
-    setDrawerOpen(false);
+    setContributionOpen(false);
     setActiveStageIndex(i);
     setViewMode('recruiter');
     setVisibleMetricStageIndex(i);
     setIsMetricVisible(true);
+    setIsPulseActive(false);
+    setTechPulse(false);
 
-    timersRef.current.metricHide = setTimeout(() => setIsMetricVisible(false), METRIC_VISIBLE_MS);
-    timersRef.current.viewSwitch = setTimeout(() => {
-      if (!manualRef.current) setViewMode('technical');
-    }, VIEW_SWITCH_MS);
+    // scroll the metric card into center once it has rendered
+    addTimer(setTimeout(() => scrollTo(metricAreaRef), 90));
+
+    // 5s → magnetic pulse flow from metric toward the dashboard
+    addTimer(setTimeout(() => setIsPulseActive(true), METRIC_VISIBLE_MS));
+
+    // 6s → hide metric, focus the dashboard (scroll + glow), Recruiter View
+    addTimer(setTimeout(() => {
+      setIsPulseActive(false);
+      setIsMetricVisible(false);
+      setVisibleMetricStageIndex(null);
+      scrollTo(dashboardRef);
+      setIsDashboardFocused(true);
+      addTimer(setTimeout(() => setIsDashboardFocused(false), DASH_GLOW_MS));
+    }, METRIC_VISIBLE_MS + PULSE_MS));
+
+    // 11s → switch to Technical (unless the user changed the view manually)
+    addTimer(setTimeout(() => {
+      if (!manualRef.current) {
+        setViewMode('technical');
+        setTechPulse(true);
+        addTimer(setTimeout(() => setTechPulse(false), TECH_PULSE_MS));
+      }
+      if (simRunningRef.current) {
+        if (i < stages.length - 1) {
+          addTimer(setTimeout(() => runStageFlow(i + 1), SIM_STEP_GAP_MS));
+        } else {
+          addTimer(setTimeout(() => {
+            simRunningRef.current = false;
+            setIsSimulationRunning(false);
+            setSuccessToastVisible(true);
+            addTimer(setTimeout(() => setSuccessToastVisible(false), 3600));
+          }, SIM_STEP_GAP_MS));
+        }
+      }
+    }, METRIC_VISIBLE_MS + PULSE_MS + RECRUITER_MS));
   };
 
-  // Manual toggle — updates the view and cancels the pending auto-switch.
+  // Click a stage card → run the flow (as a one-off, not the simulation).
+  const selectStage = (i) => {
+    simRunningRef.current = false;
+    setIsSimulationRunning(false);
+    runStageFlow(i);
+  };
+
+  // Manual toggle — updates the view immediately and cancels the auto-switch.
   const changeView = (m) => {
     manualRef.current = true;
-    setHasUserManuallyChangedView(true);
     setViewMode(m);
-    if (timersRef.current.viewSwitch) {
-      clearTimeout(timersRef.current.viewSwitch);
-      timersRef.current.viewSwitch = null;
-    }
+  };
+
+  const stopSim = () => {
+    simRunningRef.current = false;
+    setIsSimulationRunning(false);
+    clearTimers();
+    setIsPulseActive(false);
   };
 
   const startSim = () => {
-    if (simRef.current) { stopSim(); return; }
-    clearFlowTimers();
-    manualRef.current = false;
-    setHasUserManuallyChangedView(false);
-    setShipped(false);
-    setDrawerOpen(false);
-    setViewMode('recruiter');
-    setActiveStageIndex(0);
-    setVisibleMetricStageIndex(0);
-    setIsMetricVisible(true);
-    setRunning(true);
-    let i = 0;
-    simRef.current = setInterval(() => {
-      i += 1;
-      if (i > stages.length - 1) {
-        stopSim();
-        setIsMetricVisible(false);
-        setShipped(true);
-        setTimeout(() => setShipped(false), 3600);
-        return;
-      }
-      setActiveStageIndex(i);
-      setVisibleMetricStageIndex(i);
-      setIsMetricVisible(true);
-    }, 1500);
+    if (simRunningRef.current) { stopSim(); return; }
+    clearTimers();
+    setSuccessToastVisible(false);
+    simRunningRef.current = true;
+    setIsSimulationRunning(true);
+    runStageFlow(0);
   };
 
-  // Clean up every timer / interval on unmount.
-  useEffect(() => () => {
-    clearFlowTimers();
-    if (simRef.current) clearInterval(simRef.current);
-  }, []);
+  // Clean up every timer on unmount.
+  useEffect(() => () => { clearTimers(); simRunningRef.current = false; }, []);
 
   const activeStage = stages[activeStageIndex];
   const showStats = isMetricVisible && visibleMetricStageIndex !== null;
@@ -689,9 +711,9 @@ export default function DataProductProcessSection() {
           </div>
 
           <div className={styles.headRight}>
-            <button type="button" className={cx(styles.sim, running && styles.simRunning)} onClick={startSim}>
-              {running ? <Square size={15} strokeWidth={2.4} aria-hidden /> : <Play size={15} strokeWidth={2.4} aria-hidden />}
-              {running ? 'Stop simulation' : 'Live Workflow Simulation'}
+            <button type="button" className={cx(styles.sim, isSimulationRunning && styles.simRunning)} onClick={startSim}>
+              {isSimulationRunning ? <Square size={15} strokeWidth={2.4} aria-hidden /> : <Play size={15} strokeWidth={2.4} aria-hidden />}
+              {isSimulationRunning ? 'Stop simulation' : 'Live Workflow Simulation'}
             </button>
 
             <div className={styles.toggle} role="group" aria-label="View mode">
@@ -737,8 +759,9 @@ export default function DataProductProcessSection() {
 
           <Pipeline active={activeStageIndex} />
 
-          {/* DESKTOP / TABLET: stat reveal aligned under the selected stage */}
-          <div className={styles.statRow}>
+          {/* DESKTOP / TABLET: stat reveal aligned under the selected stage.
+              Collapses to zero height when no metric is visible (no empty gap). */}
+          <div className={styles.statRow} ref={metricAreaRef}>
             <AnimatePresence>
               {showStats && (
                 <StatGroup
@@ -748,15 +771,38 @@ export default function DataProductProcessSection() {
                 />
               )}
             </AnimatePresence>
-            {!showStats && <p className={styles.statHint} aria-hidden>Select a stage to reveal its impact.</p>}
+          </div>
+
+          {/* MAGNETIC PULSE FLOW — energy travelling metric → dashboard */}
+          <div className={styles.pulseLane} aria-hidden>
+            <AnimatePresence>
+              {isPulseActive && (
+                <motion.div
+                  className={styles.pulse}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <span className={styles.pulseLine} />
+                  <span className={styles.pulseDot} />
+                  <span className={cx(styles.pulseDot, styles.pulseDotB)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* DASHBOARD PANEL */}
-        <ImpactDashboard stage={activeStage} mode={viewMode} drawerOpen={drawerOpen} onToggleDrawer={() => setDrawerOpen((v) => !v)} />
+        <div
+          ref={dashboardRef}
+          className={cx(styles.dashWrap, isDashboardFocused && styles.dashFocused, techPulse && styles.techPulse)}
+        >
+          <ImpactDashboard stage={activeStage} mode={viewMode} drawerOpen={contributionOpen} onToggleDrawer={() => setContributionOpen((v) => !v)} />
+        </div>
       </div>
 
-      <SuccessToast show={shipped} />
+      <SuccessToast show={successToastVisible} />
     </motion.section>
   );
 }

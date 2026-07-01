@@ -203,26 +203,54 @@ function TechPill({ children }) {
    ────────────────────────────────────────────────────────────────────────── */
 function ProcessCard({ stage, isActive, isDone, onSelect }) {
   const { number, title, Icon, descRecruiter } = stage;
+  const ref = useRef(null);
+
+  // Feed pointer position into CSS variables: --mx/--my drive the mouse-follow
+  // glow, --rx/--ry drive the 3D tilt. All the visuals live in the CSS Module.
+  const handleMove = (e) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    el.style.setProperty('--mx', `${(px * 100).toFixed(2)}%`);
+    el.style.setProperty('--my', `${(py * 100).toFixed(2)}%`);
+    el.style.setProperty('--rx', `${((0.5 - py) * 8).toFixed(2)}deg`);
+    el.style.setProperty('--ry', `${((px - 0.5) * 10).toFixed(2)}deg`);
+  };
+  const handleLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
+  };
+
   return (
     <motion.button
+      ref={ref}
       type="button"
       onClick={onSelect}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
       aria-pressed={isActive}
       aria-label={`Stage ${number}: ${title}`}
       className={cx(styles.card, isActive && styles.cardActive, isDone && styles.cardDone)}
       variants={{ hidden: { opacity: 0, y: 26 }, show: { opacity: 1, y: 0 } }}
-      animate={{ scale: isActive ? 1.04 : 1 }}
-      whileHover={{ y: -3 }}
+      animate={{ scale: isActive ? 1.03 : 1 }}
+      whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
     >
-      <div className={styles.cardTop}>
-        <span className={styles.cardNum}>{number}</span>
-        <span className={styles.cardIcon} aria-hidden>
-          <Icon size={22} strokeWidth={2.1} />
+      <span className={styles.cardGlow} aria-hidden />
+      <span className={styles.cardTilt}>
+        <span className={styles.cardTop}>
+          <span className={styles.cardNum}>{number}</span>
+          <span className={styles.cardIcon} aria-hidden>
+            <Icon size={22} strokeWidth={2.1} />
+          </span>
         </span>
-      </div>
-      <span className={styles.cardTitle}>{title}</span>
-      <span className={styles.cardDesc}>{descRecruiter}</span>
+        <span className={styles.cardTitle}>{title}</span>
+        <span className={styles.cardDesc}>{descRecruiter}</span>
+      </span>
     </motion.button>
   );
 }

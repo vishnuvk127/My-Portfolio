@@ -208,14 +208,10 @@
 .cardCell { position: relative; display: flex; flex-direction: column; }
 .statInlineMobile { display: none; }
 
+/* Collapses to zero height when it has no metric child — no empty gap. */
 .statRow {
   position: relative; display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 14px; align-items: start; justify-items: center;
-  min-height: 150px; margin-top: 10px;
-}
-.statHint {
-  grid-column: 1 / -1; align-self: center; margin: 0; text-align: center;
-  color: rgba(255, 255, 255, 0.32); font-size: 13px; font-weight: 500;
 }
 .statCell { position: relative; display: flex; flex-direction: column; align-items: center; }
 .statCellDouble { max-width: 340px; }
@@ -260,6 +256,45 @@
 }
 .statBoxLabel { font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, 0.72); }
 .statBoxStage { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 43, 43, 0.75); margin-top: 2px; }
+
+/* ─────────── MAGNETIC PULSE FLOW (metric → dashboard) ─────────── */
+.pulseLane { position: relative; height: 0; }
+.pulse {
+  position: absolute; left: 50%; top: -6px; transform: translateX(-50%);
+  width: 4px; height: 98px; pointer-events: none; z-index: 6;
+}
+.pulseLine {
+  position: absolute; inset: 0; border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255, 43, 43, 0), #ff2b2b 42%, #ff2b2b 58%, rgba(255, 43, 43, 0));
+  box-shadow: 0 0 16px rgba(255, 43, 43, 0.85);
+}
+.pulseDot {
+  position: absolute; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+  background: #ff2b2b; box-shadow: 0 0 16px 4px rgba(255, 43, 43, 0.9);
+  animation: pulseTravel 1s ease-in-out infinite;
+}
+.pulseDotB { animation-delay: 0.45s; }
+@keyframes pulseTravel {
+  0% { top: -6px; opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: 96px; opacity: 0; }
+}
+
+/* ─────────── DASHBOARD FOCUS GLOW + TECHNICAL ARRIVAL PULSE ─────────── */
+.dashWrap { border-radius: 24px; }
+.dashFocused { animation: dashGlow 1.5s ease-out; }
+@keyframes dashGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0); }
+  25% { box-shadow: 0 0 0 3px rgba(255, 43, 43, 0.55), 0 0 60px rgba(255, 43, 43, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0); }
+}
+.techPulse { animation: techGlow 1.2s ease-out; }
+@keyframes techGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0); }
+  40% { box-shadow: 0 0 0 2px rgba(255, 43, 43, 0.6), 0 0 42px rgba(255, 43, 43, 0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 43, 43, 0); }
+}
 
 /* ─────────── METRIC BADGES ─────────── */
 .badges { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }

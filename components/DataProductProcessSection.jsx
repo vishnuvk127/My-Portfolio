@@ -8,15 +8,20 @@
  *        Framer Motion · Recharts · Lucide React · React Icons (Simple Icons)
  * Install: npm install framer-motion recharts lucide-react react-icons
  *
- * Recruiter View and Technical View render fully distinct content, and every
- * Skills Gained / Technologies Used item shows a matching icon/logo.
+ * Behaviour:
+ *  - Stat boxes are hidden by default and reveal only for the clicked stage,
+ *    positioned under that stage's card with a glowing connector wire
+ *    (Stage 2 uses a branching connector for its two stats).
+ *  - Clicking a stage runs a timed flow: show stats (5s) → hide → the
+ *    dashboard auto-switches Recruiter → Technical (unless the user switches
+ *    manually). All timers are ref-managed and cleaned up.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Target, Database, Brain, BarChart3, Rocket,
-  Play, Square, Sparkles, CheckCircle2, ChevronDown, ArrowUpRight,
+  Play, Square, Sparkles, CheckCircle2, ChevronDown,
   Briefcase, BriefcaseBusiness, Code2, Activity, Gauge, ClipboardList,
   FileCheck, Users, Workflow, Filter, ShieldCheck, LineChart, Settings,
   Sigma, Presentation, PieChart, GitBranch, Cog, TrendingUp, Cloud,
@@ -34,12 +39,12 @@ import styles from './DataProductProcessSection.module.css';
 const cx = (...c) => c.filter(Boolean).join(' ');
 const ACCENT = '#ff2b2b';
 
+/* Timing for the automatic click flow (ms) — tweak freely. */
+const METRIC_VISIBLE_MS = 5000; // stats stay for 5s after a stage click
+const VIEW_SWITCH_MS = 10000;   // Recruiter → Technical auto-switch
+
 /* ──────────────────────────────────────────────────────────────────────────
-   ICON MAPS
-   Skills → Lucide icons (fallback: Layers)
-   Technologies → Simple Icons logos where available, else clean Lucide
-   semantic icons (fallback: Code2). Everything renders in monochrome and
-   inherits the pill's colour (red / white), never brand colours.
+   ICON MAPS — Skills (Lucide) / Technologies (Simple Icons + Lucide fallbacks)
    ────────────────────────────────────────────────────────────────────────── */
 const skillIconMap = {
   'Business Analysis': BriefcaseBusiness,
@@ -101,7 +106,7 @@ const SKILL_FALLBACK = Layers;
 const TECH_FALLBACK = Code2;
 
 /* ──────────────────────────────────────────────────────────────────────────
-   DATA — 5 stages, each with fully separate recruiter + technical content
+   DATA — 5 stages, distinct recruiter + technical content, plus per-stage stats
    ────────────────────────────────────────────────────────────────────────── */
 const stages = [
   {
@@ -114,10 +119,10 @@ const stages = [
     description: 'Clarify the business problem, define KPIs, success metrics, users, and expected decision impact.',
     skills: ['Business Analysis', 'KPI Definition', 'Requirement Gathering', 'Data Validation', 'Stakeholder Communication'],
     technologies: ['JIRA', 'Confluence', 'Excel', 'SQL'],
+    stats: [{ value: '+35%', label: 'Requirements clarity', Icon: Gauge }],
     recruiter: {
       headline: 'Turning unclear business needs into a clear analytics roadmap.',
-      summary:
-        'I start by understanding the business problem, the people who will use the solution, and the decisions the work needs to support. This helps avoid building dashboards or models that look good but do not solve the real problem.',
+      summary: 'I start by understanding the business problem, the people who will use the solution, and the decisions the work needs to support. This helps avoid building dashboards or models that look good but do not solve the real problem.',
       role: 'I translated stakeholder needs into clear KPIs, success measures, and project requirements before development started.',
       businessImpact: 'Improved project clarity by 35% and reduced the risk of rework by aligning data work with business goals from the beginning.',
       points: [
@@ -128,8 +133,7 @@ const stages = [
     },
     technical: {
       headline: 'Requirement mapping, KPI design, and source-system discovery.',
-      summary:
-        'I converted business questions into measurable analytical requirements, identified source systems, defined data validation rules, and documented how each KPI should be calculated.',
+      summary: 'I converted business questions into measurable analytical requirements, identified source systems, defined data validation rules, and documented how each KPI should be calculated.',
       contribution: 'Mapped business requirements to data fields, created KPI definitions, reviewed source availability, and prepared documentation in JIRA and Confluence.',
       implementation: 'Used SQL checks, Excel validation, requirement documentation, and stakeholder feedback loops to confirm that the analysis had a reliable foundation.',
       points: [
@@ -149,10 +153,13 @@ const stages = [
     description: 'Build reliable data pipelines, clean raw data, validate quality, and prepare structured datasets for analysis.',
     skills: ['SQL Development', 'Python Automation', 'ETL Pipeline Design', 'Data Cleaning', 'Data Quality Control', 'Workflow Automation'],
     technologies: ['SQL', 'Python', 'AWS Glue', 'Snowflake', 'Airflow'],
+    stats: [
+      { value: '30%', label: 'Faster dashboards', Icon: Database },
+      { value: '$70K', label: 'Annual savings', Icon: TrendingUp },
+    ],
     recruiter: {
       headline: 'Building reliable data foundations for faster reporting.',
-      summary:
-        'I focused on making raw business data clean, trusted, and ready for decision-making. Instead of relying on manual reporting steps, I helped create repeatable workflows that made dashboards faster and more reliable.',
+      summary: 'I focused on making raw business data clean, trusted, and ready for decision-making. Instead of relying on manual reporting steps, I helped create repeatable workflows that made dashboards faster and more reliable.',
       role: 'I played a key role in preparing structured datasets, improving data quality, and reducing delays in dashboard refresh cycles.',
       businessImpact: 'Improved dashboard readiness by 30% and helped business teams access cleaner insights faster.',
       points: [
@@ -163,8 +170,7 @@ const stages = [
     },
     technical: {
       headline: 'ETL automation, validation logic, and analytics-ready data modeling.',
-      summary:
-        'I built SQL and Python-based data preparation workflows to clean, transform, validate, and structure data for reporting and downstream analytics.',
+      summary: 'I built SQL and Python-based data preparation workflows to clean, transform, validate, and structure data for reporting and downstream analytics.',
       contribution: 'Created ETL workflows, added validation checks, handled missing or inconsistent values, and optimized transformations for faster dashboard performance.',
       implementation: 'Used SQL, Python, AWS Glue, Snowflake, and Airflow-style workflow logic to automate repeatable data preparation steps.',
       points: [
@@ -184,10 +190,10 @@ const stages = [
     description: 'Apply forecasting, segmentation, anomaly detection, and risk scoring models to uncover patterns and predict outcomes.',
     skills: ['Machine Learning', 'Forecasting', 'Risk Scoring', 'Feature Engineering', 'Model Validation', 'Statistical Analysis'],
     technologies: ['Python', 'Scikit-learn', 'Pandas', 'NumPy', 'XGBoost', 'LightGBM', 'ARIMA'],
+    stats: [{ value: '+22%', label: 'Better forecast accuracy', Icon: Brain }],
     recruiter: {
       headline: 'Using models to turn data patterns into business predictions.',
-      summary:
-        'I used analytical and machine learning methods to help teams understand trends, predict outcomes, and identify risk earlier. This made the work more valuable than basic reporting because it supported forward-looking decisions.',
+      summary: 'I used analytical and machine learning methods to help teams understand trends, predict outcomes, and identify risk earlier. This made the work more valuable than basic reporting because it supported forward-looking decisions.',
       role: 'I contributed to building forecasting, segmentation, anomaly detection, and risk-scoring logic that improved decision confidence.',
       businessImpact: 'Improved forecast accuracy by 22% and helped teams make faster, more confident planning decisions.',
       points: [
@@ -198,8 +204,7 @@ const stages = [
     },
     technical: {
       headline: 'Feature engineering, model training, validation, and performance improvement.',
-      summary:
-        'I worked on model workflows involving feature preparation, algorithm selection, validation, and performance comparison to improve prediction quality.',
+      summary: 'I worked on model workflows involving feature preparation, algorithm selection, validation, and performance comparison to improve prediction quality.',
       contribution: 'Applied statistical modeling and machine learning techniques including ARIMA, XGBoost, LightGBM, anomaly detection logic, and risk scoring methods.',
       implementation: 'Used Python, Scikit-learn, Pandas, NumPy, ARIMA, XGBoost, and LightGBM-style workflows to test patterns, validate accuracy, and improve model output.',
       points: [
@@ -219,10 +224,10 @@ const stages = [
     description: 'Create dashboards and executive reports that make complex data easy to understand and act on.',
     skills: ['Dashboard Design', 'KPI Reporting', 'Data Storytelling', 'DAX', 'Executive Reporting', 'Data Visualization'],
     technologies: ['Power BI', 'Tableau', 'DAX', 'SQL', 'Excel'],
+    stats: [{ value: '60+', label: 'Leaders supported', Icon: BarChart3 }],
     recruiter: {
       headline: 'Making complex data easy for leaders to act on.',
-      summary:
-        'I designed dashboards that helped business users quickly understand performance, trends, risks, and opportunities without needing to dig through raw data.',
+      summary: 'I designed dashboards that helped business users quickly understand performance, trends, risks, and opportunities without needing to dig through raw data.',
       role: 'I converted complex analytical outputs into clean dashboards, KPI views, and reporting layouts that supported leadership decisions.',
       businessImpact: 'Supported 60+ leaders with dashboards and reports that improved visibility into business performance.',
       points: [
@@ -233,8 +238,7 @@ const stages = [
     },
     technical: {
       headline: 'Dashboard modeling, DAX logic, KPI design, and reporting optimization.',
-      summary:
-        'I built dashboard layers that connected cleaned datasets with business KPIs, interactive filters, executive summaries, and performance-focused visuals.',
+      summary: 'I built dashboard layers that connected cleaned datasets with business KPIs, interactive filters, executive summaries, and performance-focused visuals.',
       contribution: 'Created Power BI and Tableau dashboards, wrote DAX measures, optimized SQL queries, and designed KPI layouts for usability and clarity.',
       implementation: 'Used Power BI, Tableau, DAX, SQL, and dashboard design principles to create reporting views for business and leadership teams.',
       points: [
@@ -254,10 +258,10 @@ const stages = [
     description: 'Automate reporting, monitor model performance, document workflows, and ship solutions used by real teams.',
     skills: ['Automation', 'CI/CD', 'Model Monitoring', 'Documentation', 'Workflow Scheduling', 'Production Handoff'],
     technologies: ['Git', 'CI/CD', 'Confluence', 'Airflow', 'SQL', 'Python'],
+    stats: [{ value: 'Hours → min', label: 'Runtime', Icon: Rocket }],
     recruiter: {
       headline: 'Shipping solutions that teams can actually use.',
-      summary:
-        'I focused on delivering work that was not just technically complete, but practical, repeatable, documented, and useful for real business users.',
+      summary: 'I focused on delivering work that was not just technically complete, but practical, repeatable, documented, and useful for real business users.',
       role: 'I helped move analytics work from one-time analysis into repeatable dashboards, automated workflows, and documented processes.',
       businessImpact: 'Reduced manual effort and improved delivery speed by turning slow workflows from hours into minutes.',
       points: [
@@ -268,8 +272,7 @@ const stages = [
     },
     technical: {
       headline: 'Automation, monitoring, documentation, and production-ready delivery.',
-      summary:
-        'I supported delivery by automating repeatable tasks, documenting workflows, monitoring outputs, and creating handoff-ready analytics solutions.',
+      summary: 'I supported delivery by automating repeatable tasks, documenting workflows, monitoring outputs, and creating handoff-ready analytics solutions.',
       contribution: 'Used Git, CI/CD concepts, Airflow-style scheduling, documentation, and monitoring logic to make solutions easier to maintain.',
       implementation: 'Created reusable workflows, documented assumptions, tracked changes, and improved repeatability across analytics and reporting processes.',
       points: [
@@ -279,16 +282,6 @@ const stages = [
       ],
     },
   },
-];
-
-/* Clickable metric badges (icon + metric + stage label). */
-const metrics = [
-  { label: 'Requirements clarity +35%', stageLabel: 'Understand', stage: 0, Icon: Gauge },
-  { label: '30% faster dashboards', stageLabel: 'Engineer', stage: 1, Icon: Database },
-  { label: '22% better forecast accuracy', stageLabel: 'Model', stage: 2, Icon: Brain },
-  { label: '60+ leaders supported', stageLabel: 'Visualize', stage: 3, Icon: BarChart3 },
-  { label: 'Hours → minutes runtime', stageLabel: 'Deliver', stage: 4, Icon: Rocket },
-  { label: '$70K annual savings', stageLabel: 'Engineer', stage: 1, Icon: TrendingUp },
 ];
 
 /* Chart series keyed by stage number → "Impact over time". */
@@ -301,18 +294,12 @@ const chartDataByStage = {
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
-   SkillPill / TechPill — icon + label, monochrome, hover glow, aria-label
+   SkillPill / TechPill
    ────────────────────────────────────────────────────────────────────────── */
 function SkillPill({ label }) {
   const Ic = skillIconMap[label] || SKILL_FALLBACK;
   return (
-    <motion.span
-      className={styles.pill}
-      role="listitem"
-      aria-label={`Skill: ${label}`}
-      whileHover={{ y: -3 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-    >
+    <motion.span className={styles.pill} role="listitem" aria-label={`Skill: ${label}`} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
       <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
       {label}
     </motion.span>
@@ -322,13 +309,7 @@ function SkillPill({ label }) {
 function TechPill({ label }) {
   const Ic = techIconMap[label] || TECH_FALLBACK;
   return (
-    <motion.span
-      className={cx(styles.pill, styles.techPill)}
-      role="listitem"
-      aria-label={`Technology: ${label}`}
-      whileHover={{ y: -3 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-    >
+    <motion.span className={cx(styles.pill, styles.techPill)} role="listitem" aria-label={`Technology: ${label}`} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
       <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
       {label}
     </motion.span>
@@ -370,9 +351,8 @@ function ProcessCard({ stage, isActive, isDone, onSelect }) {
       aria-pressed={isActive}
       aria-label={`Stage ${number}: ${title}`}
       className={cx(styles.card, isActive && styles.cardActive, isDone && styles.cardDone)}
-      variants={{ hidden: { opacity: 0, y: 26 }, show: { opacity: 1, y: 0 } }}
-      animate={{ scale: isActive ? 1.03 : 1 }}
       whileHover={{ y: -4 }}
+      animate={{ scale: isActive ? 1.03 : 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
     >
       <span className={styles.cardGlow} aria-hidden />
@@ -388,30 +368,7 @@ function ProcessCard({ stage, isActive, isDone, onSelect }) {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   MetricBadge — icon + metric + stage label
-   ────────────────────────────────────────────────────────────────────────── */
-function MetricBadge({ label, stageLabel, Icon, active, onClick }) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cx(styles.badge, active && styles.badgeActive)}
-      whileHover={{ y: -3, scale: 1.03 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 20 }}
-    >
-      <span className={styles.badgeIcon} aria-hidden><Icon size={16} strokeWidth={2.2} /></span>
-      <span className={styles.badgeText}>
-        <span className={styles.badgeMetric}>{label}</span>
-        <span className={styles.badgeStage}>{stageLabel}</span>
-      </span>
-    </motion.button>
-  );
-}
-
-/* Pipeline — glowing connector under the cards (decorative). */
+/* Pipeline — glowing horizontal connector under the cards (decorative). */
 function Pipeline({ active }) {
   const fill = `${(active / (stages.length - 1)) * 80}%`;
   return (
@@ -427,6 +384,51 @@ function Pipeline({ active }) {
   );
 }
 
+/* StatBox — a single metric card that pops in with a red glow. */
+function StatBox({ value, label, Icon, stageLabel }) {
+  return (
+    <div className={styles.statBox}>
+      <span className={styles.statBoxIcon} aria-hidden><Icon size={18} strokeWidth={2.2} /></span>
+      <span className={styles.statBoxValue}>{value}</span>
+      <span className={styles.statBoxLabel}>{label}</span>
+      <span className={styles.statBoxStage}>{stageLabel}</span>
+    </div>
+  );
+}
+
+/* BranchConnector — decorative "{" tree wire that splits to two stat boxes. */
+function BranchConnector() {
+  return (
+    <svg className={styles.branch} viewBox="0 0 240 46" preserveAspectRatio="none" aria-hidden>
+      <path className={styles.branchPath} d="M120 0 V14 Q120 26 100 26 H44" />
+      <path className={styles.branchPath} d="M120 0 V14 Q120 26 140 26 H196" />
+    </svg>
+  );
+}
+
+/* StatGroup — the reveal for a stage: connector wire(s) + stat box(es). */
+function StatGroup({ stage, colIndex, mobile }) {
+  const isDouble = stage.stats.length > 1;
+  const style = (!mobile && typeof colIndex === 'number')
+    ? { gridColumn: isDouble ? '1 / 4' : `${colIndex + 1}` }
+    : undefined;
+  return (
+    <motion.div
+      className={cx(styles.statCell, isDouble && styles.statCellDouble, mobile && styles.statCellMobile)}
+      style={style}
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+    >
+      {isDouble && !mobile ? <BranchConnector /> : <span className={styles.wire} aria-hidden />}
+      <div className={styles.statBoxes}>
+        {stage.stats.map((s) => <StatBox key={s.label} value={s.value} label={s.label} Icon={s.Icon} stageLabel={stage.title} />)}
+      </div>
+    </motion.div>
+  );
+}
+
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
@@ -437,7 +439,7 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
-/* InfoBlock — labelled paragraph used for role / impact / contribution / etc. */
+/* InfoBlock — labelled paragraph for role / impact / contribution / etc. */
 function InfoBlock({ label, text, accent }) {
   return (
     <div className={cx(styles.info, accent && styles.infoAccent)}>
@@ -448,7 +450,7 @@ function InfoBlock({ label, text, accent }) {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   ImpactDashboard — renders DISTINCT recruiter vs technical content
+   ImpactDashboard — distinct recruiter vs technical content
    ────────────────────────────────────────────────────────────────────────── */
 function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
   const { Icon } = stage;
@@ -467,14 +469,11 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className={styles.panelGrid}
         >
-          {/* LEFT — narrative differs entirely by view */}
           <div className={styles.panelMain}>
             <div className={styles.panelHead}>
               <span className={styles.panelIcon} aria-hidden><Icon size={22} strokeWidth={2.1} /></span>
               <div>
-                <span className={styles.panelKicker}>
-                  Stage {stage.number} · {mode === 'recruiter' ? 'Recruiter View' : 'Technical View'}
-                </span>
+                <span className={styles.panelKicker}>Stage {stage.number} · {mode === 'recruiter' ? 'Recruiter View' : 'Technical View'}</span>
                 <h3 className={styles.panelTitle}>{stage.title}</h3>
               </div>
             </div>
@@ -522,7 +521,6 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
             </div>
           </div>
 
-          {/* RIGHT — skills, technologies (with icons), contribution drawer */}
           <div className={styles.panelSide}>
             <div className={styles.group}>
               <span className={styles.groupLabel}>Skills Gained</span>
@@ -538,12 +536,7 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
               </div>
             </div>
 
-            <button
-              type="button"
-              className={styles.detailsBtn}
-              onClick={onToggleDrawer}
-              aria-expanded={drawerOpen}
-            >
+            <button type="button" className={styles.detailsBtn} onClick={onToggleDrawer} aria-expanded={drawerOpen}>
               <span>{drawerOpen ? 'Hide contribution' : `View ${mode === 'recruiter' ? 'business impact' : 'technical'} details`}</span>
               <motion.span animate={{ rotate: drawerOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }} aria-hidden>
                 <ChevronDown size={16} strokeWidth={2.4} />
@@ -552,20 +545,9 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
 
             <AnimatePresence initial={false}>
               {drawerOpen && (
-                <motion.ul
-                  className={styles.drawer}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.32, ease: 'easeInOut' }}
-                >
+                <motion.ul className={styles.drawer} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.32, ease: 'easeInOut' }}>
                   {view.points.map((p, i) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.06 * i + 0.05 }}
-                    >
+                    <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.06 * i + 0.05 }}>
                       <span className={styles.drawerIcon} aria-hidden><BulletIcon size={15} strokeWidth={2.3} /></span>
                       <span>{p}</span>
                     </motion.li>
@@ -580,50 +562,12 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
   );
 }
 
-/* SimulationProgress — bottom status bar with 01…05 markers. */
-function SimulationProgress({ active, running }) {
-  return (
-    <div className={styles.simBar}>
-      <div className={styles.simStatus}>
-        <span className={cx(styles.simStatusIcon, running && styles.simStatusIconRun)} aria-hidden>
-          {running ? <Activity size={16} strokeWidth={2.4} /> : <Play size={16} strokeWidth={2.4} />}
-        </span>
-        <div>
-          <span className={styles.simStatusLabel}>Simulation status</span>
-          <span className={cx(styles.simStatusValue, running && styles.simStatusValueRun)}>{running ? 'Running' : 'Ready'}</span>
-        </div>
-      </div>
-
-      <div className={styles.simTrack} aria-hidden>
-        {stages.map((s, i) => (
-          <div key={s.number} className={styles.simStep}>
-            {i > 0 && <span className={cx(styles.simLine, (i <= active) && styles.simLineOn)} />}
-            <span className={cx(styles.simNode, (i < active) && styles.simNodeDone, (i === active) && styles.simNodeActive)}>{s.number}</span>
-          </div>
-        ))}
-      </div>
-
-      <p className={styles.simHint}>
-        Click <strong>Live Workflow Simulation</strong> to watch the full journey.
-        <Rocket size={15} strokeWidth={2.2} aria-hidden />
-      </p>
-    </div>
-  );
-}
-
 /* SuccessToast */
 function SuccessToast({ show }) {
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
-          className={styles.toast}
-          role="status"
-          initial={{ opacity: 0, y: 24, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-        >
+        <motion.div className={styles.toast} role="status" initial={{ opacity: 0, y: 24, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24, scale: 0.95 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}>
           <CheckCircle2 size={18} strokeWidth={2.4} aria-hidden />
           Data product shipped successfully.
         </motion.div>
@@ -636,13 +580,27 @@ function SuccessToast({ show }) {
    DataProductProcessSection — top-level component
    ────────────────────────────────────────────────────────────────────────── */
 export default function DataProductProcessSection() {
-  const [active, setActive] = useState(0);
-  const [mode, setMode] = useState('recruiter'); // 'recruiter' | 'technical'
+  const [activeStageIndex, setActiveStageIndex] = useState(0);
+  const [viewMode, setViewMode] = useState('recruiter'); // 'recruiter' | 'technical'
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [running, setRunning] = useState(false);
   const [shipped, setShipped] = useState(false);
+  const [visibleMetricStageIndex, setVisibleMetricStageIndex] = useState(null);
+  const [isMetricVisible, setIsMetricVisible] = useState(false);
+  const [hasUserManuallyChangedView, setHasUserManuallyChangedView] = useState(false);
+
+  const timersRef = useRef({ metricHide: null, viewSwitch: null });
   const simRef = useRef(null);
+  const manualRef = useRef(false);
   const reduceMotion = useReducedMotion();
+
+  const clearFlowTimers = () => {
+    const t = timersRef.current;
+    if (t.metricHide) clearTimeout(t.metricHide);
+    if (t.viewSwitch) clearTimeout(t.viewSwitch);
+    t.metricHide = null;
+    t.viewSwitch = null;
+  };
 
   const stopSim = () => {
     if (simRef.current) clearInterval(simRef.current);
@@ -650,34 +608,71 @@ export default function DataProductProcessSection() {
     setRunning(false);
   };
 
+  // Click a stage card → run the timed reveal + auto view-switch flow.
   const selectStage = (i) => {
     stopSim();
-    setShipped(false);
-    setActive(i);
+    clearFlowTimers();
+    manualRef.current = false;
+    setHasUserManuallyChangedView(false);
+    setDrawerOpen(false);
+    setActiveStageIndex(i);
+    setViewMode('recruiter');
+    setVisibleMetricStageIndex(i);
+    setIsMetricVisible(true);
+
+    timersRef.current.metricHide = setTimeout(() => setIsMetricVisible(false), METRIC_VISIBLE_MS);
+    timersRef.current.viewSwitch = setTimeout(() => {
+      if (!manualRef.current) setViewMode('technical');
+    }, VIEW_SWITCH_MS);
+  };
+
+  // Manual toggle — updates the view and cancels the pending auto-switch.
+  const changeView = (m) => {
+    manualRef.current = true;
+    setHasUserManuallyChangedView(true);
+    setViewMode(m);
+    if (timersRef.current.viewSwitch) {
+      clearTimeout(timersRef.current.viewSwitch);
+      timersRef.current.viewSwitch = null;
+    }
   };
 
   const startSim = () => {
     if (simRef.current) { stopSim(); return; }
+    clearFlowTimers();
+    manualRef.current = false;
+    setHasUserManuallyChangedView(false);
     setShipped(false);
     setDrawerOpen(false);
-    setActive(0);
+    setViewMode('recruiter');
+    setActiveStageIndex(0);
+    setVisibleMetricStageIndex(0);
+    setIsMetricVisible(true);
     setRunning(true);
     let i = 0;
     simRef.current = setInterval(() => {
       i += 1;
       if (i > stages.length - 1) {
         stopSim();
+        setIsMetricVisible(false);
         setShipped(true);
         setTimeout(() => setShipped(false), 3600);
         return;
       }
-      setActive(i);
+      setActiveStageIndex(i);
+      setVisibleMetricStageIndex(i);
+      setIsMetricVisible(true);
     }, 1500);
   };
 
-  useEffect(() => () => { if (simRef.current) clearInterval(simRef.current); }, []);
+  // Clean up every timer / interval on unmount.
+  useEffect(() => () => {
+    clearFlowTimers();
+    if (simRef.current) clearInterval(simRef.current);
+  }, []);
 
-  const activeStage = stages[active];
+  const activeStage = stages[activeStageIndex];
+  const showStats = isMetricVisible && visibleMetricStageIndex !== null;
   const fadeIn = reduceMotion
     ? {}
     : { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.12 }, transition: { duration: 0.6, ease: 'easeOut' } };
@@ -700,53 +695,65 @@ export default function DataProductProcessSection() {
             </button>
 
             <div className={styles.toggle} role="group" aria-label="View mode">
-              <button
-                type="button"
-                aria-pressed={mode === 'recruiter'}
-                className={cx(styles.toggleBtn, mode === 'recruiter' && styles.toggleOn)}
-                onClick={() => setMode('recruiter')}
-              >
+              <button type="button" aria-pressed={viewMode === 'recruiter'} className={cx(styles.toggleBtn, viewMode === 'recruiter' && styles.toggleOn)} onClick={() => changeView('recruiter')}>
                 <Briefcase size={15} strokeWidth={2.2} aria-hidden /> Recruiter View
               </button>
-              <button
-                type="button"
-                aria-pressed={mode === 'technical'}
-                className={cx(styles.toggleBtn, mode === 'technical' && styles.toggleOn)}
-                onClick={() => setMode('technical')}
-              >
+              <button type="button" aria-pressed={viewMode === 'technical'} className={cx(styles.toggleBtn, viewMode === 'technical' && styles.toggleOn)} onClick={() => changeView('technical')}>
                 <Code2 size={15} strokeWidth={2.2} aria-hidden /> Technical View
               </button>
             </div>
           </div>
         </div>
 
-        {/* WORKFLOW CARDS + PIPELINE */}
-        <motion.div
-          className={styles.cards}
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09 } } }}
-          initial={reduceMotion ? undefined : 'hidden'}
-          whileInView={reduceMotion ? undefined : 'show'}
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {stages.map((stage, i) => (
-            <ProcessCard key={stage.number} stage={stage} isActive={i === active} isDone={i < active} onSelect={() => selectStage(i)} />
-          ))}
-        </motion.div>
+        {/* WORKFLOW */}
+        <div className={styles.workflow}>
+          <motion.div
+            className={styles.cards}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09 } } }}
+            initial={reduceMotion ? undefined : 'hidden'}
+            whileInView={reduceMotion ? undefined : 'show'}
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            {stages.map((stage, i) => (
+              <motion.div
+                key={stage.number}
+                className={styles.cardCell}
+                variants={{ hidden: { opacity: 0, y: 26 }, show: { opacity: 1, y: 0 } }}
+                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              >
+                <ProcessCard stage={stage} isActive={i === activeStageIndex} isDone={i < activeStageIndex} onSelect={() => selectStage(i)} />
 
-        <Pipeline active={active} />
+                {/* MOBILE: stat reveal directly below the clicked card */}
+                <div className={styles.statInlineMobile}>
+                  <AnimatePresence>
+                    {showStats && visibleMetricStageIndex === i && (
+                      <StatGroup stage={stage} mobile />
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
 
-        {/* METRIC BADGES */}
-        <div className={styles.badges}>
-          {metrics.map((m) => (
-            <MetricBadge key={m.label} label={m.label} stageLabel={m.stageLabel} Icon={m.Icon} active={m.stage === active} onClick={() => selectStage(m.stage)} />
-          ))}
+          <Pipeline active={activeStageIndex} />
+
+          {/* DESKTOP / TABLET: stat reveal aligned under the selected stage */}
+          <div className={styles.statRow}>
+            <AnimatePresence>
+              {showStats && (
+                <StatGroup
+                  key={visibleMetricStageIndex}
+                  stage={stages[visibleMetricStageIndex]}
+                  colIndex={visibleMetricStageIndex}
+                />
+              )}
+            </AnimatePresence>
+            {!showStats && <p className={styles.statHint} aria-hidden>Select a stage to reveal its impact.</p>}
+          </div>
         </div>
 
         {/* DASHBOARD PANEL */}
-        <ImpactDashboard stage={activeStage} mode={mode} drawerOpen={drawerOpen} onToggleDrawer={() => setDrawerOpen((v) => !v)} />
-
-        {/* SIMULATION STATUS BAR */}
-        <SimulationProgress active={active} running={running} />
+        <ImpactDashboard stage={activeStage} mode={viewMode} drawerOpen={drawerOpen} onToggleDrawer={() => setDrawerOpen((v) => !v)} />
       </div>
 
       <SuccessToast show={shipped} />

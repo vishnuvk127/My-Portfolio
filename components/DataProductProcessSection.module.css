@@ -213,7 +213,14 @@
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   transition: color 0.25s, border-color 0.25s, background 0.25s, box-shadow 0.25s;
 }
-.badgeIcon { display: inline-flex; color: #ff2b2b; }
+.badgeIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px; color: #ff2b2b; flex-shrink: 0;
+  background: rgba(255, 43, 43, 0.1); border: 1px solid rgba(255, 43, 43, 0.25);
+}
+.badgeText { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.badgeMetric { font-size: 13.5px; font-weight: 700; color: inherit; }
+.badgeStage { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.45); }
 .badge:hover { color: #fff; border-color: rgba(255, 43, 43, 0.45); }
 .badge:focus-visible { outline: 2px solid #ff2b2b; outline-offset: 3px; }
 .badgeActive {
@@ -242,7 +249,24 @@
 }
 .panelKicker { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 43, 43, 0.85); }
 .panelTitle { margin: 3px 0 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.panelHeadline {
+  margin: 0 0 12px; font-size: 17px; font-weight: 700; line-height: 1.4; color: #fff;
+  padding-left: 14px; border-left: 3px solid #ff2b2b;
+}
 .panelDesc { color: rgba(255, 255, 255, 0.62); font-size: 15px; line-height: 1.65; margin: 0 0 18px; }
+
+/* labelled narrative blocks (My Role / Business Impact / Technical Contribution / Implementation) */
+.info { margin-bottom: 14px; }
+.infoLabel {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255, 43, 43, 0.85); margin-bottom: 5px;
+}
+.infoText { margin: 0; font-size: 14px; line-height: 1.6; color: rgba(255, 255, 255, 0.66); }
+.infoAccent {
+  padding: 12px 15px; border-radius: 12px;
+  background: rgba(255, 43, 43, 0.06); border: 1px solid rgba(255, 43, 43, 0.2);
+}
+.infoAccent .infoText { color: rgba(255, 255, 255, 0.85); }
 
 .impact {
   display: flex; align-items: center; gap: 10px; padding: 12px 15px; margin-bottom: 18px;
@@ -299,7 +323,12 @@
 }
 .pill:hover { color: #fff; border-color: #ff2b2b; background: rgba(255, 43, 43, 0.12); box-shadow: 0 0 18px rgba(255, 43, 43, 0.35); }
 .techPill { color: rgba(255, 255, 255, 0.85); border-color: rgba(255, 43, 43, 0.22); background: rgba(255, 43, 43, 0.06); }
-.techDot { width: 6px; height: 6px; border-radius: 50%; background: #ff2b2b; box-shadow: 0 0 8px rgba(255, 43, 43, 0.7); }
+.pillIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; flex-shrink: 0; color: #ff2b2b; transition: color 0.2s;
+}
+.pillIcon svg { width: 15px; height: 15px; }
+.pill:hover .pillIcon { color: #fff; }
 
 .detailsBtn {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px;

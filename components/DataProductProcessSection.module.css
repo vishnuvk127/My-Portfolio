@@ -423,16 +423,6 @@
 .pillIcon svg { width: 15px; height: 15px; }
 .pill:hover .pillIcon { color: #fff; }
 
-.detailsBtn {
-  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px;
-  padding: 11px 17px; border-radius: 12px; font-family: inherit; font-size: 13.5px; font-weight: 700;
-  color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 43, 43, 0.4);
-  transition: background 0.2s, box-shadow 0.2s;
-}
-.detailsBtn:hover { background: rgba(255, 43, 43, 0.12); box-shadow: 0 0 20px rgba(255, 43, 43, 0.3); }
-.detailsBtn:focus-visible { outline: 2px solid #ff2b2b; outline-offset: 3px; }
-.detailsBtn svg { color: #ff2b2b; }
-
 .drawer { list-style: none; margin: 16px 0 0; padding: 0; overflow: hidden; }
 .drawer li {
   display: flex; gap: 11px; padding: 13px 0; color: rgba(255, 255, 255, 0.68);

@@ -15,8 +15,8 @@
   font-weight: 800;
   letter-spacing: 0.03em;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.055);
-  text-shadow: 0 1px 18px rgba(255, 140, 66, 0.035);
+  color: rgba(255, 255, 255, 0.035);
+  text-shadow: 0 1px 16px rgba(255, 140, 66, 0.025);
   transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 .brand:hover {

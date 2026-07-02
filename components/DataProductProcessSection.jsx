@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Target, Database, Brain, BarChart3, Rocket,
-  Play, Square, Sparkles, CheckCircle2, ChevronDown,
+  Play, Square, Sparkles, CheckCircle2,
   Briefcase, BriefcaseBusiness, Code2, Activity, Gauge, ClipboardList,
   FileCheck, Users, Workflow, Filter, ShieldCheck, LineChart, Settings,
   Sigma, Presentation, PieChart, GitBranch, Cog, TrendingUp, Cloud,
@@ -456,7 +456,7 @@ function InfoBlock({ label, text, accent }) {
 /* ──────────────────────────────────────────────────────────────────────────
    ImpactDashboard — distinct recruiter vs technical content
    ────────────────────────────────────────────────────────────────────────── */
-function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
+function ImpactDashboard({ stage, mode }) {
   const { Icon } = stage;
   const view = mode === 'recruiter' ? stage.recruiter : stage.technical;
   const chartData = chartDataByStage[stage.number];
@@ -540,25 +540,17 @@ function ImpactDashboard({ stage, mode, drawerOpen, onToggleDrawer }) {
               </div>
             </div>
 
-            <button type="button" className={styles.detailsBtn} onClick={onToggleDrawer} aria-expanded={drawerOpen}>
-              <span>Contribution</span>
-              <motion.span animate={{ rotate: drawerOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ display: 'inline-flex' }} aria-hidden>
-                <ChevronDown size={16} strokeWidth={2.4} />
-              </motion.span>
-            </button>
-
-            <AnimatePresence initial={false}>
-              {drawerOpen && (
-                <motion.ul className={styles.drawer} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.32, ease: 'easeInOut' }}>
-                  {view.points.map((p, i) => (
-                    <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.06 * i + 0.05 }}>
-                      <span className={styles.drawerIcon} aria-hidden><BulletIcon size={15} strokeWidth={2.3} /></span>
-                      <span>{p}</span>
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              )}
-            </AnimatePresence>
+            <div className={styles.group}>
+              <span className={styles.groupLabel}>Contribution</span>
+              <motion.ul className={styles.drawer} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+                {view.points.map((p, i) => (
+                  <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.06 * i + 0.05 }}>
+                    <span className={styles.drawerIcon} aria-hidden><BulletIcon size={15} strokeWidth={2.3} /></span>
+                    <span>{p}</span>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -586,7 +578,6 @@ function SuccessToast({ show }) {
 export default function DataProductProcessSection() {
   const [activeStageIndex, setActiveStageIndex] = useState(0);
   const [viewMode, setViewMode] = useState('recruiter'); // 'recruiter' | 'technical'
-  const [contributionOpen, setContributionOpen] = useState(false);
   const [visibleMetricStageIndex, setVisibleMetricStageIndex] = useState(null);
   const [isMetricVisible, setIsMetricVisible] = useState(false);
   const [isPulseActive, setIsPulseActive] = useState(false);
@@ -615,7 +606,6 @@ export default function DataProductProcessSection() {
   const runStageFlow = (i) => {
     clearTimers();
     manualRef.current = false;
-    setContributionOpen(false);
     setActiveStageIndex(i);
     setViewMode('recruiter');
     setVisibleMetricStageIndex(i);
@@ -798,7 +788,7 @@ export default function DataProductProcessSection() {
           ref={dashboardRef}
           className={cx(styles.dashWrap, isDashboardFocused && styles.dashFocused, techPulse && styles.techPulse)}
         >
-          <ImpactDashboard stage={activeStage} mode={viewMode} drawerOpen={contributionOpen} onToggleDrawer={() => setContributionOpen((v) => !v)} />
+          <ImpactDashboard stage={activeStage} mode={viewMode} />
         </div>
       </div>
 

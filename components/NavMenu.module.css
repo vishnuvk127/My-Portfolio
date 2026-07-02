@@ -15,13 +15,13 @@
   font-weight: 800;
   letter-spacing: 0.03em;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.4);
-  text-shadow: 0 2px 20px rgba(255, 140, 66, 0.3);
+  color: rgba(255, 255, 255, 0.16);
+  text-shadow: 0 2px 20px rgba(255, 140, 66, 0.12);
   transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 .brand:hover {
-  color: rgba(255, 255, 255, 0.75);
-  text-shadow: 0 2px 24px rgba(255, 140, 66, 0.5);
+  color: rgba(255, 255, 255, 0.42);
+  text-shadow: 0 2px 24px rgba(255, 140, 66, 0.28);
 }
 
 @media (max-width: 640px) {

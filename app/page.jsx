@@ -16,7 +16,7 @@ import DataProductProcessSection from '@/components/DataProductProcessSection';
 import styles from './page.module.css';
 
 export const metadata = {
-  title: 'Vishnu Vardhan Kaitepalli — Data Analytics Engineer',
+  title: 'Vishnu Vardhan Kaitepalli — Data Analyst',
   description: 'Portfolio of Vishnu Vardhan — ETL automation, risk scoring models, credit risk analytics, and scalable BI architecture.',
 };
 
@@ -142,17 +142,65 @@ const experience = [
 ];
 
 const pncStats = [
-  { num: '2+',   lbl: 'Years at PNC' },
-  { num: '$15M', lbl: 'Credit Losses Mitigated' },
-  { num: '30%',  lbl: 'Fraud Alert Reduction' },
-  { num: '0.89', lbl: 'ROC-AUC Achieved' },
+  {
+    num: '2+',
+    lbl: 'Years at PNC',
+    contextTitle: 'Applied finance analytics experience',
+    context:
+      'This represents hands-on analytics work in financial services, where I contributed to credit risk, fraud analytics, ETL automation, dashboarding, and model monitoring workflows. The focus was moving from raw financial data to decision-ready insights.',
+  },
+  {
+    num: '$15M',
+    lbl: 'Credit Losses Mitigated',
+    contextTitle: 'Portfolio risk reduction support',
+    context:
+      'This refers to analytics support for credit-risk workflows where model signals, covenant risk indicators, and portfolio monitoring helped identify accounts that needed earlier review. My contribution focused on preparing risk signals, supporting CECL / CCAR-style analysis, and translating model outputs into portfolio insights.',
+  },
+  {
+    num: '30%',
+    lbl: 'Fraud Alert Reduction',
+    contextTitle: 'Reducing false-positive investigation noise',
+    context:
+      'This reflects work on fraud analytics where anomaly-detection logic helped reduce unnecessary alerts. My role involved transaction-pattern analysis, model-ready data preparation, and validation workflows so fraud teams could focus more attention on higher-risk cases.',
+  },
+  {
+    num: '0.89',
+    lbl: 'ROC-AUC Achieved',
+    contextTitle: 'Model validation improvement',
+    context:
+      'This represents a credit-risk classification improvement measured through ROC-AUC. I contributed by preparing structured risk datasets, supporting feature validation, comparing model performance, and helping improve separation between higher-risk and lower-risk borrower profiles.',
+  },
 ];
 
 const ltiStats = [
-  { num: '2',      lbl: 'Years at LTI Mindtree' },
-  { num: '500GB+', lbl: 'Data Unified' },
-  { num: '70%',    lbl: 'MLOps Rework Reduced' },
-  { num: '60%',    lbl: 'Campaign Response Lift' },
+  {
+    num: '2',
+    lbl: 'Years at LTI Mindtree',
+    contextTitle: 'Enterprise analytics delivery experience',
+    context:
+      'This covers analytics and data delivery experience at LTI Mindtree, where I worked on ETL pipelines, forecasting, customer segmentation, KPI reporting, and dashboard support for business users.',
+  },
+  {
+    num: '500GB+',
+    lbl: 'Data Unified',
+    contextTitle: 'Multi-source data consolidation',
+    context:
+      'This represents the scale of data handled across SQL Server, Azure SQL DB, and Oracle sources. My contribution focused on helping unify fragmented datasets through ETL workflows, improving consistency, and preparing cleaner data layers for dashboards and analytics.',
+  },
+  {
+    num: '70%',
+    lbl: 'MLOps Rework Reduced',
+    contextTitle: 'Cleaner handoffs for analytics workflows',
+    context:
+      'This refers to reducing repeated cleanup and rework caused by inconsistent data outputs. I helped normalize modular ETL outputs, improve validation steps, and structure data handoffs so downstream analytics and model workflows became more repeatable.',
+  },
+  {
+    num: '60%',
+    lbl: 'Campaign Response Lift',
+    contextTitle: 'Customer segmentation for better targeting',
+    context:
+      'This reflects segmentation-based analytics used to identify stronger customer groups for campaign targeting. My work involved preparing behavioral data, supporting clustering / XGBoost-style segmentation, and helping teams focus outreach on higher-value customer patterns.',
+  },
 ];
 
 /* Same approach as Experience — condensed achievements + skills/tech
@@ -225,6 +273,38 @@ const certifications = [
   { name: 'Tableau Desktop Specialist', issuer: 'Tableau / Salesforce' },
 ];
 
+function AboutStatCard({ stat, delay, group, index }) {
+  const { num, lbl, contextTitle, context } = stat;
+  const cardId = `${group}-about-stat-${index}`;
+
+  return (
+    <Reveal
+      className={`${styles.statCard} ${styles.bentoStat}`}
+      delay={delay}
+      tabIndex={0}
+      role="article"
+      aria-labelledby={`${cardId}-label`}
+      aria-describedby={`${cardId}-context`}
+    >
+      <div className={styles.statCardInner}>
+        <div className={`${styles.statFace} ${styles.statFront}`}>
+          <StatCounter value={num} className={styles.statNum} />
+          <div id={`${cardId}-label`} className={styles.statLbl}>{lbl}</div>
+          <span className={styles.statHint}>Hover for context</span>
+        </div>
+
+        <div className={`${styles.statFace} ${styles.statBack}`}>
+          <span className={styles.statBackKicker}>Evidence context</span>
+          <strong className={styles.statBackTitle}>{contextTitle}</strong>
+          <p id={`${cardId}-context`} className={styles.statBackText}>{context}</p>
+        </div>
+      </div>
+
+      <span className={styles.statLightning} aria-hidden="true" />
+    </Reveal>
+  );
+}
+
 /* ─────────────────────────────────────────
    PAGE
 ───────────────────────────────────────── */
@@ -252,20 +332,26 @@ export default function HomePage() {
         </div>
 
         <Reveal as="span" className={styles.statGroupLabel}>PNC Financial Services</Reveal>
-        {pncStats.map(({ num, lbl }, i) => (
-          <Reveal key={lbl} className={`${styles.statCard} ${styles.bentoStat}`} delay={i * 0.08}>
-            <StatCounter value={num} className={styles.statNum} />
-            <div className={styles.statLbl}>{lbl}</div>
-          </Reveal>
+        {pncStats.map((stat, i) => (
+          <AboutStatCard
+            key={stat.lbl}
+            stat={stat}
+            delay={i * 0.08}
+            group="pnc"
+            index={i}
+          />
         ))}
 
         <Reveal as="span" className={styles.statGroupLabel}>LTI Mindtree</Reveal>
-        {ltiStats.map(({ num, lbl }, i) => (
-          <Reveal key={lbl} className={`${styles.statCard} ${styles.bentoStat}`} delay={i * 0.08}>
-            <StatCounter value={num} className={styles.statNum} />
-            <div className={styles.statLbl}>{lbl}</div>
-          </Reveal>
-        ))}
+        {ltiStats.map((stat, i) => (
+          <AboutStatCard
+            key={stat.lbl}
+            stat={stat}
+            delay={i * 0.08}
+            group="lti"
+            index={i}
+          />
+        ))}        
       </section>
 
       {/* ── SKILLS ── */}

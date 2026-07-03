@@ -9,47 +9,39 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const BASE_LANYARD_LENGTH = 150;
-const MAX_PULL_DISTANCE = 115;
+const INFLUENCE_RADIUS = 420;
+const MAX_LEFT_RIGHT = 280;
+const MAX_UP = 300;
+const MAX_DOWN = 150;
+const HOME_ROTATE = -7;
 
-function limitMovement(x, y) {
-  const distance = Math.sqrt(x * x + y * y);
-
-  if (distance <= MAX_PULL_DISTANCE) {
-    return { x, y };
-  }
-
-  const scale = MAX_PULL_DISTANCE / distance;
-
-  return {
-    x: x * scale,
-    y: y * scale,
-  };
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
   const wrapRef = useRef(null);
-  const frameRef = useRef(null);
+  const badgeRef = useRef(null);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
+    const badge = badgeRef.current;
+    if (!badge) return;
 
-    gsap.set(wrap, {
-      y: -260,
+    gsap.set(badge, {
+      y: -340,
       opacity: 0,
       rotate: -18,
-      transformOrigin: '50% -150px',
+      transformOrigin: '50% 35%',
     });
 
-    const tween = gsap.to(wrap, {
+    const tween = gsap.to(badge, {
       y: 0,
       opacity: 1,
-      rotate: -7,
+      rotate: HOME_ROTATE,
       duration: 1.85,
-      ease: 'elastic.out(1, 0.36)',
+      ease: 'elastic.out(1, 0.35)',
       scrollTrigger: {
-        trigger: wrap,
+        trigger: badge,
         start: 'top 86%',
         end: 'bottom 20%',
         toggleActions: 'play reverse play reverse',
@@ -62,63 +54,68 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
     };
   }, []);
 
-  const updateFrameAndLanyard = (x, y) => {
+  useEffect(() => {
     const wrap = wrapRef.current;
-    if (!wrap) return;
+    const badge = badgeRef.current;
+    if (!wrap || !badge) return;
 
-    const visibleLanyardY = BASE_LANYARD_LENGTH + y;
-    const lanyardLength = Math.sqrt(x * x + visibleLanyardY * visibleLanyardY);
-    const lanyardAngle = Math.atan2(x, visibleLanyardY) * (180 / Math.PI);
-    const frameRotate = -7 + x * 0.045;
+    const resetBadge = () => {
+      wrap.style.setProperty('--move-x', '0px');
+      wrap.style.setProperty('--move-y', '0px');
+      wrap.style.setProperty('--rotate', `${HOME_ROTATE}deg`);
+      wrap.style.setProperty('--lanyard-sway', '0deg');
+    };
 
-    wrap.style.setProperty('--pull-x', `${x}px`);
-    wrap.style.setProperty('--pull-y', `${y}px`);
-    wrap.style.setProperty('--lanyard-length', `${lanyardLength}px`);
-    wrap.style.setProperty('--lanyard-angle', `${lanyardAngle}deg`);
-    wrap.style.setProperty('--frame-rotate', `${frameRotate}deg`);
-  };
+    const handlePointerMove = (event) => {
+      const rect = badge.getBoundingClientRect();
 
-  const handlePointerMove = (event) => {
-    const frame = frameRef.current;
-    if (!frame) return;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-    const rect = frame.getBoundingClientRect();
+      const awayX = centerX - event.clientX;
+      const awayY = centerY - event.clientY;
 
-    const frameCenterX = rect.left + rect.width / 2;
-    const frameCenterY = rect.top + rect.height / 2;
+      const distance = Math.max(Math.sqrt(awayX * awayX + awayY * awayY), 1);
 
-    /*
-      Same-pole magnetic repulsion:
-      mouse comes close -> frame moves away from the mouse.
-    */
-    const awayX = frameCenterX - event.clientX;
-    const awayY = frameCenterY - event.clientY;
+      if (distance > INFLUENCE_RADIUS) {
+        resetBadge();
+        return;
+      }
 
-    const strength = 0.5;
+      const force = 1 - distance / INFLUENCE_RADIUS;
+      const power = 260 * force;
 
-    const rawX = awayX * strength;
-    const rawY = awayY * strength;
+      const moveX = clamp((awayX / distance) * power, -MAX_LEFT_RIGHT, MAX_LEFT_RIGHT);
+      const moveY = clamp((awayY / distance) * power, -MAX_UP, MAX_DOWN);
 
-    const { x, y } = limitMovement(rawX, rawY);
+      const rotate = clamp(HOME_ROTATE + moveX * 0.035, -18, 10);
+      const lanyardSway = clamp(moveX * -0.06, -12, 12);
 
-    updateFrameAndLanyard(x, y);
-  };
+      wrap.style.setProperty('--move-x', `${moveX}px`);
+      wrap.style.setProperty('--move-y', `${moveY}px`);
+      wrap.style.setProperty('--rotate', `${rotate}deg`);
+      wrap.style.setProperty('--lanyard-sway', `${lanyardSway}deg`);
+    };
 
-  const handlePointerLeave = () => {
-    updateFrameAndLanyard(0, 0);
-  };
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerleave', resetBadge);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerleave', resetBadge);
+    };
+  }, []);
 
   return (
-    <div
-      ref={wrapRef}
-      className={styles.frameWrap}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-    >
-      <span className={styles.reel} aria-hidden="true" />
-      <span className={styles.lanyard} aria-hidden="true" />
+    <div ref={wrapRef} className={styles.frameWrap}>
+      <div ref={badgeRef} className={styles.badgeGroup}>
+        <div className={styles.lanyard} aria-hidden="true">
+          <span className={styles.lanyardBand} />
+          <span className={styles.lanyardLeft} />
+          <span className={styles.lanyardRight} />
+          <span className={styles.lanyardClip} />
+        </div>
 
-      <div ref={frameRef} className={styles.frameMover}>
         <div className={styles.frame}>
           <span className={styles.energyFlow} aria-hidden="true" />
 

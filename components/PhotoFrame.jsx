@@ -9,41 +9,29 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-/**
- * PhotoFrame — a small frame/badge that holds the profile image, hung
- * from an off-centre ring so it rests with a slight clockwise list to
- * the right, like a tag that's hanging a little askew. Swap
- * /public/images/profile.jpg for a 3D render any time — same filename,
- * no code changes needed.
- *
- * Scroll behaviour (GSAP ScrollTrigger, toggleActions "play reverse
- * play reverse" — all four directions wired, not a one-shot reveal):
- *  - onEnter      (scrolling down, frame enters view)        → swings in from the left
- *  - onLeave      (scrolling down further, frame exits view) → retreats back out left
- *  - onEnterBack  (scrolling back up, frame re-enters view)  → swings in again
- *  - onLeaveBack  (scrolling up past the section)             → retreats out left again
- */
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
+  const wrapRef = useRef(null);
   const frameRef = useRef(null);
 
   useEffect(() => {
-    const el = frameRef.current;
+    const el = wrapRef.current;
     if (!el) return;
 
-    // Pivot near the hanging ring, off-centre to the left — this is what
-    // makes the resting tilt read as "hung from that point" rather than
-    // an arbitrary rotation.
-    gsap.set(el, { x: -170, opacity: 0, rotate: -16, transformOrigin: '30% -8px' });
+    gsap.set(el, {
+      y: -70,
+      opacity: 0,
+      rotate: 0,
+    });
 
     const tween = gsap.to(el, {
-      x: 0,
+      y: 0,
       opacity: 1,
-      rotate: 6,
+      rotate: 0,
       duration: 0.9,
       ease: 'power3.out',
       scrollTrigger: {
         trigger: el,
-        start: 'top 85%',
+        start: 'top 86%',
         end: 'bottom 20%',
         toggleActions: 'play reverse play reverse',
       },
@@ -55,13 +43,57 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
     };
   }, []);
 
+  const handleMouseMove = (e) => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    const rect = frame.getBoundingClientRect();
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const distanceX = centerX - e.clientX;
+    const distanceY = centerY - e.clientY;
+
+    const distance = Math.max(
+      Math.sqrt(distanceX * distanceX + distanceY * distanceY),
+      1
+    );
+
+    const strength = Math.max(0, 1 - distance / 240);
+
+    const moveX = (distanceX / distance) * strength * 28;
+    const moveY = (distanceY / distance) * strength * 22;
+
+    frame.style.setProperty('--move-x', `${moveX}px`);
+    frame.style.setProperty('--move-y', `${moveY}px`);
+  };
+
+  const handleMouseLeave = () => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    frame.style.setProperty('--move-x', '0px');
+    frame.style.setProperty('--move-y', '0px');
+  };
+
   return (
-    <div ref={frameRef} className={styles.frameWrap}>
-      <span className={styles.frameHook} aria-hidden="true" />
-      <div className={styles.frame}>
-        <div className={styles.frameGlow} aria-hidden="true" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={styles.frameImg} />
+    <div ref={wrapRef} className={styles.frameWrap}>
+      <span className={styles.hangingWire} aria-hidden="true" />
+      <span className={styles.hook} aria-hidden="true" />
+
+      <div
+        ref={frameRef}
+        className={styles.frameMagnet}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className={styles.frame}>
+          <span className={styles.energyLine} aria-hidden="true" />
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt={alt} className={styles.photo} />
+        </div>
       </div>
     </div>
   );

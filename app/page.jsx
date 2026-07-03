@@ -319,7 +319,7 @@ export default function HomePage() {
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />
 
       {/* ── ABOUT (bento grid) ── */}
-      <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'hidden' }}>
+      <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'visible' }}>
         <AmbientDataField color="255,140,66" density={36} />
         <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
           <PhotoFrame />

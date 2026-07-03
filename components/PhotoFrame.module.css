@@ -1,81 +1,207 @@
-/* PhotoFrame.module.css — small hanging frame/badge for the About photo /
-   future 3D render. It hangs from an off-centre ring (.frameHook) and
-   rests with a slight clockwise tilt (set in PhotoFrame.jsx), like a tag
-   hung a little crooked. This file only handles the static look —
-   entrance/retreat motion lives in PhotoFrame.jsx (GSAP ScrollTrigger). */
-
 .frameWrap {
   position: relative;
+  width: 176px;
+  max-width: 100%;
+  margin: 10px 0 26px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 190px;
-  margin: 2px 0 16px;
-  will-change: transform, opacity;
+  justify-content: center;
+  z-index: 5;
 }
 
+/* Hanging wire from the upper section */
+.hangingWire {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2px);
+  width: 1.5px;
+  height: 170px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 140, 66, 0),
+    rgba(255, 209, 102, 0.38),
+    rgba(255, 140, 66, 0.28),
+    rgba(255, 255, 255, 0.18)
+  );
+  box-shadow:
+    0 0 14px rgba(255, 140, 66, 0.25),
+    0 0 28px rgba(255, 209, 102, 0.12);
+  pointer-events: none;
+}
+
+/* Small glowing energy moving through the wire */
+.hangingWire::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -35%;
+  width: 3px;
+  height: 42px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 209, 102, 0.95),
+    transparent
+  );
+  animation: wireFlow 2.6s ease-in-out infinite;
+}
+
+@keyframes wireFlow {
+  0% {
+    top: -35%;
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 110%;
+    opacity: 0;
+  }
+}
+
+/* Circle hook holding the frame */
+.hook {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #0b0712;
+  border: 1.5px solid rgba(255, 209, 102, 0.48);
+  box-shadow:
+    inset 0 0 0 5px rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(255, 140, 66, 0.24);
+  z-index: 3;
+}
+
+/* This layer moves away from mouse */
+.frameMagnet {
+  width: 100%;
+  transform: translate(var(--move-x, 0px), var(--move-y, 0px));
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.25s ease;
+  will-change: transform;
+}
+
+.frameMagnet:hover {
+  filter: drop-shadow(0 0 26px rgba(255, 140, 66, 0.22));
+}
+
+/* Straight padded frame */
 .frame {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: 22px;
-  background: linear-gradient(160deg, #1a1024 0%, #0b0712 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 140, 66, 0.1) inset;
+  padding: 9px;
+  border-radius: 18px;
   overflow: hidden;
-  padding: 12px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    #0b0712;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 22px 56px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 140, 66, 0.12);
 }
 
-/* The ring/grommet the frame hangs from — placed off-centre so the
-   resting tilt (set via GSAP rotate, transform-origin near this point)
-   reads as the frame dangling unevenly from a single point. */
-.frameHook {
+/* Decorative magnetic line over the frame */
+.energyLine {
   position: absolute;
-  top: -11px;
-  left: 30%;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: linear-gradient(160deg, #3a2e4a 0%, #1a1024 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 0 0 4px rgba(11, 7, 18, 0.92), 0 3px 7px rgba(0, 0, 0, 0.45);
+  inset: 0;
   z-index: 3;
-}
-
-.frameHook::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 9px;
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.frameGlow {
-  position: absolute;
-  inset: -30%;
-  background: radial-gradient(circle at 50% 28%, rgba(255, 140, 66, 0.4), transparent 62%);
   pointer-events: none;
-  z-index: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 209, 102, 0.28) 48%,
+    rgba(255, 140, 66, 0.16) 52%,
+    transparent 64%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: frameFlow 4s ease-in-out infinite;
 }
 
-.frameImg {
+@keyframes frameFlow {
+  0%,
+  40% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  52% {
+    opacity: 1;
+  }
+
+  78% {
+    transform: translateX(120%);
+    opacity: 0.25;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+.photo {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 15px;
   display: block;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 12px;
+  filter: saturate(1.03) contrast(1.02);
+}
+
+.frameMagnet:hover .energyLine {
+  animation-duration: 1.5s;
 }
 
 @media (max-width: 900px) {
   .frameWrap {
-    max-width: 210px;
-    margin: 26px auto 28px;
-    align-items: center;
+    width: 180px;
+    margin: 34px auto 30px;
+  }
+
+  .hangingWire {
+    height: 130px;
+  }
+}
+
+@media (max-width: 640px) {
+  .frameWrap {
+    width: 160px;
+  }
+
+  .hangingWire {
+    height: 95px;
+  }
+
+  .frameMagnet {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hangingWire::after,
+  .energyLine {
+    animation: none !important;
+  }
+
+  .frameMagnet {
+    transition: none;
+    transform: none !important;
   }
 }

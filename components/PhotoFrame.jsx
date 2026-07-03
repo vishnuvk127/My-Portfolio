@@ -9,28 +9,47 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+const BASE_LANYARD_LENGTH = 150;
+const MAX_PULL_DISTANCE = 115;
+
+function limitMovement(x, y) {
+  const distance = Math.sqrt(x * x + y * y);
+
+  if (distance <= MAX_PULL_DISTANCE) {
+    return { x, y };
+  }
+
+  const scale = MAX_PULL_DISTANCE / distance;
+
+  return {
+    x: x * scale,
+    y: y * scale,
+  };
+}
+
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
   const wrapRef = useRef(null);
   const frameRef = useRef(null);
 
   useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
 
-    gsap.set(el, {
-      y: -70,
+    gsap.set(wrap, {
+      y: -260,
       opacity: 0,
-      rotate: 0,
+      rotate: -18,
+      transformOrigin: '50% -150px',
     });
 
-    const tween = gsap.to(el, {
+    const tween = gsap.to(wrap, {
       y: 0,
       opacity: 1,
-      rotate: 0,
-      duration: 0.9,
-      ease: 'power3.out',
+      rotate: -7,
+      duration: 1.85,
+      ease: 'elastic.out(1, 0.36)',
       scrollTrigger: {
-        trigger: el,
+        trigger: wrap,
         start: 'top 86%',
         end: 'bottom 20%',
         toggleActions: 'play reverse play reverse',
@@ -43,53 +62,65 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
     };
   }, []);
 
-  const handleMouseMove = (e) => {
+  const updateFrameAndLanyard = (x, y) => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
+    const visibleLanyardY = BASE_LANYARD_LENGTH + y;
+    const lanyardLength = Math.sqrt(x * x + visibleLanyardY * visibleLanyardY);
+    const lanyardAngle = Math.atan2(x, visibleLanyardY) * (180 / Math.PI);
+    const frameRotate = -7 + x * 0.045;
+
+    wrap.style.setProperty('--pull-x', `${x}px`);
+    wrap.style.setProperty('--pull-y', `${y}px`);
+    wrap.style.setProperty('--lanyard-length', `${lanyardLength}px`);
+    wrap.style.setProperty('--lanyard-angle', `${lanyardAngle}deg`);
+    wrap.style.setProperty('--frame-rotate', `${frameRotate}deg`);
+  };
+
+  const handlePointerMove = (event) => {
     const frame = frameRef.current;
     if (!frame) return;
 
     const rect = frame.getBoundingClientRect();
 
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const frameCenterX = rect.left + rect.width / 2;
+    const frameCenterY = rect.top + rect.height / 2;
 
-    const distanceX = centerX - e.clientX;
-    const distanceY = centerY - e.clientY;
+    /*
+      Same-pole magnetic repulsion:
+      mouse comes close -> frame moves away from the mouse.
+    */
+    const awayX = frameCenterX - event.clientX;
+    const awayY = frameCenterY - event.clientY;
 
-    const distance = Math.max(
-      Math.sqrt(distanceX * distanceX + distanceY * distanceY),
-      1
-    );
+    const strength = 0.5;
 
-    const strength = Math.max(0, 1 - distance / 240);
+    const rawX = awayX * strength;
+    const rawY = awayY * strength;
 
-    const moveX = (distanceX / distance) * strength * 28;
-    const moveY = (distanceY / distance) * strength * 22;
+    const { x, y } = limitMovement(rawX, rawY);
 
-    frame.style.setProperty('--move-x', `${moveX}px`);
-    frame.style.setProperty('--move-y', `${moveY}px`);
+    updateFrameAndLanyard(x, y);
   };
 
-  const handleMouseLeave = () => {
-    const frame = frameRef.current;
-    if (!frame) return;
-
-    frame.style.setProperty('--move-x', '0px');
-    frame.style.setProperty('--move-y', '0px');
+  const handlePointerLeave = () => {
+    updateFrameAndLanyard(0, 0);
   };
 
   return (
-    <div ref={wrapRef} className={styles.frameWrap}>
-      <span className={styles.hangingWire} aria-hidden="true" />
-      <span className={styles.hook} aria-hidden="true" />
+    <div
+      ref={wrapRef}
+      className={styles.frameWrap}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+    >
+      <span className={styles.reel} aria-hidden="true" />
+      <span className={styles.lanyard} aria-hidden="true" />
 
-      <div
-        ref={frameRef}
-        className={styles.frameMagnet}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div ref={frameRef} className={styles.frameMover}>
         <div className={styles.frame}>
-          <span className={styles.energyLine} aria-hidden="true" />
+          <span className={styles.energyFlow} aria-hidden="true" />
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={src} alt={alt} className={styles.photo} />

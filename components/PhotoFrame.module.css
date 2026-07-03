@@ -1,54 +1,105 @@
+/* PhotoFrame.module.css
+   Free lanyard photo frame:
+   - falls from top with bounce
+   - rests tilted
+   - frame moves away from cursor
+   - lanyard stretches and rotates with frame
+*/
+
 .frameWrap {
+  --pull-x: 0px;
+  --pull-y: 0px;
+  --lanyard-length: 150px;
+  --lanyard-angle: 0deg;
+  --frame-rotate: -7deg;
+
   position: relative;
-  width: 176px;
-  max-width: 100%;
-  margin: 10px 0 26px;
-  display: flex;
-  justify-content: center;
-  z-index: 5;
+  width: 260px;
+  height: 390px;
+  margin: 8px 0 22px;
+  z-index: 8;
+  overflow: visible;
 }
 
-/* Hanging wire from the upper section */
-.hangingWire {
+/* Top reel */
+.reel {
   position: absolute;
+  top: 0;
   left: 50%;
-  bottom: calc(100% - 2px);
-  width: 1.5px;
-  height: 170px;
+  width: 34px;
+  height: 34px;
   transform: translateX(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 140, 66, 0),
-    rgba(255, 209, 102, 0.38),
-    rgba(255, 140, 66, 0.28),
-    rgba(255, 255, 255, 0.18)
-  );
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 45% 38%, rgba(255, 209, 102, 0.45), transparent 34%),
+    linear-gradient(145deg, #211529, #08050d);
+  border: 1.5px solid rgba(255, 209, 102, 0.5);
   box-shadow:
-    0 0 14px rgba(255, 140, 66, 0.25),
-    0 0 28px rgba(255, 209, 102, 0.12);
+    inset 0 0 0 8px rgba(255, 255, 255, 0.035),
+    0 0 24px rgba(255, 140, 66, 0.26),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+  z-index: 5;
   pointer-events: none;
 }
 
-/* Small glowing energy moving through the wire */
-.hangingWire::after {
+.reel::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 209, 102, 0.32);
+}
+
+/* Flexible lanyard */
+.lanyard {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  width: 2px;
+  height: var(--lanyard-length);
+  transform-origin: top center;
+  transform: translateX(-50%) rotate(var(--lanyard-angle));
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 209, 102, 0.78),
+      rgba(255, 140, 66, 0.46),
+      rgba(255, 255, 255, 0.16)
+    );
+  box-shadow:
+    0 0 12px rgba(255, 140, 66, 0.42),
+    0 0 28px rgba(255, 209, 102, 0.16);
+  transition:
+    height 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Small energy drop inside lanyard */
+.lanyard::after {
   content: '';
   position: absolute;
   left: 50%;
-  top: -35%;
-  width: 3px;
-  height: 42px;
+  top: -30%;
+  width: 4px;
+  height: 48px;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgba(255, 209, 102, 0.95),
-    transparent
-  );
-  animation: wireFlow 2.6s ease-in-out infinite;
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(255, 209, 102, 0.96),
+      rgba(255, 140, 66, 0.18),
+      transparent
+    );
+  animation: lanyardEnergy 2.4s ease-in-out infinite;
 }
 
-@keyframes wireFlow {
+@keyframes lanyardEnergy {
   0% {
     top: -35%;
     opacity: 0;
@@ -59,43 +110,35 @@
   }
 
   100% {
-    top: 110%;
+    top: 115%;
     opacity: 0;
   }
 }
 
-/* Circle hook holding the frame */
-.hook {
+/* This is the moving frame layer */
+.frameMover {
   position: absolute;
+  top: 178px;
   left: 50%;
-  top: -10px;
-  width: 20px;
-  height: 20px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: #0b0712;
-  border: 1.5px solid rgba(255, 209, 102, 0.48);
-  box-shadow:
-    inset 0 0 0 5px rgba(255, 255, 255, 0.04),
-    0 0 18px rgba(255, 140, 66, 0.24);
-  z-index: 3;
-}
-
-/* This layer moves away from mouse */
-.frameMagnet {
-  width: 100%;
-  transform: translate(var(--move-x, 0px), var(--move-y, 0px));
+  width: 176px;
+  transform:
+    translateX(calc(-50% + var(--pull-x)))
+    translateY(var(--pull-y))
+    rotate(var(--frame-rotate));
+  transform-origin: 50% -135px;
   transition:
-    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.25s ease;
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.24s ease;
   will-change: transform;
+  z-index: 4;
 }
 
-.frameMagnet:hover {
-  filter: drop-shadow(0 0 26px rgba(255, 140, 66, 0.22));
+/* Extra glow while playing with it */
+.frameWrap:hover .frameMover {
+  filter: drop-shadow(0 0 28px rgba(255, 140, 66, 0.25));
 }
 
-/* Straight padded frame */
+/* Small padded tilted frame */
 .frame {
   position: relative;
   width: 100%;
@@ -104,6 +147,7 @@
   border-radius: 18px;
   overflow: hidden;
   background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.12), transparent 42%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
     #0b0712;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -112,26 +156,28 @@
     inset 0 0 0 1px rgba(255, 140, 66, 0.12);
 }
 
-/* Decorative magnetic line over the frame */
-.energyLine {
+/* Orange/gold magnetic flow across frame */
+.energyFlow {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 4;
   pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    transparent 38%,
-    rgba(255, 209, 102, 0.28) 48%,
-    rgba(255, 140, 66, 0.16) 52%,
-    transparent 64%,
-    transparent 100%
-  );
+  opacity: 0.75;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(255, 209, 102, 0.28) 48%,
+      rgba(255, 140, 66, 0.16) 52%,
+      transparent 64%,
+      transparent 100%
+    );
   transform: translateX(-120%);
-  animation: frameFlow 4s ease-in-out infinite;
+  animation: frameEnergyFlow 4s ease-in-out infinite;
 }
 
-@keyframes frameFlow {
+@keyframes frameEnergyFlow {
   0%,
   40% {
     transform: translateX(-120%);
@@ -153,6 +199,10 @@
   }
 }
 
+.frameWrap:hover .energyFlow {
+  animation-duration: 1.4s;
+}
+
 .photo {
   position: relative;
   z-index: 1;
@@ -165,43 +215,54 @@
   filter: saturate(1.03) contrast(1.02);
 }
 
-.frameMagnet:hover .energyLine {
-  animation-duration: 1.5s;
+.frameWrap:hover .reel {
+  box-shadow:
+    inset 0 0 0 8px rgba(255, 255, 255, 0.035),
+    0 0 34px rgba(255, 140, 66, 0.42),
+    0 12px 28px rgba(0, 0, 0, 0.56);
+}
+
+.frameWrap:hover .lanyard {
+  box-shadow:
+    0 0 18px rgba(255, 140, 66, 0.56),
+    0 0 34px rgba(255, 209, 102, 0.22);
 }
 
 @media (max-width: 900px) {
   .frameWrap {
-    width: 180px;
-    margin: 34px auto 30px;
+    width: 260px;
+    height: 360px;
+    margin: 22px auto 26px;
   }
 
-  .hangingWire {
-    height: 130px;
+  .frameMover {
+    width: 174px;
+    top: 160px;
   }
 }
 
 @media (max-width: 640px) {
   .frameWrap {
-    width: 160px;
+    width: 220px;
+    height: 330px;
   }
 
-  .hangingWire {
-    height: 95px;
-  }
-
-  .frameMagnet {
-    transform: none;
+  .frameMover {
+    width: 156px;
+    top: 150px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hangingWire::after,
-  .energyLine {
+  .lanyard,
+  .frameMover,
+  .energyFlow,
+  .lanyard::after {
     animation: none !important;
+    transition: none !important;
   }
 
-  .frameMagnet {
-    transition: none;
-    transform: none !important;
+  .frameMover {
+    transform: translateX(-50%) rotate(-7deg) !important;
   }
 }

@@ -9,71 +9,118 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const HOME_ROTATE = -8;
-const INFLUENCE_RADIUS = 620;
+const MAX_DISTANCE = 700;
 const MAX_X = 360;
 const MAX_UP = 420;
 const MAX_DOWN = 180;
+const HOME_ROTATE = -8;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
-  const holderRef = useRef(null);
+  const slotRef = useRef(null);
+  const shellRef = useRef(null);
   const fallRef = useRef(null);
-  const moveRef = useRef(null);
+  const badgeRef = useRef(null);
+  const lanyardRef = useRef(null);
   const rafRef = useRef(null);
 
   useEffect(() => {
+    const slot = slotRef.current;
+    const shell = shellRef.current;
     const fallLayer = fallRef.current;
-    if (!fallLayer) return;
+    const badge = badgeRef.current;
 
-    gsap.set(fallLayer, {
-      y: -520,
-      opacity: 0,
-      rotate: -22,
-      transformOrigin: '50% 18%',
-    });
+    if (!slot || !shell || !fallLayer || !badge) return;
 
-    const tween = gsap.to(fallLayer, {
-      y: 0,
-      opacity: 1,
-      rotate: HOME_ROTATE,
-      duration: 1.9,
-      ease: 'elastic.out(1, 0.34)',
-      scrollTrigger: {
-        trigger: fallLayer,
+    const positionShell = () => {
+      const slotRect = slot.getBoundingClientRect();
+
+      shell.style.setProperty('--home-left', `${slotRect.left + slotRect.width / 2}px`);
+      shell.style.setProperty('--home-top', `${slotRect.top}px`);
+    };
+
+    positionShell();
+
+    window.addEventListener('resize', positionShell);
+    window.addEventListener('scroll', positionShell, { passive: true });
+
+    const ctx = gsap.context(() => {
+      gsap.set(shell, { autoAlpha: 0 });
+      gsap.set(fallLayer, {
+        y: -430,
+        rotate: -20,
+        transformOrigin: '50% 18%',
+      });
+      gsap.set(badge, {
+        x: 0,
+        y: 0,
+        rotate: 0,
+        transformOrigin: '50% 28%',
+      });
+
+      ScrollTrigger.create({
+        trigger: slot,
         start: 'top 88%',
-        end: 'bottom 18%',
-        toggleActions: 'play reverse play reverse',
-      },
-    });
+        end: 'bottom 10%',
+        onEnter: () => {
+          positionShell();
+
+          gsap.timeline()
+            .to(shell, { autoAlpha: 1, duration: 0.1 })
+            .to(fallLayer, {
+              y: 0,
+              rotate: HOME_ROTATE,
+              duration: 1.9,
+              ease: 'elastic.out(1, 0.34)',
+            }, 0);
+        },
+        onLeaveBack: () => {
+          gsap.to(shell, { autoAlpha: 0, duration: 0.25 });
+          gsap.set(fallLayer, { y: -430, rotate: -20 });
+          gsap.set(badge, { x: 0, y: 0, rotate: 0 });
+        },
+      });
+    }, shell);
 
     return () => {
-      tween.scrollTrigger && tween.scrollTrigger.kill();
-      tween.kill();
+      ctx.revert();
+      window.removeEventListener('resize', positionShell);
+      window.removeEventListener('scroll', positionShell);
     };
   }, []);
 
   useEffect(() => {
-    const holder = holderRef.current;
-    const moveLayer = moveRef.current;
-    if (!holder || !moveLayer) return;
+    const badge = badgeRef.current;
+    const lanyard = lanyardRef.current;
+    if (!badge) return;
 
     const reset = () => {
-      holder.style.setProperty('--move-x', '0px');
-      holder.style.setProperty('--move-y', '0px');
-      holder.style.setProperty('--rotate', `${HOME_ROTATE}deg`);
-      holder.style.setProperty('--lanyard-sway', '0deg');
-      holder.style.setProperty('--lanyard-pull', '0px');
+      gsap.to(badge, {
+        x: 0,
+        y: 0,
+        rotate: 0,
+        duration: 0.8,
+        ease: 'elastic.out(1, 0.45)',
+      });
+
+      if (lanyard) {
+        gsap.to(lanyard, {
+          rotate: 0,
+          scaleY: 1,
+          duration: 0.8,
+          ease: 'elastic.out(1, 0.45)',
+        });
+      }
     };
 
-    const updateFromPointer = (event) => {
+    const handleMouseMove = (event) => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
       rafRef.current = requestAnimationFrame(() => {
-        const rect = moveLayer.getBoundingClientRect();
+        const rect = badge.getBoundingClientRect();
 
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -83,59 +130,71 @@ export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile
 
         const distance = Math.max(Math.hypot(awayX, awayY), 1);
 
-        if (distance > INFLUENCE_RADIUS) {
+        if (distance > MAX_DISTANCE) {
           reset();
           return;
         }
 
-        const force = 1 - distance / INFLUENCE_RADIUS;
-        const easedForce = force * force * (3 - 2 * force);
-        const power = 430 * easedForce;
+        const force = 1 - distance / MAX_DISTANCE;
+        const smoothForce = force * force * (3 - 2 * force);
+        const power = 520 * smoothForce;
 
         const moveX = clamp((awayX / distance) * power, -MAX_X, MAX_X);
         const moveY = clamp((awayY / distance) * power, -MAX_UP, MAX_DOWN);
+        const rotate = clamp(moveX * 0.045 + moveY * 0.012, -18, 18);
 
-        const rotate = clamp(HOME_ROTATE + moveX * 0.035 + moveY * 0.012, -24, 16);
-        const lanyardSway = clamp(moveX * -0.045, -16, 16);
-        const lanyardPull = clamp(Math.abs(moveY) * 0.08 + Math.abs(moveX) * 0.04, 0, 24);
+        gsap.to(badge, {
+          x: moveX,
+          y: moveY,
+          rotate,
+          duration: 0.38,
+          ease: 'power3.out',
+        });
 
-        holder.style.setProperty('--move-x', `${moveX}px`);
-        holder.style.setProperty('--move-y', `${moveY}px`);
-        holder.style.setProperty('--rotate', `${rotate}deg`);
-        holder.style.setProperty('--lanyard-sway', `${lanyardSway}deg`);
-        holder.style.setProperty('--lanyard-pull', `${lanyardPull}px`);
+        if (lanyard) {
+          gsap.to(lanyard, {
+            rotate: clamp(moveX * -0.045, -14, 14),
+            scaleY: clamp(1 + Math.abs(moveY) * 0.0009, 1, 1.22),
+            duration: 0.38,
+            ease: 'power3.out',
+          });
+        }
       });
     };
 
-    window.addEventListener('pointermove', updateFromPointer, { passive: true });
-    window.addEventListener('pointerleave', reset);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', reset);
 
     return () => {
-      window.removeEventListener('pointermove', updateFromPointer);
-      window.removeEventListener('pointerleave', reset);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', reset);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
   return (
-    <div ref={holderRef} className={styles.frameHolder}>
-      <div ref={fallRef} className={styles.fallLayer}>
-        <div ref={moveRef} className={styles.moveLayer}>
-          <div className={styles.neckLanyard} aria-hidden="true">
-            <span className={styles.lanyardLoop} />
-            <span className={styles.lanyardLeft} />
-            <span className={styles.lanyardRight} />
-            <span className={styles.lanyardClip} />
-          </div>
+    <>
+      <div ref={slotRef} className={styles.photoSlot} aria-hidden="true" />
 
-          <div className={styles.frame}>
-            <span className={styles.energyFlow} aria-hidden="true" />
+      <div ref={shellRef} className={styles.floatShell}>
+        <div ref={fallRef} className={styles.fallLayer}>
+          <div ref={badgeRef} className={styles.badge}>
+            <div ref={lanyardRef} className={styles.lanyard} aria-hidden="true">
+              <span className={styles.lanyardLoop} />
+              <span className={styles.leftStrap} />
+              <span className={styles.rightStrap} />
+              <span className={styles.clip} />
+            </div>
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={alt} className={styles.photo} />
+            <div className={styles.frame}>
+              <span className={styles.energy} aria-hidden="true" />
+
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt={alt} className={styles.photo} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

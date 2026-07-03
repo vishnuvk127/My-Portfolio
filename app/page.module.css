@@ -147,16 +147,92 @@
 }
 
 .statCard {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 22px;
-  transition: border-color 0.25s, background 0.25s;
+  position: relative;
+  min-height: 124px;
+  padding: 0;
+  border-radius: 18px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  background: transparent;
+  border: none;
+  isolation: isolate;
+  z-index: 1;
+  transition:
+    min-height 0.35s ease,
+    transform 0.28s ease,
+    filter 0.28s ease,
+    opacity 0.28s ease,
+    z-index 0s;
 }
 
-.statCard:hover {
-  background: var(--bg-panel-hi);
-  border-color: var(--border-hi);
+.statCard:hover,
+.statCard:focus,
+.statCard:focus-within {
+  min-height: 250px;
+  transform: translateY(-8px) scale(1.035);
+  z-index: 80;
+  outline: none;
+}
+
+.statCardInner {
+  position: relative;
+  width: 100%;
+  min-height: 124px;
+  height: 100%;
+  display: grid;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+    min-height 0.35s ease;
+}
+
+.statCard:hover .statCardInner,
+.statCard:focus .statCardInner,
+.statCard:focus-within .statCardInner {
+  min-height: 250px;
+  transform: rotateY(180deg);
+}
+
+.statFace {
+  grid-area: 1 / 1;
+  min-height: 124px;
+  padding: 22px;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    rgba(14, 10, 22, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 140, 66, 0.035);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.statFront {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.statBack {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 250px;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 209, 102, 0.16), transparent 34%),
+    radial-gradient(circle at 80% 90%, rgba(255, 140, 66, 0.16), transparent 42%),
+    linear-gradient(145deg, rgba(17, 11, 29, 0.98), rgba(7, 4, 13, 0.96));
+  border-color: rgba(255, 140, 66, 0.44);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.7),
+    0 0 42px rgba(255, 140, 66, 0.26),
+    inset 0 0 28px rgba(255, 140, 66, 0.06);
 }
 
 .statNum {
@@ -177,6 +253,190 @@
   font-weight: 500;
   color: var(--text-mid);
   letter-spacing: 0.04em;
+}
+
+.statHint {
+  display: inline-flex;
+  margin-top: 12px;
+  width: fit-content;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 209, 102, 0.42);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.statCard:hover .statHint,
+.statCard:focus .statHint,
+.statCard:focus-within .statHint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.statBackKicker {
+  width: fit-content;
+  margin-bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ffd166;
+  background: rgba(255, 140, 66, 0.12);
+  border: 1px solid rgba(255, 140, 66, 0.28);
+}
+
+.statBackTitle {
+  display: block;
+  margin-bottom: 10px;
+  color: #fff2d8;
+  font-size: clamp(13px, 1.25vw, 16px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.statBackText {
+  font-size: clamp(11.5px, 1vw, 13px);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Magical lightning layer */
+.statLightning {
+  position: absolute;
+  inset: -10px;
+  border-radius: 24px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+}
+
+.statLightning::before,
+.statLightning::after {
+  content: '';
+  position: absolute;
+  width: 46%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #ffd166, #ff8c42, transparent);
+  filter:
+    drop-shadow(0 0 8px rgba(255, 209, 102, 0.95))
+    drop-shadow(0 0 18px rgba(255, 140, 66, 0.65));
+  transform-origin: center;
+}
+
+.statLightning::before {
+  top: 15%;
+  left: -8%;
+  transform: rotate(-10deg);
+}
+
+.statLightning::after {
+  right: -8%;
+  bottom: 18%;
+  transform: rotate(-10deg);
+}
+
+.statCard:hover .statLightning,
+.statCard:focus .statLightning,
+.statCard:focus-within .statLightning {
+  opacity: 1;
+  animation: lightningBounce 0.9s ease-in-out infinite;
+}
+
+.statCard:hover .statLightning::before,
+.statCard:focus .statLightning::before,
+.statCard:focus-within .statLightning::before {
+  animation: lightningStrikeLeft 0.9s ease-in-out infinite;
+}
+
+.statCard:hover .statLightning::after,
+.statCard:focus .statLightning::after,
+.statCard:focus-within .statLightning::after {
+  animation: lightningStrikeRight 0.9s ease-in-out infinite 0.12s;
+}
+
+@keyframes lightningBounce {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1.035);
+    filter: brightness(1.45);
+  }
+}
+
+@keyframes lightningStrikeLeft {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translateX(-12px) rotate(-10deg) scaleX(0.45);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(26px) rotate(-10deg) scaleX(1);
+  }
+}
+
+@keyframes lightningStrikeRight {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translateX(12px) rotate(-10deg) scaleX(0.45);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(-26px) rotate(-10deg) scaleX(1);
+  }
+}
+
+/* Blur the rest of the portfolio while an About stat is being inspected */
+.main:has(.statCard:hover) > *:not(.about),
+.main:has(.statCard:focus) > *:not(.about),
+.main:has(.statCard:focus-within) > *:not(.about) {
+  filter: blur(7px) brightness(0.45) saturate(0.75);
+  opacity: 0.45;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.about:has(.statCard:hover) .bentoIntro,
+.about:has(.statCard:focus) .bentoIntro,
+.about:has(.statCard:focus-within) .bentoIntro,
+.about:has(.statCard:hover) .bentoVisual,
+.about:has(.statCard:focus) .bentoVisual,
+.about:has(.statCard:focus-within) .bentoVisual,
+.about:has(.statCard:hover) .statGroupLabel,
+.about:has(.statCard:focus) .statGroupLabel,
+.about:has(.statCard:focus-within) .statGroupLabel {
+  filter: blur(5px) brightness(0.55);
+  opacity: 0.42;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.about:has(.statCard:hover) .statCard:not(:hover),
+.about:has(.statCard:focus) .statCard:not(:focus),
+.about:has(.statCard:focus-within) .statCard:not(:focus-within) {
+  filter: blur(3px) brightness(0.55);
+  opacity: 0.46;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.about:has(.statCard:hover)::after,
+.about:has(.statCard:focus)::after,
+.about:has(.statCard:focus-within)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0%, transparent 28%, rgba(5, 3, 8, 0.56) 72%),
+    radial-gradient(circle at 50% 50%, rgba(255, 140, 66, 0.08), transparent 42%);
 }
 
 .aboutVisual {
@@ -897,6 +1157,56 @@
 }
 
 /* ── Responsive ── */
+@media (max-width: 720px) {
+  .statCard:hover,
+  .statCard:focus,
+  .statCard:focus-within {
+    min-height: 300px;
+  }
+
+  .statCard:hover .statCardInner,
+  .statCard:focus .statCardInner,
+  .statCard:focus-within .statCardInner {
+    min-height: 300px;
+  }
+
+  .statBack {
+    min-height: 300px;
+  }
+
+  .statBackText {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .main:has(.statCard:hover) > *:not(.about),
+  .main:has(.statCard:focus) > *:not(.about),
+  .main:has(.statCard:focus-within) > *:not(.about) {
+    filter: blur(4px) brightness(0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statCard,
+  .statCardInner,
+  .statLightning,
+  .statLightning::before,
+  .statLightning::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .statCard:hover .statCardInner,
+  .statCard:focus .statCardInner,
+  .statCard:focus-within .statCardInner {
+    transform: none;
+  }
+
+  .statBack {
+    transform: none;
+  }
+}
+
 @media (max-width: 900px) {
   .about {
     grid-template-columns: 1fr;

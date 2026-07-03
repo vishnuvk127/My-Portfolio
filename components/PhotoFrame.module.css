@@ -1,134 +1,149 @@
-.frameWrap {
+.frameHolder {
   --move-x: 0px;
   --move-y: 0px;
-  --rotate: -7deg;
+  --rotate: -8deg;
   --lanyard-sway: 0deg;
+  --lanyard-pull: 0px;
 
   position: relative;
-  width: 300px;
-  height: 430px;
-  margin: -8px 0 24px;
+  width: 360px;
+  height: 520px;
+  margin: -70px 0 10px;
   overflow: visible;
-  z-index: 8;
-}
-
-/* Entire lanyard + photo frame moves together */
-.badgeGroup {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 186px;
-  transform:
-    translateX(calc(-50% + var(--move-x)))
-    translateY(var(--move-y))
-    rotate(var(--rotate));
-  transform-origin: 50% 28%;
-  transition:
-    transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.28s ease;
-  will-change: transform;
-}
-
-.frameWrap:hover .badgeGroup {
-  filter: drop-shadow(0 0 30px rgba(255, 140, 66, 0.26));
-}
-
-/* Lanyard is attached to the card, not to a fixed hinge */
-.lanyard {
-  position: relative;
-  width: 100%;
-  height: 142px;
-  transform: rotate(var(--lanyard-sway));
-  transform-origin: 50% 100%;
-  transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 25;
   pointer-events: none;
 }
 
-/* Top lanyard band, like the part going upward */
-.lanyardBand {
+/* GSAP controls only this layer for the fall/bounce. */
+.fallLayer {
   position: absolute;
+  top: -155px;
   left: 50%;
-  top: 0;
-  width: 54px;
-  height: 34px;
+  width: 230px;
   transform: translateX(-50%);
-  border-radius: 999px 999px 12px 12px;
-  border: 2px solid rgba(255, 209, 102, 0.5);
-  border-bottom: none;
+  overflow: visible;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Mouse repulsion controls only this layer. */
+.moveLayer {
+  position: relative;
+  width: 100%;
+  transform:
+    translateX(var(--move-x))
+    translateY(var(--move-y))
+    rotate(var(--rotate));
+  transform-origin: 50% 30%;
+  transition:
+    transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.26s ease;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.moveLayer:hover {
+  filter: drop-shadow(0 0 30px rgba(255, 140, 66, 0.28));
+}
+
+/* Neck-style lanyard attached to frame */
+.neckLanyard {
+  position: relative;
+  width: 100%;
+  height: calc(250px + var(--lanyard-pull));
+  transform: rotate(var(--lanyard-sway));
+  transform-origin: 50% 100%;
+  transition:
+    height 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Rounded neck loop at top — not a hinge */
+.lanyardLoop {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 112px;
+  height: 96px;
+  transform: translateX(-50%);
+  border: 5px solid rgba(255, 140, 66, 0.42);
+  border-bottom-color: transparent;
+  border-radius: 70px 70px 26px 26px;
   background:
-    radial-gradient(circle at 50% 20%, rgba(255, 209, 102, 0.22), transparent 58%),
-    rgba(10, 7, 18, 0.44);
+    radial-gradient(circle at 50% 6%, rgba(255, 209, 102, 0.16), transparent 58%);
   box-shadow:
-    0 0 18px rgba(255, 140, 66, 0.28),
+    0 0 18px rgba(255, 140, 66, 0.24),
     inset 0 0 14px rgba(255, 209, 102, 0.08);
 }
 
-/* Left side of lanyard */
+/* Left strap */
 .lanyardLeft {
   position: absolute;
-  left: 72px;
-  top: 24px;
-  width: 5px;
-  height: 108px;
+  left: 74px;
+  top: 68px;
+  width: 7px;
+  height: calc(176px + var(--lanyard-pull));
   border-radius: 999px;
+  transform: rotate(-10deg);
   background:
     linear-gradient(
       180deg,
-      rgba(255, 209, 102, 0.72),
-      rgba(255, 140, 66, 0.38),
-      rgba(255, 255, 255, 0.14)
+      rgba(255, 209, 102, 0.82),
+      rgba(255, 140, 66, 0.42),
+      rgba(255, 255, 255, 0.13)
     );
   box-shadow:
-    0 0 12px rgba(255, 140, 66, 0.36),
-    inset 0 0 8px rgba(255, 209, 102, 0.15);
-  transform: rotate(-7deg);
+    0 0 14px rgba(255, 140, 66, 0.38),
+    inset 0 0 8px rgba(255, 209, 102, 0.14);
 }
 
-/* Right side of lanyard */
+/* Right strap */
 .lanyardRight {
   position: absolute;
-  right: 72px;
-  top: 24px;
-  width: 5px;
-  height: 108px;
+  right: 74px;
+  top: 68px;
+  width: 7px;
+  height: calc(176px + var(--lanyard-pull));
   border-radius: 999px;
+  transform: rotate(10deg);
   background:
     linear-gradient(
       180deg,
-      rgba(255, 209, 102, 0.72),
-      rgba(255, 140, 66, 0.38),
-      rgba(255, 255, 255, 0.14)
+      rgba(255, 209, 102, 0.82),
+      rgba(255, 140, 66, 0.42),
+      rgba(255, 255, 255, 0.13)
     );
   box-shadow:
-    0 0 12px rgba(255, 140, 66, 0.36),
-    inset 0 0 8px rgba(255, 209, 102, 0.15);
-  transform: rotate(7deg);
+    0 0 14px rgba(255, 140, 66, 0.38),
+    inset 0 0 8px rgba(255, 209, 102, 0.14);
 }
 
-/* Clip that fixes lanyard to the frame */
+/* Clip connecting neck lanyard to frame */
 .lanyardClip {
   position: absolute;
   left: 50%;
   bottom: -4px;
-  width: 42px;
-  height: 18px;
+  width: 58px;
+  height: 22px;
   transform: translateX(-50%);
-  border-radius: 7px 7px 10px 10px;
+  border-radius: 8px 8px 12px 12px;
   background:
-    linear-gradient(145deg, rgba(255, 209, 102, 0.26), rgba(255, 140, 66, 0.12)),
+    linear-gradient(145deg, rgba(255, 209, 102, 0.28), rgba(255, 140, 66, 0.1)),
     #0b0712;
-  border: 1px solid rgba(255, 209, 102, 0.42);
+  border: 1px solid rgba(255, 209, 102, 0.44);
   box-shadow:
-    0 0 16px rgba(255, 140, 66, 0.24),
+    0 0 18px rgba(255, 140, 66, 0.26),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  z-index: 3;
+  z-index: 4;
 }
 
-/* Photo frame */
+/* Frame is attached below lanyard */
 .frame {
   position: relative;
-  width: 100%;
+  width: 186px;
   aspect-ratio: 3 / 4;
+  margin: -1px auto 0;
   padding: 9px;
   border-radius: 18px;
   overflow: hidden;
@@ -138,11 +153,11 @@
     #0b0712;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 22px 56px rgba(0, 0, 0, 0.52),
+    0 24px 58px rgba(0, 0, 0, 0.54),
     inset 0 0 0 1px rgba(255, 140, 66, 0.12);
 }
 
-/* Magnetic decorative flow */
+/* Decorative magnetic flow */
 .energyFlow {
   position: absolute;
   inset: 0;
@@ -185,7 +200,7 @@
   }
 }
 
-.frameWrap:hover .energyFlow {
+.frameHolder:hover .energyFlow {
   animation-duration: 1.35s;
 }
 
@@ -201,65 +216,85 @@
   filter: saturate(1.03) contrast(1.02);
 }
 
-/* More glow when user is near/interacting */
-.frameWrap:hover .lanyardLeft,
-.frameWrap:hover .lanyardRight,
-.frameWrap:hover .lanyardBand,
-.frameWrap:hover .lanyardClip {
+.frameHolder:hover .lanyardLoop,
+.frameHolder:hover .lanyardLeft,
+.frameHolder:hover .lanyardRight,
+.frameHolder:hover .lanyardClip {
   box-shadow:
-    0 0 20px rgba(255, 140, 66, 0.5),
+    0 0 24px rgba(255, 140, 66, 0.5),
     inset 0 0 10px rgba(255, 209, 102, 0.18);
 }
 
 @media (max-width: 900px) {
-  .frameWrap {
-    width: 280px;
-    height: 410px;
-    margin: 20px auto 28px;
+  .frameHolder {
+    width: 310px;
+    height: 480px;
+    margin: -40px auto 22px;
   }
 
-  .badgeGroup {
-    width: 178px;
+  .fallLayer {
+    top: -120px;
+    width: 215px;
+  }
+
+  .neckLanyard {
+    height: calc(225px + var(--lanyard-pull));
+  }
+
+  .frame {
+    width: 176px;
   }
 }
 
 @media (max-width: 640px) {
-  .frameWrap {
-    width: 230px;
-    height: 370px;
+  .frameHolder {
+    width: 250px;
+    height: 430px;
+    margin: -30px auto 20px;
   }
 
-  .badgeGroup {
-    width: 158px;
+  .fallLayer {
+    top: -95px;
+    width: 190px;
   }
 
-  .lanyard {
-    height: 124px;
+  .neckLanyard {
+    height: calc(200px + var(--lanyard-pull));
   }
 
-  .lanyardLeft,
-  .lanyardRight {
-    height: 92px;
+  .lanyardLoop {
+    width: 92px;
+    height: 78px;
+    border-width: 4px;
   }
 
   .lanyardLeft {
-    left: 60px;
+    left: 62px;
+    top: 58px;
+    height: calc(144px + var(--lanyard-pull));
   }
 
   .lanyardRight {
-    right: 60px;
+    right: 62px;
+    top: 58px;
+    height: calc(144px + var(--lanyard-pull));
+  }
+
+  .frame {
+    width: 158px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .badgeGroup,
-  .lanyard,
+  .fallLayer,
+  .moveLayer,
+  .neckLanyard,
   .energyFlow {
     animation: none !important;
     transition: none !important;
   }
 
-  .badgeGroup {
-    transform: translateX(-50%) rotate(-7deg) !important;
+  .moveLayer {
+    transform: rotate(-8deg) !important;
   }
 }

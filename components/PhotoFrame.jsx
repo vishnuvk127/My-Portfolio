@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Matter from 'matter-js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from './PhotoFrame.module.css';
@@ -9,192 +10,209 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const MAX_DISTANCE = 700;
-const MAX_X = 360;
-const MAX_UP = 420;
-const MAX_DOWN = 180;
-const HOME_ROTATE = -8;
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 export default function PhotoFrame({ src = '/images/profile.jpg', alt = 'Profile portrait' }) {
-  const slotRef = useRef(null);
-  const shellRef = useRef(null);
-  const fallRef = useRef(null);
-  const badgeRef = useRef(null);
+  const containerRef = useRef(null);
   const lanyardRef = useRef(null);
-  const rafRef = useRef(null);
+  const frameRef = useRef(null);
 
   useEffect(() => {
-    const slot = slotRef.current;
-    const shell = shellRef.current;
-    const fallLayer = fallRef.current;
-    const badge = badgeRef.current;
+    const container = containerRef.current;
+    const lanyardEl = lanyardRef.current;
+    const frameEl = frameRef.current;
 
-    if (!slot || !shell || !fallLayer || !badge) return;
+    if (!container || !lanyardEl || !frameEl) return;
 
-    const positionShell = () => {
-      const slotRect = slot.getBoundingClientRect();
+    // 1. Setup Matter.js Engine
+    const { Engine, Runner, World, Bodies, Constraint, Mouse, MouseConstraint } = Matter;
+    const engine = Engine.create();
 
-      shell.style.setProperty('--home-left', `${slotRect.left + slotRect.width / 2}px`);
-      shell.style.setProperty('--home-top', `${slotRect.top}px`);
-    };
+    // Dimensions matched to your CSS
+    const lanyardW = 230;
+    const lanyardH = 180; 
+    const cardW = 186;
+    const cardH = 248;
 
-    positionShell();
+    // 2. Anchor Positions
+    const anchorX = 260 / 2; 
+    const targetAnchorY = -20; 
+    const startAnchorY = -350; 
 
-    window.addEventListener('resize', positionShell);
-    window.addEventListener('scroll', positionShell, { passive: true });
+    // 3. Create Bodies
+    const anchor = Bodies.circle(anchorX, startAnchorY, 2, { isStatic: true });
 
-    const ctx = gsap.context(() => {
-      gsap.set(shell, { autoAlpha: 0 });
-      gsap.set(fallLayer, {
-        y: -430,
-        rotate: -20,
-        transformOrigin: '50% 18%',
-      });
-      gsap.set(badge, {
-        x: 0,
-        y: 0,
-        rotate: 0,
-        transformOrigin: '50% 28%',
-      });
+    const lanyardBody = Bodies.rectangle(anchorX, startAnchorY + lanyardH / 2, lanyardW, lanyardH, {
+      collisionFilter: { group: -1 }, 
+      frictionAir: 0.04,
+      density: 0.001,
+    });
 
-      ScrollTrigger.create({
-        trigger: slot,
-        start: 'top 88%',
-        end: 'bottom 10%',
-        onEnter: () => {
-          positionShell();
+    const cardBody = Bodies.rectangle(anchorX, startAnchorY + lanyardH + cardH / 2, cardW, cardH, {
+      restitution: 0.2, 
+      frictionAir: 0.08, 
+      density: 0.002, 
+      collisionFilter: { group: -1 },
+    });
 
-          gsap.timeline()
-            .to(shell, { autoAlpha: 1, duration: 0.1 })
-            .to(fallLayer, {
-              y: 0,
-              rotate: HOME_ROTATE,
-              duration: 1.9,
-              ease: 'elastic.out(1, 0.34)',
-            }, 0);
-        },
-        onLeaveBack: () => {
-          gsap.to(shell, { autoAlpha: 0, duration: 0.25 });
-          gsap.set(fallLayer, { y: -430, rotate: -20 });
-          gsap.set(badge, { x: 0, y: 0, rotate: 0 });
-        },
-      });
-    }, shell);
+    // 4. Create Constraints (The bouncy spring effect)
+    const topHinge = Constraint.create({
+      bodyA: anchor,
+      bodyB: lanyardBody,
+      pointA: { x: 0, y: 0 },
+      pointB: { x: 0, y: -lanyardH / 2 },
+      stiffness: 0.04, 
+      damping: 0.03,
+      length: 0
+    });
 
-    return () => {
-      ctx.revert();
-      window.removeEventListener('resize', positionShell);
-      window.removeEventListener('scroll', positionShell);
-    };
-  }, []);
+    const bottomHinge = Constraint.create({
+      bodyA: lanyardBody,
+      bodyB: cardBody,
+      pointA: { x: 0, y: lanyardH / 2 - 15 },
+      pointB: { x: 0, y: -cardH / 2 + 15 },
+      stiffness: 0.9, 
+      length: 0
+    });
 
-  useEffect(() => {
-    const badge = badgeRef.current;
-    const lanyard = lanyardRef.current;
-    if (!badge) return;
+    World.add(engine.world, [anchor, lanyardBody, cardBody, topHinge, bottomHinge]);
 
-    const reset = () => {
-      gsap.to(badge, {
-        x: 0,
-        y: 0,
-        rotate: 0,
-        duration: 0.8,
-        ease: 'elastic.out(1, 0.45)',
-      });
+    // 5. Mouse Interaction & Repulsion
+    const mouse = Mouse.create(container);
+    
+    // Unbind wheel/touch events so the user can scroll past the badge easily
+    mouse.element.removeEventListener("wheel", mouse.mousewheel);
+    mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
+    mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
+    mouse.element.removeEventListener("touchstart", mouse.mousedown);
+    mouse.element.removeEventListener("touchmove", mouse.mousemove);
+    mouse.element.removeEventListener("touchend", mouse.mouseup);
 
-      if (lanyard) {
-        gsap.to(lanyard, {
-          rotate: 0,
-          scaleY: 1,
-          duration: 0.8,
-          ease: 'elastic.out(1, 0.45)',
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.1,
+        render: { visible: false }
+      }
+    });
+    World.add(engine.world, mouseConstraint);
+
+    // --- NEW: Hover Repulsion Logic ---
+    const MAX_DISTANCE = 700; // How close the mouse needs to be to push it
+
+    const handleMouseMove = (event) => {
+      if (!frameEl) return;
+      
+      const rect = frameEl.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      // Calculate distance from mouse to center of the badge
+      const awayX = centerX - event.clientX;
+      const awayY = centerY - event.clientY;
+      const distance = Math.hypot(awayX, awayY);
+
+      if (distance < MAX_DISTANCE && distance > 0) {
+        // Exponential force: pushes much harder as the mouse gets closer
+        const force = 1 - distance / MAX_DISTANCE;
+        const power = force * force * 0.025; 
+
+        // Apply physical push to the Matter.js body
+        Matter.Body.applyForce(cardBody, cardBody.position, {
+          x: (awayX / distance) * power,
+          y: (awayY / distance) * power
         });
       }
     };
 
-    const handleMouseMove = (event) => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    window.addEventListener('mousemove', handleMouseMove);
 
-      rafRef.current = requestAnimationFrame(() => {
-        const rect = badge.getBoundingClientRect();
+    // 6. Run Engine
+    const runner = Runner.create();
+    Runner.run(runner, engine);
 
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+    // 7. Sync Physics with React DOM
+    let raf;
+    const updateDOM = () => {
+      if (lanyardEl && frameEl) {
+        const maxAngle = 0.8; 
+        if (cardBody.angle > maxAngle) Matter.Body.setAngle(cardBody, maxAngle);
+        if (cardBody.angle < -maxAngle) Matter.Body.setAngle(cardBody, -maxAngle);
 
-        const awayX = centerX - event.clientX;
-        const awayY = centerY - event.clientY;
+        lanyardEl.style.transform = `translate(${lanyardBody.position.x - lanyardW / 2}px, ${lanyardBody.position.y - lanyardH / 2}px) rotate(${lanyardBody.angle}rad)`;
+        frameEl.style.transform = `translate(${cardBody.position.x - cardW / 2}px, ${cardBody.position.y - cardH / 2}px) rotate(${cardBody.angle}rad)`;
+      }
+      raf = requestAnimationFrame(updateDOM);
+    };
+    updateDOM();
 
-        const distance = Math.max(Math.hypot(awayX, awayY), 1);
+    // 8. Entrance Animation Trigger 
+    let dropTween;
 
-        if (distance > MAX_DISTANCE) {
-          reset();
-          return;
-        }
+    const triggerDrop = () => {
+      if (dropTween) dropTween.kill();
 
-        const force = 1 - distance / MAX_DISTANCE;
-        const smoothForce = force * force * (3 - 2 * force);
-        const power = 520 * smoothForce;
+      Matter.Body.setPosition(anchor, { x: anchorX, y: startAnchorY });
+      Matter.Body.setPosition(lanyardBody, { x: anchorX, y: startAnchorY + lanyardH / 2 });
+      Matter.Body.setPosition(cardBody, { x: anchorX, y: startAnchorY + lanyardH + cardH / 2 });
 
-        const moveX = clamp((awayX / distance) * power, -MAX_X, MAX_X);
-        const moveY = clamp((awayY / distance) * power, -MAX_UP, MAX_DOWN);
-        const rotate = clamp(moveX * 0.045 + moveY * 0.012, -18, 18);
+      Matter.Body.setVelocity(lanyardBody, { x: 0, y: 0 });
+      Matter.Body.setVelocity(cardBody, { x: 0, y: 0 });
+      Matter.Body.setAngularVelocity(lanyardBody, 0);
+      Matter.Body.setAngularVelocity(cardBody, 0);
 
-        gsap.to(badge, {
-          x: moveX,
-          y: moveY,
-          rotate,
-          duration: 0.38,
-          ease: 'power3.out',
-        });
-
-        if (lanyard) {
-          gsap.to(lanyard, {
-            rotate: clamp(moveX * -0.045, -14, 14),
-            scaleY: clamp(1 + Math.abs(moveY) * 0.0009, 1, 1.22),
-            duration: 0.38,
-            ease: 'power3.out',
-          });
+      const proxy = { y: startAnchorY };
+      dropTween = gsap.to(proxy, {
+        y: targetAnchorY,
+        duration: 1.0,
+        ease: 'power3.out', 
+        onUpdate: () => {
+          Matter.Body.setPosition(anchor, { x: anchorX, y: proxy.y });
         }
       });
+
+      setTimeout(() => {
+        Matter.Body.applyForce(cardBody, cardBody.position, { x: 0.012, y: 0 });
+      }, 400); 
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', reset);
+    const trigger = ScrollTrigger.create({
+      trigger: container,
+      start: 'top 85%',
+      end: 'bottom 15%',
+      onEnter: triggerDrop,     
+      onEnterBack: triggerDrop, 
+      onLeave: () => {
+        if (dropTween) dropTween.kill();
+        Matter.Body.setPosition(anchor, { x: anchorX, y: startAnchorY }); 
+      },
+      onLeaveBack: () => {
+        if (dropTween) dropTween.kill();
+        Matter.Body.setPosition(anchor, { x: anchorX, y: startAnchorY });
+      }
+    });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', reset);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      trigger.kill();
+      cancelAnimationFrame(raf);
+      Runner.stop(runner);
+      World.clear(engine.world);
+      Engine.clear(engine);
     };
-  }, []);
+  }, [src]);
 
   return (
-    <>
-      <div ref={slotRef} className={styles.photoSlot} aria-hidden="true" />
-
-      <div ref={shellRef} className={styles.floatShell}>
-        <div ref={fallRef} className={styles.fallLayer}>
-          <div ref={badgeRef} className={styles.badge}>
-            <div ref={lanyardRef} className={styles.lanyard} aria-hidden="true">
-              <span className={styles.lanyardLoop} />
-              <span className={styles.leftStrap} />
-              <span className={styles.rightStrap} />
-              <span className={styles.clip} />
-            </div>
-
-            <div className={styles.frame}>
-              <span className={styles.energy} aria-hidden="true" />
-
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt={alt} className={styles.photo} />
-            </div>
-          </div>
-        </div>
+    <div ref={containerRef} className={styles.photoSlot}>
+      <div ref={lanyardRef} className={styles.lanyard} aria-hidden="true">
+        <span className={styles.ribbonLeft} />
+        <span className={styles.ribbonRight} />
+        <span className={styles.punchHole} />
       </div>
-    </>
+
+      <div ref={frameRef} className={styles.frame}>
+        <span className={styles.energy} aria-hidden="true" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className={styles.photo} />
+      </div>
+    </div>
   );
 }

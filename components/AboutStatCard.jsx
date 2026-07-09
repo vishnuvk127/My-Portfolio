@@ -15,7 +15,7 @@ import styles from '../app/page.module.css';
  *     with even padding instead of being clipped by a fixed height.
  *
  *  2. Graduated "depth of field" — the other stat cards blur in rings by
- *     distance from the inspected one: nearest 40% → next 80% → 100%. The rest
+ *     distance from the inspected one: nearest 30% → next 80% → 100%. The rest
  *     of the page is left sharp (no more full-page blur).
  *
  * Styles come from app/page.module.css; the blur/opacity animate via the
@@ -23,7 +23,7 @@ import styles from '../app/page.module.css';
  */
 
 const MAX_BLUR = 6; // px, applied to the farthest ring (100%)
-const RING_FRACTION = { 1: 0.4, 2: 0.8 }; // nearest ring 40%, next 80%, ≥3 ⇒ 100%
+const RING_FRACTION = { 1: 0.3, 2: 0.8 }; // nearest ring 30%, next 80%, ≥3 ⇒ 100%
 
 function statSiblings(card) {
   return [...card.parentElement.children].filter(

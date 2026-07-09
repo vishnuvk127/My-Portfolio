@@ -1,105 +1,221 @@
-/* NavMenu.module.css — colors, blur/glass effects, transitions, and the
-   hamburger's open/close bar animation. Structural layout (position,
-   sizing, spacing, typography) now lives as Tailwind utilities directly
-   on the JSX elements in NavMenu.jsx; this file only keeps the pieces
-   Tailwind can't express cleanly (backdrop-filter combos, custom
-   cubic-bezier easing, :nth-child bar rotation, mobile breakpoint
-   overrides for values that were set inline via Tailwind). */
+.header {
+  position: fixed;
+  top: 24px;
+  left: 18px;
+  z-index: 1000;
+  width: max-content;
+  max-height: calc(100vh - 28px);
+}
+
+.glassBubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  isolation: isolate;
+  transition:
+    background 0.5s ease,
+    box-shadow 0.5s ease,
+    backdrop-filter 0.5s ease,
+    -webkit-backdrop-filter 0.5s ease;
+}
+
+.ultraClear {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)),
+    rgba(15, 10, 25, 0.05);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+}
+
+.frostedAcrylic {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1)),
+    rgba(15, 10, 25, 0.6);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+}
+
+.neonEdge {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02)),
+    rgba(15, 10, 25, 0.3);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 140, 66, 0.1);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+.glassBubble::before {
+  position: absolute;
+  z-index: -1;
+  top: -70%;
+  left: 12%;
+  width: 42%;
+  height: 180%;
+  border-radius: 50%;
+  background: rgba(255, 140, 66, 0.16);
+  filter: blur(22px);
+  content: '';
+  pointer-events: none;
+}
+
+.glassBubble::after {
+  position: absolute;
+  z-index: -1;
+  right: 8%;
+  bottom: -90%;
+  width: 36%;
+  height: 170%;
+  border-radius: 50%;
+  background: rgba(150, 95, 255, 0.13);
+  filter: blur(24px);
+  content: '';
+  pointer-events: none;
+}
 
 .brand {
-  font-family: 'Inter', 'SF Pro Display', sans-serif;
-  color: rgba(255, 255, 255, 0.018);
-  text-shadow: 0 1px 14px rgba(255, 140, 66, 0.012);
-  transition: color 0.25s ease, text-shadow 0.25s ease;
-}
-.brand:hover {
-  color: rgba(255, 255, 255, 0.07);
-  text-shadow: 0 1px 18px rgba(255, 140, 66, 0.045);
-}
-
-@media (max-width: 640px) {
-  .brand {
-    top: 22px;
-    font-size: 14px;
-    max-width: 52vw;
-  }
-}
-
-.toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-}
-.toggle:hover {
-  background: rgba(255, 140, 66, 0.16);
-  border-color: rgba(255, 140, 66, 0.45);
-  transform: scale(1.06);
-}
-
-.bar {
-  background: #fff;
-  transition: transform 0.28s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.2s ease, width 0.2s ease;
-}
-
-.toggleOpen .bar:nth-child(1) {
-  transform: translateY(5.3px) rotate(45deg);
-}
-.toggleOpen .bar:nth-child(2) {
-  opacity: 0;
-  width: 0;
-}
-.toggleOpen .bar:nth-child(3) {
-  transform: translateY(-5.3px) rotate(-45deg);
-}
-
-/* ── Invisible click-outside catcher (no dimming — page stays visible) ── */
-.catcherShow {
-  pointer-events: auto;
-}
-
-/* ── Compact glass dropdown, anchored under the toggle ── */
-.panel {
-  background: rgba(20, 14, 32, 0.42);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
-  transform-origin: top right;
-  transform: scale(0.92) translateY(-6px);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease;
-}
-.panelOpen {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.linkList a {
-  color: rgba(255, 255, 255, 0.72);
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.linkList a:hover {
-  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgba(255, 140, 66, 0.32);
+  border-radius: 50%;
   color: #fff;
+  background: rgba(255, 140, 66, 0.1);
+  text-decoration: none;
+  box-shadow: inset 0 0 16px rgba(255, 140, 66, 0.08);
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.brand:hover {
+  transform: rotate(-5deg) scale(1.06);
+  background: rgba(255, 140, 66, 0.18);
+}
+
+.brandCore {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.brandPulse {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff8c42;
+  box-shadow: 0 0 9px #ff8c42;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.divider {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  position: relative;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.navLink:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .linkActive {
-  background: rgba(255, 140, 66, 0.18) !important;
-  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(255, 140, 66, 0.2), rgba(255, 255, 255, 0.07));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 4px 16px rgba(255, 140, 66, 0.12);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 
 @media (max-width: 640px) {
-  .toggle {
-    top: 20px;
-    width: 34px;
-    height: 34px;
+  .header {
+    top: 14px;
+    left: 10px;
   }
-  .panel {
-    top: 60px;
+
+  .glassBubble {
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .brand {
+    width: 29px;
+    height: 29px;
+  }
+
+  .navLink {
+    width: 29px;
+    height: 29px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brandPulse {
+    animation: none;
+  }
+
+  .brand,
+  .navLink {
+    transition: none;
   }
 }

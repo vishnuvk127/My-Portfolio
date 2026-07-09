@@ -1,18 +1,20 @@
 import CoverSplash from '@/components/CoverSplash';
 import VideoIntro from '@/components/VideoIntro';
 import Reveal from '@/components/Reveal';
-import StatCounter from '@/components/StatCounter';
+import AboutStatCard from '@/components/AboutStatCard';
 import TiltCard from '@/components/TiltCard';
 import AmbientDataField from '@/components/AmbientDataField';
 import TimelineFX from '@/components/TimelineFX';
 import KineticHeading from '@/components/KineticHeading';
 import MagneticButton from '@/components/MagneticButton';
 import Marquee from '@/components/Marquee';
-import PhotoFrame from '@/components/PhotoFrame';
-import SkillRadar from '@/components/SkillRadar';
+import ResumeThanks from '@/components/ResumeThanks';
 import SlideIn from '@/components/SlideIn';
 import ProjectCarousel from '@/components/ProjectCarousel';
 import DataProductProcessSection from '@/components/DataProductProcessSection';
+import { MapPin, GraduationCap, CalendarDays, Briefcase, Mail, Cloud, BarChart3, PieChart } from 'lucide-react';
+import { SiPython, SiPostgresql, SiSnowflake, SiApacheairflow, SiPandas, SiScikitlearn, SiGit } from 'react-icons/si';
+import { FiLinkedin, FiGithub } from 'react-icons/fi';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -273,37 +275,35 @@ const certifications = [
   { name: 'Tableau Desktop Specialist', issuer: 'Tableau / Salesforce' },
 ];
 
-function AboutStatCard({ stat, delay, group, index }) {
-  const { num, lbl, contextTitle, context } = stat;
-  const cardId = `${group}-about-stat-${index}`;
+/* About info-panel data. Main technologies use real Simple Icons brand logos
+   where they exist; AWS / Power BI / Tableau were dropped from Simple Icons
+   upstream, so they fall back to matching Lucide glyphs (same pattern as
+   DataProductProcessSection). */
+const mainTech = [
+  { name: 'Python', Icon: SiPython },
+  { name: 'PostgreSQL', Icon: SiPostgresql },
+  { name: 'Snowflake', Icon: SiSnowflake },
+  { name: 'AWS', Icon: Cloud },
+  { name: 'Power BI', Icon: BarChart3 },
+  { name: 'Apache Airflow', Icon: SiApacheairflow },
+  { name: 'Pandas', Icon: SiPandas },
+  { name: 'scikit-learn', Icon: SiScikitlearn },
+  { name: 'Tableau', Icon: PieChart },
+  { name: 'Git', Icon: SiGit },
+];
 
-  return (
-    <Reveal
-      className={`${styles.statCard} ${styles.bentoStat}`}
-      delay={delay}
-      tabIndex={0}
-      role="article"
-      aria-labelledby={`${cardId}-label`}
-      aria-describedby={`${cardId}-context`}
-    >
-      <div className={styles.statCardInner}>
-        <div className={`${styles.statFace} ${styles.statFront}`}>
-          <StatCounter value={num} className={styles.statNum} />
-          <div id={`${cardId}-label`} className={styles.statLbl}>{lbl}</div>
-          <span className={styles.statHint}>Hover for context</span>
-        </div>
+const quickFacts = [
+  { Icon: Briefcase, text: 'Data Analyst' },
+  { Icon: MapPin, text: 'Dallas, Texas' },
+  { Icon: CalendarDays, text: '4+ yrs experience' },
+  { Icon: GraduationCap, text: 'M.S. Computer Science' },
+];
 
-        <div className={`${styles.statFace} ${styles.statBack}`}>
-          <span className={styles.statBackKicker}>Evidence context</span>
-          <strong className={styles.statBackTitle}>{contextTitle}</strong>
-          <p id={`${cardId}-context`} className={styles.statBackText}>{context}</p>
-        </div>
-      </div>
-
-      <span className={styles.statLightning} aria-hidden="true" />
-    </Reveal>
-  );
-}
+const socials = [
+  { Icon: FiLinkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/vishnuvk12/' },
+  { Icon: FiGithub, label: 'GitHub', href: 'https://github.com' },
+  { Icon: Mail, label: 'Email', href: 'mailto:vishnuvardhanvv127@gmail.com' },
+];
 
 /* ─────────────────────────────────────────
    PAGE
@@ -319,17 +319,65 @@ export default function HomePage() {
       <VideoIntro videoSrc="/videos/hero.mp4" nextId="about" />
 
       {/* ── ABOUT (bento grid) ── */}
-      <section id="about" className={styles.about} style={{ position: 'relative', overflow: 'visible' }}>
+      <section id="about" className={`px-[8vw] pt-[90px] pb-[70px] ${styles.about}`} style={{ position: 'relative', overflow: 'visible' }}>
         <AmbientDataField color="255,140,66" density={36} />
-        <div className={`${styles.aboutLeft} ${styles.bentoIntro}`}>
-          <PhotoFrame />
-          <KineticHeading as="p" className={styles.aboutHeadline}>
-            A collection of analytics, automation, and risk-focused projects where I improved data reliability, reduced manual effort, and helped teams make faster, more confident business decisions.
-          </KineticHeading>
-        </div>
-        <div className={`${styles.aboutVisual} ${styles.bentoVisual}`}>
-          <SkillRadar />
-        </div>
+
+        {/* Left — profile photo card with name + role overlay */}
+        <Reveal className={`relative min-h-[440px] overflow-hidden rounded-[24px] ${styles.photoCard} ${styles.bentoIntro}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/profile.jpg" alt="Kaitepalli Vishnu Vardhan" className={`absolute inset-0 h-full w-full object-cover ${styles.photoCardImg}`} />
+          <div className={`absolute inset-0 pointer-events-none ${styles.photoScrim}`} />
+          <div className="absolute left-6 bottom-6 z-[1]">
+            <span className="block text-[clamp(20px,2.4vw,28px)] font-extrabold leading-[1.1] tracking-[-0.02em] text-white">Kaitepalli Vishnu Vardhan</span>
+            <span className={`mt-2.5 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${styles.photoRolePill}`}>Data Analyst</span>
+          </div>
+        </Reveal>
+
+        {/* Right — info panel: bio · quick facts · tech logos · connect */}
+        <Reveal delay={0.08} className={`flex flex-col gap-6 rounded-[24px] p-7 ${styles.infoPanel} ${styles.bentoVisual}`}>
+          <span className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${styles.statusPill}`}>Open to opportunities</span>
+
+          <p className={`text-[clamp(14px,1.4vw,16px)] leading-[1.8] ${styles.infoBio}`}>
+            I&apos;m a data analyst who turns fragmented, messy data into decisions leaders can trust. Across banking and enterprise analytics I&apos;ve shipped <strong>ETL automation</strong>, <strong>credit-risk and fraud models</strong>, and <strong>executive dashboards</strong> — always chasing cleaner data, faster answers, and measurable business impact.
+          </p>
+
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
+            {quickFacts.map(({ Icon, text }) => (
+              <span key={text} className={`inline-flex items-center gap-2 text-[13px] font-medium ${styles.fact}`}>
+                <Icon size={15} strokeWidth={2} aria-hidden /> {text}
+              </span>
+            ))}
+          </div>
+
+          <div>
+            <span className={`mb-3 block text-[11px] font-bold uppercase tracking-[0.16em] ${styles.infoLabel}`}>Main Technologies</span>
+            <div className="flex flex-wrap gap-2.5">
+              {mainTech.map(({ name, Icon }) => (
+                <span key={name} className={`inline-flex items-center gap-2 rounded-[10px] px-3 py-2 text-[12.5px] font-medium ${styles.techChip}`}>
+                  <Icon size={16} aria-hidden className={styles.techIcon} /> {name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className={`mb-3 block text-[11px] font-bold uppercase tracking-[0.16em] ${styles.infoLabel}`}>Connect</span>
+            <div className="flex flex-wrap items-center gap-3">
+              {socials.map(({ Icon, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${styles.connectLink}`}
+                >
+                  <Icon size={18} aria-hidden />
+                </a>
+              ))}
+              <ResumeThanks />
+            </div>
+          </div>
+        </Reveal>
 
         <Reveal as="span" className={styles.statGroupLabel}>PNC Financial Services</Reveal>
         {pncStats.map((stat, i) => (
@@ -355,7 +403,7 @@ export default function HomePage() {
       </section>
 
       {/* ── SKILLS ── */}
-      <section id="skills" className={styles.skills} style={{ position: 'relative', overflow: 'hidden' }}>
+      <section id="skills" className={`px-[8vw] pt-[80px] pb-[90px] ${styles.skills}`} style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientDataField color="255,209,102" density={42} />
         <Reveal className={styles.sectionHeader}>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Tools I work with.</h2>
@@ -366,7 +414,7 @@ export default function HomePage() {
           speed={42}
           className={styles.skillsMarquee}
         />
-        <div className={styles.skillsGrid}>
+        <div className="relative z-[1] grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] gap-[22px]">
           {skills.map(({ icon, title, tags }, i) => (
             <Reveal key={title} delay={i * 0.06}>
               <TiltCard className={styles.skillCard}>
@@ -384,7 +432,7 @@ export default function HomePage() {
       </section>
 
       {/* ── EXPERIENCE ── */}
-      <section id="experience" className={styles.experience} style={{ position: 'relative', overflow: 'hidden' }}>
+      <section id="experience" className={`px-[8vw] py-[80px] ${styles.experience}`} style={{ position: 'relative', overflow: 'hidden' }}>
         <Reveal className={styles.sectionHeader}>
           <h2 className={styles.secTitle}>Where I&apos;ve built things.</h2>
         </Reveal>
@@ -417,7 +465,7 @@ export default function HomePage() {
       </section>
 
       {/* ── PROJECTS ── */}
-      <section id="projects" className={styles.projects}>
+      <section id="projects" className={`px-[8vw] py-[80px] ${styles.projects}`}>
         <Reveal className={styles.sectionHeader}>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Things I&apos;ve shipped.</h2>
         </Reveal>
@@ -453,7 +501,7 @@ export default function HomePage() {
       <DataProductProcessSection />
 
       {/* ── EDUCATION & CERTS ── */}
-      <section id="education" className={styles.education}>
+      <section id="education" className={`px-[8vw] py-[80px] ${styles.education}`}>
         <div className={styles.eduCol}>
           <Reveal className={styles.sectionHeader}>
             <h2 className={styles.secTitle}>Academic background.</h2>
@@ -486,11 +534,11 @@ export default function HomePage() {
       </section>
 
       {/* ── ACHIEVEMENTS ── */}
-      <section id="achievements" className={styles.achievements}>
+      <section id="achievements" className={`px-[8vw] py-[70px] ${styles.achievements}`}>
         <Reveal className={styles.sectionHeader}>
           <h2 className={`${styles.secTitle} ${styles.light}`}>Milestones.</h2>
         </Reveal>
-        <div className={styles.achRow}>
+        <div className="relative z-[1] flex flex-wrap gap-[22px]">
           {[
             {
               icon: '🏆',
@@ -515,16 +563,16 @@ export default function HomePage() {
       </section>
 
       {/* ── CONTACT ── */}
-      <section id="contact" className={styles.contact}>
+      <section id="contact" className={`px-[8vw] pt-[90px] pb-[70px] text-center ${styles.contact}`}>
         <span className={styles.secLabel}>Get In Touch</span>
         <KineticHeading as="h2" className={styles.secTitle}>Let&apos;s build something.</KineticHeading>
         <p className={styles.contactSub}>Open to data analytics, ML engineering, and BI architecture opportunities. Let&apos;s talk.</p>
-        <Reveal as="div" className={styles.ctaLinks}>
+        <Reveal as="div" className={`relative z-[1] mb-[56px] flex flex-wrap justify-center gap-[14px] ${styles.ctaLinks}`}>
           <MagneticButton className={`${styles.ctaBtn} ${styles.primary}`} href="mailto:vishnuvardhanvv127@gmail.com">Send an Email</MagneticButton>
           <MagneticButton className={`${styles.ctaBtn} ${styles.secondary}`} href="https://www.linkedin.com/in/vishnuvk12/" target="_blank" rel="noopener noreferrer">LinkedIn</MagneticButton>
           <MagneticButton className={`${styles.ctaBtn} ${styles.secondary}`} href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</MagneticButton>
         </Reveal>
-        <Reveal as="div" className={styles.contactInfoRow} delay={0.1}>
+        <Reveal as="div" className={`relative z-[1] flex flex-wrap justify-center gap-[44px] ${styles.contactInfoRow}`} delay={0.1}>
           <div className={styles.ci}>
             <span className={styles.ciLabel}>Email</span>
             <a className={styles.ciVal} href="mailto:vishnuvardhanvv127@gmail.com">vishnuvardhanvv127@gmail.com</a>
@@ -540,7 +588,7 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      <footer className={styles.footer}>
+      <footer className={`px-[8vw] py-[28px] text-center text-xs font-normal tracking-[0.08em] ${styles.footer}`}>
         &copy; 2026 <span>Vishnu Vardhan Kaitepalli</span> · Crafted with precision.
       </footer>
 

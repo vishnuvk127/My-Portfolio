@@ -1,0 +1,93 @@
+/* ResumeThanks.module.css — the "art" for the animated résumé box.
+   Structure (flex, sizing, padding, rounding, type scale) is set via
+   Tailwind on the element in ResumeThanks.jsx; this file carries the
+   glass/gradient look, the idle shimmer sweep, the gradient-clipped CTA
+   text, and the post-download thank-you glow — all using the shared
+   design tokens from globals.css so it matches the About panel. */
+
+.box {
+  min-height: 44px; /* matches the 44px connect icon buttons beside it */
+  cursor: pointer;
+  background:
+    linear-gradient(145deg, rgba(255, 140, 66, 0.14), rgba(255, 209, 102, 0.05)),
+    rgba(14, 10, 22, 0.6);
+  border: 1px solid rgba(255, 140, 66, 0.4);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 140, 66, 0.06);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+.box:hover {
+  border-color: rgba(255, 140, 66, 0.65);
+  box-shadow: 0 14px 38px rgba(255, 140, 66, 0.22);
+}
+
+/* Gradient-clipped call-to-action label. */
+.cta {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(130deg, var(--orange), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Continuous diagonal light sweep — this is what makes it read as an
+   "animated box" before it's ever clicked. */
+.shimmer {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  animation: resumeShimmer 3.6s ease-in-out infinite;
+}
+@keyframes resumeShimmer {
+  0% { left: -60%; }
+  55%, 100% { left: 130%; }
+}
+
+/* Post-download state: warmer fill + a breathing glow. */
+.boxThanked {
+  border-color: rgba(255, 209, 102, 0.7);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.18), transparent 60%),
+    linear-gradient(145deg, rgba(255, 140, 66, 0.16), rgba(255, 209, 102, 0.08)),
+    rgba(14, 10, 22, 0.75);
+  box-shadow:
+    0 0 34px rgba(255, 140, 66, 0.35),
+    inset 0 0 22px rgba(255, 140, 66, 0.08);
+  animation: thankGlow 1.7s ease-in-out infinite;
+}
+@keyframes thankGlow {
+  0%, 100% { box-shadow: 0 0 30px rgba(255, 140, 66, 0.3), inset 0 0 22px rgba(255, 140, 66, 0.07); }
+  50%      { box-shadow: 0 0 48px rgba(255, 209, 102, 0.5), inset 0 0 26px rgba(255, 140, 66, 0.12); }
+}
+
+.thanks {
+  position: relative;
+  z-index: 1;
+  line-height: 1.35;
+}
+.thanksMain {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff2d8;
+}
+.thanksSub {
+  font-size: 6.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer,
+  .boxThanked {
+    animation: none;
+  }
+}

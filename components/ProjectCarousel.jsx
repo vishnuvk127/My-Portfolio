@@ -134,12 +134,12 @@ export default function ProjectCarousel({ children }) {
   }, [items.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div ref={stageRef} className={styles.stage}>
+    <div ref={stageRef} className={`relative h-[700px] overflow-hidden ${styles.stage}`}>
       {items.map((child, i) => (
         <div
           key={i}
           ref={(el) => { slideRefs.current[i] = el; }}
-          className={styles.slide}
+          className={`absolute inset-0 flex items-center justify-center ${styles.slide}`}
         >
           {child}
         </div>

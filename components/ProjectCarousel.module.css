@@ -1,20 +1,15 @@
 /* ProjectCarousel.module.css — pinned stage for the Projects stacked-card
    scroll effect. Slides are absolutely stacked on top of one another;
    ProjectCarousel.jsx (GSAP ScrollTrigger) drives their transform/opacity/
-   blur as the user scrolls, see that file for the animation logic. */
+   blur as the user scrolls, see that file for the animation logic.
 
-.stage {
-  position: relative;
-  height: 700px;
-  overflow: hidden;
-}
+   Structure (position, sizing, flex centering) now lives as Tailwind
+   utilities on the elements in ProjectCarousel.jsx. This file keeps
+   `will-change` (a GPU hint Tailwind can't express for this property set)
+   and the responsive stage-height overrides, which — being unlayered —
+   correctly win over the Tailwind base height at each breakpoint. */
 
 .slide {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   will-change: transform, opacity, filter;
 }
 

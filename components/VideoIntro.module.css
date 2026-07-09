@@ -1,56 +1,23 @@
-/* VideoIntro.module.css — controls & sound hint fully removed */
-
-.heroSection {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* VideoIntro.module.css — the "art" layer for the cinematic hero.
+   Structure (positioning, sizing, flex, spacing, font geometry) now lives
+   as Tailwind utilities in VideoIntro.jsx. This file keeps what Tailwind
+   can't cleanly express: the blur/gradient overlays, the gradient-clipped
+   role text, the GSAP entrance seed values (opacity/transform that GSAP
+   animates from), the scroll-pulse keyframes, and the responsive padding
+   override (which, being unlayered, wins over the Tailwind base). */
 
 /* ── Ambient blurred background ── */
 .ambientLayer {
-  position: absolute;
-  inset: -30px;
-  z-index: 1;
-  overflow: hidden;
   transition: opacity 0.15s linear;
 }
 
 .ambientVideo {
-  width: calc(100% + 60px);
-  height: calc(100% + 60px);
-  object-fit: cover;
   filter: blur(28px) brightness(0.35) saturate(1.4);
   transform: scale(1.05);
 }
 
-/* ── Main video ── */
-.mainVideoWrap {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mainVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 /* ── Gradient overlays ── */
 .gradTop {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 40%;
-  z-index: 3;
-  pointer-events: none;
   background: linear-gradient(180deg,
     rgba(0,0,0,0.85) 0%,
     rgba(0,0,0,0.4)  60%,
@@ -59,11 +26,6 @@
 }
 
 .gradBottom {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 55%;
-  z-index: 3;
-  pointer-events: none;
   background: linear-gradient(0deg,
     rgba(0,0,0,0.92) 0%,
     rgba(0,0,0,0.6)  50%,
@@ -72,89 +34,40 @@
 }
 
 .gradLeft {
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
-  width: 35%;
-  z-index: 3;
-  pointer-events: none;
   background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, transparent 100%);
 }
 
 .gradRight {
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 35%;
-  z-index: 3;
-  pointer-events: none;
   background: linear-gradient(270deg, rgba(0,0,0,0.55) 0%, transparent 100%);
 }
 
 .warmVignette {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 35%;
-  z-index: 3;
-  pointer-events: none;
   background: radial-gradient(ellipse 80% 60% at 20% 100%,
     rgba(255,100,30,0.08) 0%, transparent 70%
   );
 }
 
 .coolGlow {
-  position: absolute;
-  top: 0; right: 0;
-  width: 40%; height: 50%;
-  z-index: 3;
-  pointer-events: none;
   background: radial-gradient(ellipse 80% 80% at 90% 10%,
     rgba(40,120,220,0.09) 0%, transparent 70%
   );
 }
 
-/* ── Three.js canvas ── */
-.canvasLayer {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-}
-
 /* ── Text overlay ── */
-.contentOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 0 6vw 9vh;
-  pointer-events: none;
-}
-
 .greeting {
   font-family: 'Inter', 'SF Pro Display', sans-serif;
-  font-size: clamp(16px, 2vw, 22px);
-  font-weight: 400;
-  letter-spacing: 0.01em;
   color: rgba(255,255,255,0.82);
-  margin: 0 0 0.55rem;
-  opacity: 0;
+  opacity: 0; /* GSAP animates to 1 */
 }
 
 .greetingName {
-  font-weight: 700;
   color: #fff;
 }
 
 .role {
-  display: block;
   font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
-  font-size: clamp(34px, 4.6vw, 60px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 1.3rem;
-  opacity: 0;
-  transform: translateY(40px);
+  opacity: 0;              /* GSAP animates to 1 */
+  transform: translateY(40px); /* GSAP animates to 0 */
   background: linear-gradient(135deg, #FF8C42 0%, #FFD166 55%, #FF6B35 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -163,41 +76,20 @@
 
 .subtitle {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(13px, 1.5vw, 17px);
-  font-weight: 300;
   color: rgba(255,255,255,0.62);
-  letter-spacing: 0.02em;
-  line-height: 1.65;
-  max-width: 520px;
-  margin: 0 0 1.9rem;
-  opacity: 0;
+  opacity: 0; /* GSAP animates to 1 */
 }
 
 /* ── CTA buttons ── */
 .ctaRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(24px);
-  pointer-events: all;
+  opacity: 0;                  /* GSAP animates to 1 */
+  transform: translateY(24px); /* GSAP animates to 0 */
 }
 
 .ctaPrimary,
 .ctaAccent,
 .ctaGhost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  padding: 13px 26px;
-  border-radius: 100px;
-  text-decoration: none;
-  white-space: nowrap;
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
 }
 
@@ -231,26 +123,11 @@
   border-color: rgba(255,255,255,0.5);
   transform: translateY(-2px);
 }
-.ctaGhost svg {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
 
 /* ── Scroll indicator ── */
 .scrollIndicator {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  pointer-events: all;
-  opacity: 0;
+  transform: translateX(-50%); /* pairs with Tailwind left-1/2 */
+  opacity: 0;                  /* GSAP animates to 0.55 */
   transition: opacity 0.3s;
 }
 
@@ -258,19 +135,11 @@
 
 .scrollLabel {
   font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.2em;
   color: rgba(255,255,255,0.35);
-  text-transform: uppercase;
 }
 
 .scrollLine {
-  width: 1px;
-  height: 42px;
   background: rgba(255,255,255,0.15);
-  position: relative;
-  overflow: hidden;
 }
 
 .scrollLine::after {

@@ -1,23 +1,44 @@
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Tailwind v4 — imported as separate layers (theme + utilities only,
+   skipping tailwindcss/preflight.css) so Tailwind's base reset never runs.
+   The site already has its own reset below; Preflight would additionally
+   strip heading font sizes/weights, list bullets, and button styling that
+   the existing component CSS relies on. @source tells Tailwind where to
+   scan for utility class names since app/ and components/ aren't both
+   under this file's own directory. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@source './**/*.{js,jsx,ts,tsx}';
+@source '../components/**/*.{js,jsx,ts,tsx}';
 
-html {
-  scroll-behavior: smooth;
-}
+/* Wrapped in @layer base (not left unlayered) so Tailwind utilities —
+   which live in @layer utilities, declared later above — can still
+   override margin/padding/etc. here when a component opts in. Unlayered
+   CSS always beats layered CSS regardless of specificity, so leaving
+   this reset unlayered was silently cancelling every Tailwind spacing
+   utility site-wide. */
+@layer base {
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-body {
-  background: #000;
-  color: #fff;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
+  html {
+    scroll-behavior: smooth;
+  }
 
-a {
-  color: inherit;
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+  }
 }
 
 :root {

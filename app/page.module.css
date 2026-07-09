@@ -83,9 +83,11 @@
 }
 
 /* ── About — bento grid ── */
+/* Section padding now set via Tailwind on the <section> in page.jsx; the
+   grid definition stays here because the bento child placement and the
+   :has() spotlight choreography below are tightly coupled to it. */
 .about {
   background: var(--bg-dark);
-  padding: 90px 8vw 70px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: auto;
@@ -180,20 +182,14 @@
 .statCardInner {
   position: relative;
   width: 100%;
-  height: 124px;
-  min-height: 124px;
+  height: 100%; /* follows the card height, which JS fits to the context text */
   transform-style: preserve-3d;
-  transition:
-    transform 0.72s cubic-bezier(0.16, 1, 0.3, 1),
-    height 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-    min-height 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .statCard:hover .statCardInner,
 .statCard:focus .statCardInner,
 .statCard:focus-within .statCardInner {
-  height: 285px;
-  min-height: 285px;
   transform: rotateY(180deg);
 }
 
@@ -228,7 +224,7 @@
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* top-aligned so scrollHeight measures the full context reliably */
   background:
     radial-gradient(circle at 20% 15%, rgba(255, 209, 102, 0.16), transparent 34%),
     radial-gradient(circle at 80% 90%, rgba(255, 140, 66, 0.16), transparent 42%),
@@ -279,20 +275,6 @@
 .statCard:focus-within .statHint {
   opacity: 1;
   transform: translateY(0);
-}
-
-.statBackKicker {
-  width: fit-content;
-  margin-bottom: 10px;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #ffd166;
-  background: rgba(255, 140, 66, 0.12);
-  border: 1px solid rgba(255, 140, 66, 0.28);
 }
 
 .statBackTitle {
@@ -399,50 +381,11 @@
   }
 }
 
-/* Blur the rest of the portfolio while an About stat is being inspected */
-.main:has(.statCard:hover) > *:not(.about),
-.main:has(.statCard:focus) > *:not(.about),
-.main:has(.statCard:focus-within) > *:not(.about) {
-  filter: blur(7px) brightness(0.45) saturate(0.75);
-  opacity: 0.45;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.about:has(.statCard:hover) .bentoIntro,
-.about:has(.statCard:focus) .bentoIntro,
-.about:has(.statCard:focus-within) .bentoIntro,
-.about:has(.statCard:hover) .bentoVisual,
-.about:has(.statCard:focus) .bentoVisual,
-.about:has(.statCard:focus-within) .bentoVisual,
-.about:has(.statCard:hover) .statGroupLabel,
-.about:has(.statCard:focus) .statGroupLabel,
-.about:has(.statCard:focus-within) .statGroupLabel {
-  filter: blur(5px) brightness(0.55);
-  opacity: 0.42;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-.about:has(.statCard:hover) .statCard:not(:hover),
-.about:has(.statCard:focus) .statCard:not(:focus),
-.about:has(.statCard:focus-within) .statCard:not(:focus-within) {
-  filter: blur(3px) brightness(0.55);
-  opacity: 0.46;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-.about:has(.statCard:hover)::after,
-.about:has(.statCard:focus)::after,
-.about:has(.statCard:focus-within)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 0%, transparent 28%, rgba(5, 3, 8, 0.56) 72%),
-    radial-gradient(circle at 50% 50%, rgba(255, 140, 66, 0.08), transparent 42%);
-}
+/* When a stat card is inspected, only the OTHER stat cards are dimmed — in
+   graduated rings by distance (nearest 40% → 80% → 100% blur). That blur is
+   applied as inline filter/opacity by AboutStatCard.jsx (it needs real
+   geometry to rank cards by distance) and animates via the .statCard
+   transition above. The rest of the page is intentionally left sharp. */
 
 .aboutVisual {
   width: 100%;
@@ -467,22 +410,97 @@
   pointer-events: none;
 }
 
+/* ── About — profile photo card (replaces the lanyard PhotoFrame) ── */
+/* Structure (position, sizing, rounding, overlay placement) is set via
+   Tailwind in page.jsx; these rules carry the glass panel, photo scrim,
+   and accent-pill "art" using the shared design tokens. */
+.photoCard {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.photoCardImg {
+  object-position: center 14%;
+  filter: saturate(1.03) contrast(1.02);
+}
+.photoScrim {
+  background: linear-gradient(180deg, transparent 34%, rgba(5, 3, 8, 0.9) 100%);
+}
+.photoRolePill {
+  color: var(--gold);
+  background: rgba(255, 140, 66, 0.16);
+  border: 1px solid rgba(255, 140, 66, 0.32);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── About — info panel (replaces the SkillRadar) ── */
+.infoPanel {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+    rgba(14, 10, 22, 0.5);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.statusPill {
+  color: var(--gold);
+  background: rgba(255, 140, 66, 0.12);
+  border: 1px solid rgba(255, 140, 66, 0.28);
+}
+.infoBio {
+  color: var(--text-mid);
+}
+.infoBio strong {
+  color: var(--text-hi);
+  font-weight: 600;
+}
+.fact {
+  color: var(--text-mid);
+}
+.fact svg {
+  color: var(--orange);
+}
+.infoLabel {
+  color: var(--orange);
+}
+.techChip {
+  color: var(--text-hi);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.techChip:hover {
+  background: rgba(255, 140, 66, 0.12);
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+.techIcon {
+  color: var(--orange);
+  flex-shrink: 0;
+}
+.connectLink {
+  color: var(--text-hi);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.connectLink:hover {
+  color: var(--gold);
+  background: rgba(255, 140, 66, 0.14);
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+
 /* ── Skills ── */
+/* .skills padding and .skillsGrid layout now set via Tailwind in page.jsx. */
 .skills {
   background: var(--bg-mid);
-  padding: 80px 8vw 90px;
 }
 
 .skillsMarquee {
   margin: 12px 0 52px;
-}
-
-.skillsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  gap: 22px;
-  position: relative;
-  z-index: 1;
 }
 
 .skillCard {
@@ -590,9 +608,9 @@
 }
 
 /* ── Experience ── */
+/* Section padding now set via Tailwind in page.jsx. */
 .experience {
   background: var(--bg-dark);
-  padding: 80px 8vw;
 }
 
 .timeline {
@@ -807,9 +825,9 @@
 }
 
 /* ── Projects — pinned stacked-card carousel ── */
+/* Section padding now set via Tailwind in page.jsx. */
 .projects {
   background: var(--bg-mid);
-  padding: 80px 8vw;
 }
 
 .projCard {
@@ -887,9 +905,10 @@
 }
 
 /* ── Education ── */
+/* Section padding now set via Tailwind in page.jsx; grid kept here since the
+   @900 breakpoint below collapses it and must override the base. */
 .education {
   background: var(--bg-dark);
-  padding: 80px 8vw;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 72px;
@@ -998,17 +1017,9 @@
 }
 
 /* ── Achievements ── */
+/* .achievements padding and .achRow layout now set via Tailwind in page.jsx. */
 .achievements {
   background: var(--bg-mid);
-  padding: 70px 8vw;
-}
-
-.achRow {
-  display: flex;
-  gap: 22px;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
 }
 
 .achCard {
@@ -1048,10 +1059,9 @@
 }
 
 /* ── Contact ── */
+/* Section padding + text-align now set via Tailwind in page.jsx. */
 .contact {
   background: var(--bg-dark);
-  padding: 90px 8vw 70px;
-  text-align: center;
 }
 
 .contactSub {
@@ -1065,15 +1075,8 @@
   line-height: 1.75;
 }
 
-.ctaLinks {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 56px;
-  position: relative;
-  z-index: 1;
-}
+/* .ctaLinks layout now set via Tailwind in page.jsx; the @640 breakpoint
+   below still switches it to a centered column. */
 
 .ctaBtn {
   display: inline-flex;
@@ -1109,14 +1112,8 @@
   border: 1.5px solid var(--border);
 }
 
-.contactInfoRow {
-  display: flex;
-  justify-content: center;
-  gap: 44px;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
+/* .contactInfoRow layout now set via Tailwind in page.jsx; the @640
+   breakpoint below tightens the gap. */
 
 .ci {
   display: flex;
@@ -1146,14 +1143,11 @@
 }
 
 /* ── Footer ── */
+/* Padding, alignment, and font geometry now set via Tailwind in page.jsx;
+   the void background, muted text color, and top border stay here. */
 .footer {
   background: var(--bg-void);
-  padding: 28px 8vw;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 400;
   color: var(--text-low);
-  letter-spacing: 0.08em;
   border-top: 1px solid var(--border);
 }
 
@@ -1168,11 +1162,7 @@
     min-height: 124px;
   }
 
-  .statCardInner {
-    height: 124px;
-    min-height: 124px;
-  }
-
+  /* Fallback expansion if JS hasn't set an exact fit-to-context height yet. */
   .statCard:hover,
   .statCard:focus,
   .statCard:focus-within {
@@ -1180,22 +1170,9 @@
     min-height: 330px;
   }
 
-  .statCard:hover .statCardInner,
-  .statCard:focus .statCardInner,
-  .statCard:focus-within .statCardInner {
-    height: 330px;
-    min-height: 330px;
-  }
-
   .statBackText {
     font-size: 12px;
     line-height: 1.6;
-  }
-
-  .main:has(.statCard:hover) > *:not(.about),
-  .main:has(.statCard:focus) > *:not(.about),
-  .main:has(.statCard:focus-within) > *:not(.about) {
-    filter: blur(4px) brightness(0.5);
   }
 }
 
@@ -1231,9 +1208,8 @@
     grid-column: 1 / -1;
     grid-row: auto;
   }
-  .bentoVisual {
-    display: none;
-  }
+  /* The right column now holds the info panel (bio, tech, connect) — real
+     content, so it stacks below the photo on mobile instead of hiding. */
   .education {
     grid-template-columns: 1fr;
     gap: 56px;

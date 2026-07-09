@@ -124,47 +124,52 @@ export default function VideoIntro({
   return (
     <>
     <NavMenu />
-    <section id="home" ref={sectionRef} className={styles.heroSection} aria-label="Portfolio introduction">
+    <section
+      id="home"
+      ref={sectionRef}
+      className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-black"
+      aria-label="Portfolio introduction"
+    >
 
       {/* Ambient blurred bg */}
-      <div className={styles.ambientLayer}>
-        <video ref={ambientRef} className={styles.ambientVideo}
+      <div className={`absolute inset-[-30px] z-[1] overflow-hidden ${styles.ambientLayer}`}>
+        <video ref={ambientRef} className={`h-[calc(100%+60px)] w-[calc(100%+60px)] object-cover ${styles.ambientVideo}`}
           src={videoSrc} autoPlay loop muted playsInline preload="auto"
           aria-hidden="true" />
       </div>
 
       {/* Main video — no autoPlay attr; started in JS so we control muted state */}
-      <div className={styles.mainVideoWrap}>
-        <video ref={mainRef} className={styles.mainVideo}
+      <div className="absolute inset-0 z-[2] flex items-center justify-center">
+        <video ref={mainRef} className="h-full w-full object-cover"
           src={videoSrc} loop playsInline preload="auto" />
       </div>
 
       {/* Gradient overlays */}
-      <div className={styles.gradTop}      aria-hidden="true" />
-      <div className={styles.gradBottom}   aria-hidden="true" />
-      <div className={styles.gradLeft}     aria-hidden="true" />
-      <div className={styles.gradRight}    aria-hidden="true" />
-      <div className={styles.warmVignette} aria-hidden="true" />
-      <div className={styles.coolGlow}     aria-hidden="true" />
+      <div className={`absolute inset-x-0 top-0 z-[3] h-[40%] pointer-events-none ${styles.gradTop}`}      aria-hidden="true" />
+      <div className={`absolute inset-x-0 bottom-0 z-[3] h-[55%] pointer-events-none ${styles.gradBottom}`}   aria-hidden="true" />
+      <div className={`absolute top-0 bottom-0 left-0 z-[3] w-[35%] pointer-events-none ${styles.gradLeft}`}     aria-hidden="true" />
+      <div className={`absolute top-0 bottom-0 right-0 z-[3] w-[35%] pointer-events-none ${styles.gradRight}`}    aria-hidden="true" />
+      <div className={`absolute inset-x-0 bottom-0 z-[3] h-[35%] pointer-events-none ${styles.warmVignette}`} aria-hidden="true" />
+      <div className={`absolute top-0 right-0 z-[3] h-[50%] w-[40%] pointer-events-none ${styles.coolGlow}`}     aria-hidden="true" />
 
       {/* Three.js data particle layer */}
-      <CinematicDataLayer className={styles.canvasLayer} />
+      <CinematicDataLayer className="z-[4]" />
 
       {/* Text */}
-      <div className={styles.contentOverlay}>
-        <p ref={greetRef} className={styles.greeting}>
-          <span className={styles.greetingName}>Kaitepalli Vishnu Vardhan</span>
+      <div className={`absolute inset-0 z-[5] flex flex-col justify-end px-[6vw] pb-[9vh] pointer-events-none ${styles.contentOverlay}`}>
+        <p ref={greetRef} className={`mb-[0.55rem] text-[clamp(16px,2vw,22px)] font-normal tracking-[0.01em] ${styles.greeting}`}>
+          <span className={`font-bold ${styles.greetingName}`}>Kaitepalli Vishnu Vardhan</span>
         </p>
-        <h1 ref={roleRef} className={styles.role}>Data Analyst</h1>
-        <p ref={subRef} className={styles.subtitle}>
+        <h1 ref={roleRef} className={`block mb-[1.3rem] text-[clamp(34px,4.6vw,60px)] font-extrabold tracking-[-0.02em] ${styles.role}`}>Data Analyst</h1>
+        <p ref={subRef} className={`mb-[1.9rem] max-w-[520px] text-[clamp(13px,1.5vw,17px)] font-light leading-[1.65] tracking-[0.02em] ${styles.subtitle}`}>
           Specialising in ETL automation, risk scoring models,
           <br />and scalable business intelligence architecture.
         </p>
-        <div ref={ctaRef} className={styles.ctaRow}>
-          <a href="#projects" className={styles.ctaPrimary}>View My Work</a>
-          <a href="#contact" className={styles.ctaAccent}>Contact Me</a>
-          <a href="/resume.pdf" download className={styles.ctaGhost}>
-            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <div ref={ctaRef} className={`flex flex-wrap items-center gap-[14px] pointer-events-auto ${styles.ctaRow}`}>
+          <a href="#projects" className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-[26px] py-[13px] text-sm font-semibold tracking-[0.01em] ${styles.ctaPrimary}`}>View My Work</a>
+          <a href="#contact" className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-[26px] py-[13px] text-sm font-semibold tracking-[0.01em] ${styles.ctaAccent}`}>Contact Me</a>
+          <a href="/resume.pdf" download className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-[26px] py-[13px] text-sm font-semibold tracking-[0.01em] ${styles.ctaGhost}`}>
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-[15px] w-[15px] shrink-0">
               <path d="M8 1.5v8.4M8 9.9 4.7 6.6M8 9.9l3.3-3.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2.5 11v1.8a1.7 1.7 0 0 0 1.7 1.7h7.6a1.7 1.7 0 0 0 1.7-1.7V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -176,14 +181,14 @@ export default function VideoIntro({
       {/* Scroll indicator — only interactive element remaining */}
       <div
         ref={scrollRef}
-        className={styles.scrollIndicator}
+        className={`absolute bottom-8 left-1/2 z-[6] flex flex-col items-center gap-2 cursor-pointer pointer-events-auto ${styles.scrollIndicator}`}
         role="button" tabIndex={0}
         aria-label="Scroll to next section"
         onClick={scrollToNext}
         onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && scrollToNext()}
       >
-        <span className={styles.scrollLabel}>Scroll</span>
-        <div className={styles.scrollLine} />
+        <span className={`text-[10px] font-normal uppercase tracking-[0.2em] ${styles.scrollLabel}`}>Scroll</span>
+        <div className={`relative h-[42px] w-px overflow-hidden ${styles.scrollLine}`} />
       </div>
 
     </section>

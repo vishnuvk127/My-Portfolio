@@ -1,12 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { gsap } from './gsapScroll';
 
 /**
  * SlideIn — bidirectional scroll-triggered slide entrance.
@@ -14,8 +9,8 @@ if (typeof window !== 'undefined') {
  * Slides the wrapped element in from the left or right as it enters the
  * viewport, and slides it back out the same way it came whenever the
  * user scrolls past it — in either direction (GSAP ScrollTrigger,
- * toggleActions "play reverse play reverse", same pattern used by
- * PhotoFrame — all four directions wired, not a one-shot reveal):
+ * toggleActions "play reverse play reverse" — all four directions
+ * wired, not a one-shot reveal):
  *  - onEnter      (scrolling down, enters view)        → slides in
  *  - onLeave      (scrolling down further, exits view) → slides back out
  *  - onEnterBack  (scrolling back up, re-enters view)  → slides in again

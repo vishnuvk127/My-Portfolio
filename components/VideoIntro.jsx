@@ -9,15 +9,11 @@ import styles from './VideoIntro.module.css';
 /**
  * VideoIntro — Scroll-aware cinematic hero
  *
- * • No controls UI, no sound hint badge
- * • Autoplays with sound on load
-* • Volume fades 1→0 as hero scrolls out of view
- * • Video pauses when fully scrolled past, resumes on scroll back up
  * Behaviour:
- *  • Video autoplays WITH sound immediately on load (no controls, no hint)
- *  • As user scrolls down, volume fades 1 → 0 proportionally
- *  • Once hero is fully scrolled past, video pauses
- *  • Scrolling back up resumes video and fades volume back in
+ *  • Video autoplays WITH sound immediately on load (no controls, no hint badge)
+ *  • As the user scrolls down, volume fades 1 → 0 proportionally
+ *  • Once the hero is fully scrolled past, the video pauses
+ *  • Scrolling back up resumes the video and fades volume back in
  */
 export default function VideoIntro({
   videoSrc = '/videos/hero.mp4',

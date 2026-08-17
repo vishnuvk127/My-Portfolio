@@ -1,5 +1,5 @@
 /* PageFX.module.css — supporting styles for the scroll-fx components
-   (Reveal, TiltCard, SkillRadar, AmbientDataField, TimelineFX).
+   (Reveal, TiltCard, AmbientDataField, TimelineFX, Marquee).
    Does not touch / duplicate page.module.css — purely additive. */
 
 /* ── Reveal ── */
@@ -39,107 +39,6 @@
 }
 .tiltCard:hover .tiltGlow {
   opacity: 1;
-}
-
-/* ── SkillRadar ── */
-.radarWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-}
-.radarStage {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-}
-.radarSvg {
-  width: 100%;
-  max-width: 400px;
-  display: block;
-  overflow: visible;
-}
-.radarPolygon {
-  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
-}
-.radarNode {
-  transition: opacity 0.4s ease, r 0.18s ease-out, fill 0.18s ease-out;
-}
-.radarSpokeHit {
-  stroke: transparent;
-  cursor: pointer;
-  outline: none;
-}
-
-/* ── Radar tooltip ── */
-.radarTooltip {
-  position: absolute;
-  pointer-events: none;
-  z-index: 5;
-}
-.radarTooltipInner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  white-space: nowrap;
-  background: rgba(10, 7, 18, 0.95);
-  border: 1px solid rgba(255, 140, 66, 0.4);
-  border-radius: 10px;
-  padding: 7px 13px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
-  animation: radarPop 0.16s ease-out;
-}
-.radarTooltipInner strong {
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffd166;
-  line-height: 1.2;
-}
-.radarTooltipInner span {
-  font-size: 10.5px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
-  letter-spacing: 0.03em;
-}
-@keyframes radarPop {
-  from { opacity: 0; transform: scale(0.82) translateY(3px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.radarLabels {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 18px;
-  width: 100%;
-  max-width: 400px;
-}
-.radarLabels li {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.04em;
-  padding: 4px 7px;
-  margin: -4px -7px;
-  border-radius: 7px;
-  cursor: pointer;
-  outline: none;
-  transition: background 0.18s, color 0.18s;
-}
-.radarLabelActive {
-  background: rgba(255, 140, 66, 0.14);
-}
-.radarLabelActive span {
-  color: rgba(255, 255, 255, 0.92);
-}
-.radarLabels strong {
-  color: #ffd166;
-  font-weight: 600;
 }
 
 /* ── AmbientDataField ── */

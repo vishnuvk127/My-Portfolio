@@ -1,13 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from './gsapScroll';
 import styles from './PageFX.module.css';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 /**
  * TimelineFX — decorates the existing, static Experience timeline with:

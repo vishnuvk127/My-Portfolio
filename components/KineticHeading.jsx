@@ -1,12 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { gsap } from './gsapScroll';
 
 /**
  * KineticHeading — large heading whose scale / opacity / letter-spacing

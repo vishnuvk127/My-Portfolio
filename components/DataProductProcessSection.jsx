@@ -118,8 +118,6 @@ const stages = [
     title: 'Understand',
     Icon: Target,
     tagline: 'Frame the problem',
-    metricValue: '+35%',
-    metricLabel: 'Requirements clarity',
     description: 'Clarify the business problem, define KPIs, success metrics, users, and expected decision impact.',
     skills: ['Business Analysis', 'KPI Definition', 'Requirement Gathering', 'Data Validation', 'Stakeholder Communication'],
     technologies: ['JIRA', 'Confluence', 'Excel', 'SQL'],
@@ -152,8 +150,6 @@ const stages = [
     title: 'Engineer',
     Icon: Database,
     tagline: 'Build the pipeline',
-    metricValue: '30%',
-    metricLabel: 'Faster dashboards',
     description: 'Build reliable data pipelines, clean raw data, validate quality, and prepare structured datasets for analysis.',
     skills: ['SQL Development', 'Python Automation', 'ETL Pipeline Design', 'Data Cleaning', 'Data Quality Control', 'Workflow Automation'],
     technologies: ['SQL', 'Python', 'AWS Glue', 'Snowflake', 'Airflow'],
@@ -189,8 +185,6 @@ const stages = [
     title: 'Model',
     Icon: Brain,
     tagline: 'Predict & uncover',
-    metricValue: '+22%',
-    metricLabel: 'Better forecast accuracy',
     description: 'Apply forecasting, segmentation, anomaly detection, and risk scoring models to uncover patterns and predict outcomes.',
     skills: ['Machine Learning', 'Forecasting', 'Risk Scoring', 'Feature Engineering', 'Model Validation', 'Statistical Analysis'],
     technologies: ['Python', 'Scikit-learn', 'Pandas', 'NumPy', 'XGBoost', 'LightGBM', 'ARIMA'],
@@ -223,8 +217,6 @@ const stages = [
     title: 'Visualize',
     Icon: BarChart3,
     tagline: 'Make it decision-ready',
-    metricValue: '60+',
-    metricLabel: 'Leaders supported',
     description: 'Create dashboards and executive reports that make complex data easy to understand and act on.',
     skills: ['Dashboard Design', 'KPI Reporting', 'Data Storytelling', 'DAX', 'Executive Reporting', 'Data Visualization'],
     technologies: ['Power BI', 'Tableau', 'DAX', 'SQL', 'Excel'],
@@ -257,8 +249,6 @@ const stages = [
     title: 'Deliver',
     Icon: Rocket,
     tagline: 'Ship & sustain',
-    metricValue: 'Hours → min',
-    metricLabel: 'Runtime',
     description: 'Automate reporting, monitor model performance, document workflows, and ship solutions used by real teams.',
     skills: ['Automation', 'CI/CD', 'Model Monitoring', 'Documentation', 'Workflow Scheduling', 'Production Handoff'],
     technologies: ['Git', 'CI/CD', 'Confluence', 'Airflow', 'SQL', 'Python'],
@@ -298,22 +288,25 @@ const chartDataByStage = {
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
-   SkillPill / TechPill
+   Pill — one component for both lists; `kind` picks the icon map, the
+   accent class, and the screen-reader prefix.
    ────────────────────────────────────────────────────────────────────────── */
-function SkillPill({ label }) {
-  const Ic = skillIconMap[label] || SKILL_FALLBACK;
-  return (
-    <motion.span className={styles.pill} role="listitem" aria-label={`Skill: ${label}`} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
-      <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
-      {label}
-    </motion.span>
-  );
-}
+const PILL_KINDS = {
+  skill: { iconMap: skillIconMap, fallback: SKILL_FALLBACK, srPrefix: 'Skill', extraClass: null },
+  tech: { iconMap: techIconMap, fallback: TECH_FALLBACK, srPrefix: 'Technology', extraClass: 'techPill' },
+};
 
-function TechPill({ label }) {
-  const Ic = techIconMap[label] || TECH_FALLBACK;
+function Pill({ label, kind = 'skill' }) {
+  const { iconMap, fallback, srPrefix, extraClass } = PILL_KINDS[kind];
+  const Ic = iconMap[label] || fallback;
   return (
-    <motion.span className={cx(styles.pill, styles.techPill)} role="listitem" aria-label={`Technology: ${label}`} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+    <motion.span
+      className={cx(styles.pill, extraClass && styles[extraClass])}
+      role="listitem"
+      aria-label={`${srPrefix}: ${label}`}
+      whileHover={{ y: -3 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+    >
       <span className={styles.pillIcon} aria-hidden><Ic size={15} /></span>
       {label}
     </motion.span>
@@ -461,6 +454,9 @@ function ImpactDashboard({ stage, mode }) {
   const view = mode === 'recruiter' ? stage.recruiter : stage.technical;
   const chartData = chartDataByStage[stage.number];
   const BulletIcon = mode === 'recruiter' ? CheckCircle2 : Code2;
+  // The headline metric is always the stage's first stat — kept in one place
+  // rather than repeated as separate metricValue / metricLabel fields.
+  const headlineStat = stage.stats[0];
 
   return (
     <div className={styles.panel}>
@@ -498,8 +494,8 @@ function ImpactDashboard({ stage, mode }) {
             )}
 
             <div className={styles.metricBox}>
-              <span className={styles.metricValue}>{stage.metricValue}</span>
-              <span className={styles.metricLabel}>{stage.metricLabel}</span>
+              <span className={styles.metricValue}>{headlineStat.value}</span>
+              <span className={styles.metricLabel}>{headlineStat.label}</span>
             </div>
 
             <div className={styles.chartHead}>
@@ -529,14 +525,14 @@ function ImpactDashboard({ stage, mode }) {
             <div className={styles.group}>
               <span className={styles.groupLabel}>Skills Gained</span>
               <div className={styles.pills} role="list">
-                {stage.skills.map((s) => <SkillPill key={s} label={s} />)}
+                {stage.skills.map((s) => <Pill key={s} kind="skill" label={s} />)}
               </div>
             </div>
 
             <div className={styles.group}>
               <span className={styles.groupLabel}>Technologies Used</span>
               <div className={styles.pills} role="list">
-                {stage.technologies.map((t) => <TechPill key={t} label={t} />)}
+                {stage.technologies.map((t) => <Pill key={t} kind="tech" label={t} />)}
               </div>
             </div>
 
